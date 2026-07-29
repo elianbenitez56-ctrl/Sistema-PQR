@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>INAPEL - Solicitud de PQR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inapel-navy": "#1a1a4b",
+                      "inapel-cyan": "#00a3e0",
+                      "inapel-orange": "#f37021",
+                      "on-tertiary-fixed-variant": "#40484d",
+                      "surface-container": "#f1f5f9",
+                      "on-secondary-container": "#003f7e",
+                      "on-surface": "#1a1a4b",
+                      "on-tertiary-fixed": "#151d22",
+                      "surface-container-low": "#f8fafc",
+                      "outline": "#737780",
+                      "on-primary-fixed-variant": "#1f477b",
+                      "on-secondary-fixed-variant": "#00468b",
+                      "secondary": "#00a3e0",
+                      "on-tertiary": "#ffffff",
+                      "primary": "#1a1a4b",
+                      "outline-variant": "#e2e8f0",
+                      "surface-dim": "#e2e8f0",
+                      "surface-container-highest": "#f1f5f9",
+                      "secondary-container": "#00a3e0",
+                      "error": "#f37021",
+                      "on-error-container": "#93000a",
+                      "on-primary-container": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "background": "#f8f9ff",
+                      "primary-container": "#1a1a4b",
+                      "surface-container-high": "#e2e8f0",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#d6e3ff",
+                      "on-secondary-fixed": "#001b3d",
+                      "surface-bright": "#ffffff",
+                      "tertiary": "#f37021",
+                      "on-surface-variant": "#64748b",
+                      "surface": "#f8f9ff",
+                      "on-primary-fixed": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#f37021",
+                      "primary-fixed": "#1a1a4b",
+                      "tertiary-fixed": "#dbe3ea",
+                      "inverse-surface": "#213145",
+                      "inverse-on-surface": "#eaf1ff",
+                      "primary-fixed-dim": "#a7c8ff",
+                      "on-error": "#ffffff",
+                      "on-background": "#1a1a4b",
+                      "secondary-fixed-dim": "#a9c7ff",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-container": "#949ca3",
+                      "tertiary-fixed-dim": "#bfc8ce",
+                      "surface-variant": "#f1f5f9",
+                      "inverse-primary": "#a7c8ff",
+                      "surface-tint": "#1a1a4b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "sm": "12px",
+                      "xs": "4px",
+                      "lg": "32px",
+                      "margin-desktop": "40px",
+                      "base": "8px",
+                      "md": "24px",
+                      "gutter": "24px",
+                      "xl": "48px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "label-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "title-md": ["Inter"],
+                      "headline-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["14px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "label-sm": ["11px", {"lineHeight": "1", "fontWeight": "500"}],
+                      "display-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "title-md": ["16px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .form-input-focus {
+            transition: all 0.2s ease;
+        }
+        .form-input-focus:focus {
+            outline: none;
+            border-color: #00a3e0;
+            box-shadow: 0 0 0 4px rgba(0, 163, 224, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="bg-white text-inapel-navy h-full w-64 fixed left-0 top-0 border-r border-outline-variant shadow-sm flex flex-col h-screen py-md pl-base z-50">
+<div class="mb-xl px-md">
+<div class="flex items-center justify-center">
+<img alt="INAPEL Logo" class="h-auto max-w-[140px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA731M-wmZqvFvXIJ6Pz2AqcbVeUF4_2bnpENXGTKelPWJiBVjFmPDLwC7n7ZrZPR76J_3DdtR6h3gGMuGzeLVizSzOm3jz8tapVL2oaGYzfUw8oon1BoAjOxD2rSP-31zgOJZQpHttEERNcTSvg-v6DYERdqOaNHAjYTvj5UCWkvrz-3G5y1Rn05ziCptQY7EHC7EfGQpjotcleyVpbjjmY_ZrWcm_435OGU92x3ODO6FuO5prj0hfBG37PMY8EzIZRA"/>
+</div>
+</div>
+<nav class="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-4">
+<!-- Active Tab: Nuevo PQR -->
+<a class="bg-inapel-navy text-white font-bold rounded-r-full mr-4 flex items-center gap-4 px-md py-3 transition-transform duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-inapel-cyan">edit_note</span>
+<span class="font-label-md text-label-md">Nuevo PQR</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-inapel-navy rounded-r-full mr-4 flex items-center gap-4 px-md py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-md text-label-md">Consultar estado</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-inapel-navy rounded-r-full mr-4 flex items-center gap-4 px-md py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">database</span>
+<span class="font-label-md text-label-md">Base de datos</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-inapel-navy rounded-r-full mr-4 flex items-center gap-4 px-md py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">troubleshoot</span>
+<span class="font-label-md text-label-md">Seguimiento PQR</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-inapel-navy rounded-r-full mr-4 flex items-center gap-4 px-md py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-md space-y-2 mb-md pr-4">
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-inapel-navy rounded-r-full mr-4 flex items-center gap-4 px-md py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Configuración</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low hover:text-inapel-navy rounded-r-full mr-4 flex items-center gap-4 px-md py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Ayuda</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-inapel-navy text-white shadow-md flex justify-between items-center w-full px-margin-desktop py-base sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<span class="font-headline-sm text-headline-sm uppercase tracking-wider font-bold">SOLICITUD DE PQR</span>
+<div class="h-4 w-px bg-white/20 mx-2"></div>
+<div class="flex items-center gap-2 text-white/70">
+<span class="material-symbols-outlined text-sm text-inapel-cyan">calendar_month</span>
+<span class="font-label-md text-label-md" id="current-date">martes, 28 de julio de 2026</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-white/10 rounded-full transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-inapel-orange rounded-full ring-2 ring-inapel-navy"></span>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-full transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="flex items-center gap-3 bg-white/10 px-4 py-1.5 rounded-full border border-white/10">
+<div class="w-8 h-8 rounded-full bg-inapel-cyan text-white flex items-center justify-center font-bold text-xs">
+                    AC
+                </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md leading-none">Área Comercial</span>
+<span class="text-[10px] opacity-60">Operador Principal</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="flex-1 p-margin-desktop space-y-gutter">
+<!-- Hero Banner -->
+<div class="relative overflow-hidden rounded-xl bg-inapel-navy shadow-lg p-xl flex items-center justify-between text-white">
+<div class="relative z-10">
+<h2 class="font-display-lg text-display-lg mb-2 tracking-tight">SOLICITUD DE PQR</h2>
+<p class="font-body-md text-body-md text-white/70 max-w-lg">
+                    Complete el siguiente formulario con la información requerida para radicar una nueva petición, queja o reclamo. Asegúrese de que los datos de contacto sean correctos.
+                </p>
+</div>
+<div class="text-right relative z-10">
+<p class="font-label-md text-label-md uppercase text-inapel-cyan mb-1">Fecha de Radicación</p>
+<p class="font-headline-md text-headline-md font-bold" id="current-date-large">28 de julio de 2026</p>
+<p class="font-title-md text-title-md text-inapel-orange" id="current-time">12:54 p. m.</p>
+</div>
+<!-- Subtle background branding -->
+<div class="absolute right-[-10%] top-[-50%] w-96 h-96 bg-inapel-cyan/10 rounded-full blur-3xl"></div>
+<div class="absolute left-[-5%] bottom-[-20%] w-64 h-64 bg-inapel-orange/5 rounded-full blur-2xl"></div>
+</div>
+<!-- Form Content Grid -->
+<form class="grid grid-cols-1 lg:grid-cols-2 gap-gutter" id="pqr-form">
+<!-- Card: Información de Recepción -->
+<section class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(26,26,75,0.05)] border border-outline-variant/30 flex flex-col overflow-hidden">
+<header class="bg-slate-50 px-md py-4 border-b border-outline-variant/50 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-inapel-navy/5 flex items-center justify-center text-inapel-navy">
+<span class="material-symbols-outlined text-inapel-cyan">call</span>
+</div>
+<h3 class="font-title-md text-title-md text-inapel-navy">Información de recepción</h3>
+</header>
+<div class="p-md space-y-gutter">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Fecha de recepción <span class="text-inapel-orange">*</span></label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="date" value="2026-07-28"/>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Hora <span class="text-inapel-orange">*</span></label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="time" value="12:54"/>
+</div>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Nombre de quien recibe <span class="text-inapel-orange">*</span></label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" placeholder="Nombre completo" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Cargo</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" placeholder="Cargo del receptor" type="text"/>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Centro de costo / Área</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" placeholder="Ej: Comercial" type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Ciudad / Municipio</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="text"/>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Departamento</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="text"/>
+</div>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Medio de recepción <span class="text-inapel-orange">*</span></label>
+<select class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus">
+<option value="">Seleccionar...</option>
+<option value="presencial">Presencial</option>
+<option value="telefonico">Telefónico</option>
+<option value="correo">Correo Electrónico</option>
+<option value="web">Página Web</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Card: Información del Cliente -->
+<section class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(26,26,75,0.05)] border border-outline-variant/30 flex flex-col overflow-hidden">
+<header class="bg-slate-50 px-md py-4 border-b border-outline-variant/50 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-inapel-cyan/5 flex items-center justify-center text-inapel-cyan">
+<span class="material-symbols-outlined">person</span>
+</div>
+<h3 class="font-title-md text-title-md text-inapel-navy">Información del cliente</h3>
+</header>
+<div class="p-md space-y-gutter">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Tipo de solicitud <span class="text-inapel-orange">*</span></label>
+<select class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus">
+<option value="">Seleccionar...</option>
+<option value="peticion">Petición</option>
+<option value="queja">Queja</option>
+<option value="reclamo">Reclamo</option>
+<option value="sugerencia">Sugerencia</option>
+</select>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Nombre o Razón Social <span class="text-inapel-orange">*</span></label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" placeholder="Empresa o nombre del cliente" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">NIT o C.C.</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="text"/>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Contacto</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="text"/>
+</div>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Dirección</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Ciudad / Municipio</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="text"/>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Departamento</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Teléfono</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="tel"/>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">WhatsApp</label>
+<input class="w-full rounded-lg border-outline-variant bg-surface-bright p-3 font-body-md text-body-md form-input-focus" type="tel"/>
+</div>
+</div>
+</div>
+</section>
+</form>
+<!-- Action Bar -->
+<div class="flex justify-between items-center bg-white p-md rounded-xl border border-outline-variant/30 shadow-sm">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm text-inapel-orange">info</span>
+<span class="font-label-md text-label-md">Los campos marcados con (*) son obligatorios para el radicado.</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-3 rounded-lg border-2 border-inapel-navy/20 text-inapel-navy font-title-md text-title-md hover:bg-slate-50 hover:border-inapel-navy/40 transition-all flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-inapel-orange">delete</span>
+                    Limpiar Formulario
+                </button>
+<button class="px-8 py-3 rounded-lg bg-inapel-navy text-white font-title-md text-title-md hover:bg-[#15153a] shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center gap-2" form="pqr-form" type="submit">
+<span class="material-symbols-outlined text-inapel-cyan">send</span>
+                    Radicar Solicitud
+                </button>
+</div>
+</div>
+<!-- Dashboard Stats Preview -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="bg-white p-md rounded-xl border border-outline-variant/30 flex flex-col shadow-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">PQR Hoy</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-md text-headline-md font-bold text-inapel-navy">12</span>
+<span class="text-xs text-inapel-cyan font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-sm">trending_up</span> 15%
+                    </span>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-outline-variant/30 flex flex-col shadow-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Pendientes</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-md text-headline-md font-bold text-inapel-orange">4</span>
+<span class="text-xs text-on-surface-variant">Sin asignar</span>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-outline-variant/30 flex flex-col shadow-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Tiempo Promedio</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-md text-headline-md font-bold text-inapel-navy">2.4 d</span>
+<span class="text-xs text-on-surface-variant">Días hábiles</span>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-outline-variant/30 flex flex-col shadow-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Satisfacción</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-md text-headline-md font-bold text-inapel-navy">94%</span>
+<div class="flex gap-0.5">
+<span class="material-symbols-outlined text-sm text-inapel-cyan" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm text-inapel-cyan" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm text-inapel-cyan" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm text-inapel-cyan" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm text-inapel-cyan">star_half</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="mt-auto py-base px-margin-desktop border-t border-outline-variant text-center bg-white/50 backdrop-blur-sm">
+<p class="font-label-sm text-label-sm text-on-surface-variant">
+            © 2026 INAPEL - Sistema de Gestión PQR v2.4.0 | Desarrollado por Servicios Tecnológicos Corporativos
+        </p>
+</footer>
+</main>
+<script>
+    function updateDateTime() {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+        
+        const dateStr = now.toLocaleDateString('es-ES', options);
+        const timeStr = now.toLocaleTimeString('es-ES', timeOptions).replace('.', '');
+        const dayOnly = now.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const dateEl = document.getElementById('current-date');
+        const dateLargeEl = document.getElementById('current-date-large');
+        const timeEl = document.getElementById('current-time');
+
+        if(dateEl) dateEl.textContent = dateStr;
+        if(dateLargeEl) dateLargeEl.textContent = dayOnly;
+        if(timeEl) timeEl.textContent = timeStr;
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    document.getElementById('pqr-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Solicitud Radicada Exitosamente. Generando número de radicado...');
+    });
+</script>
+</body></html>

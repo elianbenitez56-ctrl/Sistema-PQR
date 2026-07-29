@@ -1,0 +1,68 @@
+CBM
+Nit:900729502-0   BODEGA MP MARFIL ESCOLAR FRM1[003]CBM
+
+CLIENTE   : 001  PRODUCTOS ECO                             VENDEDOR : 0000 GENERAL                                                         PAGINA:   1
+NIT/CC    : 802004090        TELEFONO :3333333             PEDIDO No. 00004850CBM
+DIRECCION ENTREGA: CALLE 30 1 295                          REMISION No: RM  - 0304575CBM
+ORIGEN: D DIGITADO      F. DE SOLICITUD 06/21/2024  F. DE PEDIDO 06/21/2024 F. DE DESPACHO 06/21/2024 CONTROL:   4826 DOC-POS: 00004850  HORA:07:04:18
+                                                                                    
+======================================================================================================================================================
+ P.L.U.    Barra                    Producto                                 Proveedor             Solici Despac  Iva    Dscto  Vlr.Vta       Total
+======================================================================================================================================================
+   81634 81634          TEMPERA MARFIL X 6 COLORES *UND UNIDADES            MARFIL IMPRESOS Y PA    3,920   3,920   0.00   0.00       875    3,430,000
+======================================================================================================================================================
+OBSERVACIONES:                                                                                                              SUBTOTAL:        3,430,000
+                                                                                                                            DSCTO:                   0
+                                                                                                                            IVA:                     0
+                                                                                                                            TOTAL:           3,430,000
+======================================================================================================================================================
+                    ** DOCUMENTO NO ASIMILA UNA FACTURA DE VENTA - VALIDO UNICAMENTE PARA ENTREGA DE MERCANCIA **
+
+
+
+RECIBIDO, FIRMA Y SELLO                                    FIRMA AUTORIZADA
+
+
+
+
+CBM
+Nit:900729502-0   BODEGA MP MARFIL ESCOLAR FRM1[003]CBM
+
+CLIENTE   : 001  PRODUCTOS ECO                             VENDEDOR : 0000 GENERAL                                                         PAGINA:   1
+NIT/CC    : 802004090        TELEFONO :3333333             PEDIDO No. 00004850CBM
+DIRECCION ENTREGA: CALLE 30 1 295                          REMISION No: RM  - 0304575CBM
+ORIGEN: D DIGITADO      F. DE SOLICITUD 06/21/2024  F. DE PEDIDO 06/21/2024 F. DE DESPACHO 06/21/2024 CONTROL:   4826 DOC-POS: 00004850  HORA:07:04:18
+                                                                                    
+======================================================================================================================================================
+ P.L.U.    Barra                    Producto                                 Proveedor             Solici Despac  Iva    Dscto  Vlr.Vta       Total
+======================================================================================================================================================
+   81634 81634          TEMPERA MARFIL X 6 COLORES *UND UNIDADES            MARFIL IMPRESOS Y PA    3,920   3,920   0.00   0.00       875    3,430,000
+======================================================================================================================================================
+OBSERVACIONES:                                                                                                              SUBTOTAL:        3,430,000
+                                                                                                                            DSCTO:                   0
+                                                                                                                            IVA:                     0
+                                                                                                                            TOTAL:           3,430,000
+======================================================================================================================================================
+                    ** DOCUMENTO NO ASIMILA UNA FACTURA DE VENTA - VALIDO UNICAMENTE PARA ENTREGA DE MERCANCIA **
+
+
+
+RECIBIDO, FIRMA Y SELLO                                    FIRMA AUTORIZADA
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -7,7 +7,16 @@ echo ======================================
 echo      INICIANDO SISTEMA PQR...
 echo ======================================
 
-start "" cmd /k python app.py
+set PYTHON=C:\Users\Administrador\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe
+
+if not exist "%PYTHON%" (
+    echo ERROR: No se encuentra Python.
+    echo Instale Python desde python.org o ajuste la ruta en INICIAR_PQR.bat
+    pause
+    exit /b 1
+)
+
+start "" cmd /k "%PYTHON% app.py"
 
 timeout /t 3 /nobreak >nul
 

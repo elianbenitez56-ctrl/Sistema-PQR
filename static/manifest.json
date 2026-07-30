@@ -1,0 +1,24 @@
+{
+  "name": "INAPEL - Sistema de Gestión PQR",
+  "short_name": "INAPEL PQR",
+  "description": "Sistema de Gestión de Peticiones, Quejas y Reclamos de INAPEL",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9ff",
+  "theme_color": "#001E40",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/static/img/logo_inapel.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/img/logo_inapel.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

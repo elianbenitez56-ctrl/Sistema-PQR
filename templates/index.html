@@ -287,6 +287,28 @@ body{
 .user-menu-item.user-menu-danger{color:var(--error)}
 .user-menu-item.user-menu-danger .material-symbols-outlined{color:var(--error)}
 .user-menu-item.user-menu-danger:hover{background:var(--error-bg);color:var(--error)}
+.user-menu-item.active{background:var(--surface-container);color:var(--blue)}
+.user-menu-item.active .material-symbols-outlined{color:var(--blue)}
+.user-menu-check{
+  margin-left:auto; display:flex; align-items:center;
+  opacity:0; transition:opacity 0.25s ease;
+}
+.user-menu-check .material-symbols-outlined{font-size:17px;color:var(--blue)}
+
+/* ─── ADMIN BADGE ─── */
+.admin-badge{
+  display:inline-flex; align-items:center; gap:5px;
+  margin-right:10px; padding:5px 11px;
+  border-radius:var(--radius-full);
+  background:rgba(31,94,172,0.12); border:1px solid rgba(31,94,172,0.35);
+  color:var(--blue); font-size:11px; font-weight:600;
+  animation:badgeIn 0.3s ease; white-space:nowrap;
+}
+.admin-badge .material-symbols-outlined{font-size:15px}
+@keyframes badgeIn{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:translateY(0)}
+}
 
 /* ─── CONTENT ─── */
 .content{padding:24px 28px;flex:1;max-width:1480px;margin:0 auto;width:100%}
@@ -1302,12 +1324,16 @@ a:focus-visible{
         <span class="dot"></span>
       </button>
       <div class="topbar-divider" aria-hidden="true"></div>
+      <span id="admin-badge" class="admin-badge" style="display:none">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        Modo Administrador
+      </span>
       <div class="user-menu-wrap">
         <button class="topbar-user" id="user-menu-trigger" onclick="toggleUserMenu()" aria-haspopup="true" aria-expanded="false" title="Menú de usuario">
           <div class="avatar">AC</div>
           <div class="user-info">
             <span class="user-name">Área Comercial</span>
-            <span class="user-role" id="user-role-label">Administrador</span>
+            <span class="user-role" id="user-role-label">Perfil Cliente</span>
           </div>
           <span class="material-symbols-outlined user-chevron" id="user-chevron">expand_more</span>
         </button>
@@ -1316,9 +1342,21 @@ a:focus-visible{
             <div class="user-menu-avatar">AC</div>
             <div class="user-menu-id">
               <div class="user-menu-name">Área Comercial</div>
-              <div class="user-menu-role" id="menu-role">Administrador</div>
+              <div class="user-menu-role" id="menu-role">Perfil Cliente</div>
             </div>
           </div>
+          <div class="user-menu-divider"></div>
+          <div class="user-menu-label">Perfiles</div>
+          <button class="user-menu-item active" id="item-perfil-cliente" onclick="switchProfile('cliente')" role="menuitem">
+            <span class="material-symbols-outlined">person</span>
+            <span>Perfil Cliente</span>
+            <span class="user-menu-check" id="check-cliente"><span class="material-symbols-outlined">check</span></span>
+          </button>
+          <button class="user-menu-item" id="item-perfil-admin" onclick="switchProfile('admin')" role="menuitem">
+            <span class="material-symbols-outlined">admin_panel_settings</span>
+            <span>Perfil Administrador</span>
+            <span class="user-menu-check" id="check-admin"><span class="material-symbols-outlined">check</span></span>
+          </button>
           <div class="user-menu-divider"></div>
           <div class="user-menu-section" id="admin-section">
             <div class="user-menu-label">Administración</div>
@@ -1338,7 +1376,7 @@ a:focus-visible{
           </div>
           <div class="user-menu-divider"></div>
           <button class="user-menu-item" onclick="openProfile();closeUserMenu()" role="menuitem">
-            <span class="material-symbols-outlined">person</span>
+            <span class="material-symbols-outlined">account_circle</span>
             <span>Mi perfil</span>
           </button>
           <button class="user-menu-item user-menu-danger" onclick="cerrarSesion();closeUserMenu()" role="menuitem">
@@ -2068,16 +2106,56 @@ function goStep(n) {
 function nextStep(n) { goStep(n); }
 function prevStep(n) { goStep(n); }
 
-// ── USER MENU & ROLES ──────────────────────────────────────────────────
-var userRole = localStorage.getItem('inapel_role') || 'Administrador';
+// ── USER MENU & PERFILES ─────────────────────────────────────────────
+var adminMode = false;
 
 function renderUserMenu() {
   var label = document.getElementById('user-role-label');
-  if (label) label.textContent = userRole;
+  if (label) label.textContent = adminMode ? 'Perfil Administrador' : 'Perfil Cliente';
   var role = document.getElementById('menu-role');
-  if (role) role.textContent = userRole;
-  var admin = document.getElementById('admin-section');
-  if (admin) admin.style.display = (userRole === 'Administrador') ? '' : 'none';
+  if (role) role.textContent = adminMode ? 'Perfil Administrador' : 'Perfil Cliente';
+  var badge = document.getElementById('admin-badge');
+  if (badge) badge.style.display = adminMode ? '' : 'none';
+  var adm = document.getElementById('admin-section');
+  if (adm) adm.style.display = adminMode ? '' : 'none';
+  var iC = document.getElementById('item-perfil-cliente');
+  if (iC) iC.classList.toggle('active', !adminMode);
+  var iA = document.getElementById('item-perfil-admin');
+  if (iA) iA.classList.toggle('active', adminMode);
+  var cC = document.getElementById('check-cliente');
+  if (cC) cC.style.opacity = adminMode ? 0 : 1;
+  var cA = document.getElementById('check-admin');
+  if (cA) cA.style.opacity = adminMode ? 1 : 0;
+}
+function switchProfile(p) {
+  if (p === 'admin' && !adminMode) {
+    oModal('Perfil Administrador',
+      '<div class="gate">' +
+      '<div class="gate-icon"><span class="material-symbols-outlined mat-icon">lock</span></div>' +
+      '<p style="text-align:center">Ingrese la contraseña de administrador para activar las herramientas de gestión.</p>' +
+      '<div class="gate-row">' +
+      '<label for="p-admin" class="visually-hidden">Contraseña de administrador</label>' +
+      '<input type="password" id="p-admin" placeholder="Contraseña" autocomplete="off" onkeydown="if(event.key===\'Enter\')abrir(\'admin\')">' +
+      '<button class="btn btn-primary" onclick="abrir(\'admin\')">Ingresar</button>' +
+      '</div>' +
+      '<p id="e-admin" class="gate-error" role="alert"></p>' +
+      '</div>');
+    var inp = document.getElementById('p-admin');
+    if (inp) inp.focus();
+    return;
+  }
+  if (p === 'cliente' && adminMode) {
+    adminMode = false;
+    cerrar('bd'); cerrar('seg'); cerrar('dash');
+    var active = document.querySelector('.panel.on');
+    if (active && active.id.indexOf('panel-basedatos') === 0 || (active && active.id.indexOf('panel-seguimiento') === 0) || (active && active.id.indexOf('panel-dashboard') === 0)) {
+      var btn = document.querySelector('.nav-item');
+      if (btn) goTab('formulario', btn);
+    }
+    toast('Perfil Cliente activado', 'info');
+  }
+  renderUserMenu();
+  closeUserMenu();
 }
 function toggleUserMenu() {
   var m = document.getElementById('user-menu');
@@ -2105,30 +2183,23 @@ document.addEventListener('keydown', function(e) {
 });
 
 function openProfile() {
-  var opts = ['Administrador','Operador','Supervisor','Cliente'];
-  var sel = opts.map(function(o) { return '<option' + (userRole === o ? ' selected' : '') + '>' + o + '</option>'; }).join('');
   oModal('Mi perfil',
     '<div class="form-grid">' +
-    '<div class="field full"><label>Nombre</label><input type="text" id="pf-nombre" value="Área Comercial"></div>' +
-    '<div class="field full"><label>Área</label><input type="text" id="pf-area" value="Comercial"></div>' +
-    '<div class="field full"><label>Rol del usuario</label><select id="pf-rol">' + sel + '</select></div>' +
+    '<div class="field full"><label>Nombre</label><input type="text" value="Área Comercial" disabled></div>' +
+    '<div class="field full"><label>Área</label><input type="text" value="Comercial" disabled></div>' +
+    '<div class="field full"><label>Perfil activo</label><input type="text" value="' + (adminMode ? 'Perfil Administrador' : 'Perfil Cliente') + '" disabled></div>' +
     '</div>' +
     '<div class="action-row" style="margin-top:18px">' +
-    '<button class="btn" onclick="cModal()">Cancelar</button>' +
-    '<button class="btn btn-primary" onclick="guardarPerfil()">Guardar cambios</button>' +
+    '<button class="btn btn-primary" onclick="cModal()">Cerrar</button>' +
     '</div>');
-}
-function guardarPerfil() {
-  var r = document.getElementById('pf-rol');
-  if (!r) return;
-  userRole = r.value;
-  localStorage.setItem('inapel_role', userRole);
-  renderUserMenu();
-  cModal();
-  toast('Rol actualizado: ' + userRole, 'success');
 }
 function cerrarSesion() {
   confirmar('Cerrar sesión', '¿Estás seguro de que deseas cerrar la sesión?', '🔒', function() {
+    if (adminMode) {
+      adminMode = false;
+      cerrar('bd'); cerrar('seg'); cerrar('dash');
+      renderUserMenu();
+    }
     toast('Sesión cerrada correctamente', 'info');
     setTimeout(function() {
       var btn = document.querySelector('.nav-item');
@@ -2449,6 +2520,7 @@ function guardar() {
     pqr.historial = [{ estado: 'Recibido', fecha: now.toISOString() }];
     db.push(pqr);
     guardarDatos();
+    dbExcel = null;
     var archivos = document.getElementById("f-files").files;
     if (archivos.length > 0) {
       var formData = new FormData();
@@ -2507,6 +2579,24 @@ function limpiar() {
 }
 
 // ── AUTH ────────────────────────────────────────────────────────────────
+function activarModulo(tipo) {
+  if (tipo === 'bd') {
+    bdAuth = true;
+    document.getElementById('gate-bd').style.display = 'none';
+    document.getElementById('con-bd').style.display = 'block';
+    renderDB();
+  } else if (tipo === 'dash') {
+    dashAuth = true;
+    document.getElementById('gate-dash').style.display = 'none';
+    document.getElementById('con-dash').style.display = 'block';
+    cargarDashboard();
+    iniciarDashboardAuto();
+  } else {
+    segAuth = true;
+    document.getElementById('gate-seg').style.display = 'none';
+    document.getElementById('con-seg').style.display = 'block';
+  }
+}
 function abrir(tipo) {
   var inp = document.getElementById('p-' + tipo);
   var err = document.getElementById('e-' + tipo);
@@ -2515,21 +2605,16 @@ function abrir(tipo) {
   inp.value = '';
   if (val === PASS) {
     err.textContent = '';
-    if (tipo === 'bd') {
-      bdAuth = true;
-      document.getElementById('gate-bd').style.display = 'none';
-      document.getElementById('con-bd').style.display = 'block';
-      renderDB();
-    } else if (tipo === 'dash') {
-      dashAuth = true;
-      document.getElementById('gate-dash').style.display = 'none';
-      document.getElementById('con-dash').style.display = 'block';
-      cargarDashboard();
-      iniciarDashboardAuto();
+    if (tipo === 'admin') {
+      adminMode = true;
+      activarModulo('bd');
+      activarModulo('seg');
+      activarModulo('dash');
+      cModal();
+      renderUserMenu();
+      toast('Modo Administrador activado', 'success');
     } else {
-      segAuth = true;
-      document.getElementById('gate-seg').style.display = 'none';
-      document.getElementById('con-seg').style.display = 'block';
+      activarModulo(tipo);
     }
   } else {
     err.textContent = 'Contraseña incorrecta. Inténtalo de nuevo.';
@@ -2559,13 +2644,20 @@ function cerrar(tipo) {
 }
 
 // ── RENDER DB ───────────────────────────────────────────────────────────
+var dbExcel = null;
+function cargarBDExcel() {
+  return fetch("/api/pqr/todos")
+    .then(function(r) { return r.json(); })
+    .then(function(lista) { dbExcel = lista || []; });
+}
 function renderDB() {
   if (!bdAuth) return;
+  if (!dbExcel) { cargarBDExcel().then(function() { renderDB(); }); return; }
   var q   = (document.getElementById('db-q').value || '').toLowerCase();
   var est = document.getElementById('db-est').value || '';
   var desde = document.getElementById('db-desde').value;
   var hasta = document.getElementById('db-hasta').value;
-  var data = db.filter(function(p) {
+  var data = dbExcel.filter(function(p) {
     var f = p.fechaRec || (p.savedAt || '').slice(0,10);
     var cumpleFecha = true;
     if (desde && f < desde) cumpleFecha = false;
@@ -2574,10 +2666,10 @@ function renderDB() {
            (!q || (p.radicado||'').toLowerCase().indexOf(q) > -1 || (p.cliente||'').toLowerCase().indexOf(q) > -1) &&
            (!est || p.estado === est);
   });
-  var total = db.length;
-  var abier = db.filter(function(p) { return ['Cerrado','No procede'].indexOf(p.estado) === -1; }).length;
-  var urgen = db.filter(function(p) { return dias(p.savedAt) > 7 && ['Cerrado','No procede'].indexOf(p.estado) === -1; }).length;
-  var cerr  = db.filter(function(p) { return p.estado === 'Cerrado'; }).length;
+  var total = dbExcel.length;
+  var abier = dbExcel.filter(function(p) { return ['Cerrado','No procede'].indexOf(p.estado) === -1; }).length;
+  var urgen = dbExcel.filter(function(p) { return dias(p.savedAt) > 7 && ['Cerrado','No procede'].indexOf(p.estado) === -1; }).length;
+  var cerr  = dbExcel.filter(function(p) { return p.estado === 'Cerrado'; }).length;
   document.getElementById('sg').innerHTML =
     sc('Total PQR', total, '#eaf1fb', '#1F5EAC', 'registros totales', 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2L14 8 20 8') +
     sc('Abiertos', abier, '#dbeafe', '#001E40', 'en trámite activo', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z') +
@@ -2622,7 +2714,7 @@ function cModal() { document.getElementById('modal').classList.remove('open'); }
 
 function mEstado(rad) {
   editRad = rad;
-  var p = db.filter(function(x) { return x.radicado === rad; })[0];
+  var p = (dbExcel !== null ? dbExcel : db).filter(function(x) { return x.radicado === rad; })[0];
   var opts = ['Recibido','Radicado','En revisión','En investigación','Pendiente de información','Pendiente de decisión','Acción en proceso','Respuesta enviada','Cerrado','No procede'];
   var sel = opts.map(function(o) { return '<option' + (p && p.estado === o ? ' selected' : '') + '>' + o + '</option>'; }).join('');
   oModal('Cambiar estado · ' + rad,
@@ -2646,8 +2738,12 @@ function aplicarEst() {
         if (!p.historial) p.historial = [];
         p.historial.push({ estado: nuevoEstado, fecha: new Date().toISOString() });
         guardarDatos();
-        renderDB();
       }
+      if (dbExcel) {
+        var x = dbExcel.filter(function(v) { return v.radicado === editRad; })[0];
+        if (x) x.estado = nuevoEstado;
+      }
+      renderDB();
       cModal();
       toast("Estado actualizado a «" + nuevoEstado + "»", "success");
     })
@@ -2656,7 +2752,7 @@ function aplicarEst() {
 }
 
 function mDetalle(rad) {
-  var p = db.filter(function(x) { return x.radicado === rad; })[0];
+  var p = (dbExcel !== null ? dbExcel : db).filter(function(x) { return x.radicado === rad; })[0];
   if (!p) return;
   var d = dias(p.savedAt);
   var states = ['Recibido','Radicado','En revisión','En investigación','Acción en proceso','Respuesta enviada','Cerrado'];

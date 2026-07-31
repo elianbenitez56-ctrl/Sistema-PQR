@@ -369,6 +369,55 @@ def consultar_pqr(valor_busqueda):
     return None
 
 # ==========================================================
+# LISTAR TODOS LOS PQR (misma fuente que obtener_dashboard)
+# ==========================================================
+
+def listar_pqrs():
+
+    actualizar_estructura_excel()
+    wb = load_workbook(ARCHIVO)
+
+    ws = wb["PQR"]
+
+    lista = []
+
+    for fila in ws.iter_rows(min_row=2, values_only=True):
+
+        if not fila[0]:
+            continue
+
+        fecha = str(fila[1])[:10] if fila[1] else ""
+        hora = fila[2] or ""
+
+        productos_raw = fila[13] if len(fila) > 13 and fila[13] else "[]"
+
+        try:
+            productos = json.loads(productos_raw)
+        except:
+            productos = []
+
+        lista.append({
+            "radicado": fila[0],
+            "fechaRec": fecha,
+            "horaRec": hora,
+            "tipoSol": fila[3] or "",
+            "cliente": fila[4] or "",
+            "nit": fila[5] or "",
+            "contacto": fila[6] or "",
+            "tel": fila[7] or "",
+            "email": fila[8] or "",
+            "estado": fila[9] or "Recibido",
+            "prioridad": fila[10] or "",
+            "desc": fila[11] or "",
+            "expectativa": fila[12] if len(fila) > 12 else "",
+            "productos": productos,
+            "savedAt": f"{fecha}T{hora}" if hora else fecha
+        })
+
+    wb.close()
+    return lista
+
+# ==========================================================
 # ACTUALIZAR ESTADO DEL PQR
 # ==========================================================
 

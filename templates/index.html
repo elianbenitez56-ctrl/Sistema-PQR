@@ -217,6 +217,77 @@ body{
 .topbar-user .user-name{font-size:12px;font-weight:600;color:var(--on-surface);white-space:nowrap}
 .topbar-user .user-role{font-size:10px;color:var(--on-surface-variant);white-space:nowrap}
 
+/* ─── USER MENU ─── */
+.user-menu-wrap{position:relative}
+.topbar-user{
+  font-family:var(--font); cursor:pointer;
+  transition:var(--transition);
+}
+.topbar-user:hover{background:var(--surface-container);border-color:var(--outline)}
+.user-chevron{
+  font-size:16px; color:var(--on-surface-variant);
+  transition:transform var(--transition); flex-shrink:0;
+}
+.user-menu-wrap.open .user-chevron{transform:rotate(180deg)}
+.user-menu{
+  position:absolute; top:calc(100% + 12px); right:0; width:284px;
+  background:var(--surface-container-lowest);
+  border:1px solid var(--outline-soft);
+  border-radius:14px; box-shadow:var(--shadow-lg);
+  padding:8px; z-index:150;
+  opacity:0; visibility:hidden;
+  transform:translateY(-8px) scale(0.98);
+  transform-origin:top right;
+  transition:opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  pointer-events:none;
+}
+.user-menu.open{
+  opacity:1; visibility:visible;
+  transform:translateY(0) scale(1);
+  pointer-events:auto;
+}
+.user-menu-header{
+  display:flex; align-items:center; gap:12px;
+  padding:10px 12px 12px;
+}
+.user-menu-avatar{
+  width:42px; height:42px; border-radius:50%;
+  background:linear-gradient(135deg,var(--navy),var(--blue));
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:700; flex-shrink:0;
+  box-shadow:0 2px 8px rgba(31,94,172,0.25);
+}
+.user-menu-id{min-width:0}
+.user-menu-name{font-size:13px;font-weight:600;color:var(--on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-menu-role{font-size:11px;font-weight:500;color:var(--blue)}
+.user-menu-divider{height:1px;background:var(--outline-soft);margin:6px 4px}
+.user-menu-section{display:block}
+.user-menu-label{
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.08em; color:var(--on-surface-variant);
+  padding:8px 12px 4px; opacity:0.7;
+}
+.user-menu-item{
+  display:flex; align-items:center; gap:12px;
+  width:100%; padding:10px 12px;
+  border:none; background:none;
+  font-family:var(--font); font-size:13px; font-weight:500;
+  color:var(--on-surface); border-radius:10px;
+  cursor:pointer; transition:var(--transition); text-align:left;
+}
+.user-menu-item .material-symbols-outlined{font-size:19px;color:var(--on-surface-variant);transition:var(--transition)}
+.user-menu-item:hover{background:var(--surface-container);color:var(--blue);transform:translateX(2px)}
+.user-menu-item:hover .material-symbols-outlined{color:var(--blue)}
+.user-menu-item .badge-count{
+  margin-left:auto; font-size:10px; font-weight:700;
+  background:var(--error); color:#fff; padding:1px 7px;
+  border-radius:var(--radius-full); min-width:20px; text-align:center;
+  line-height:1.5;
+}
+.user-menu-item.user-menu-danger{color:var(--error)}
+.user-menu-item.user-menu-danger .material-symbols-outlined{color:var(--error)}
+.user-menu-item.user-menu-danger:hover{background:var(--error-bg);color:var(--error)}
+
 /* ─── CONTENT ─── */
 .content{padding:24px 28px;flex:1;max-width:1480px;margin:0 auto;width:100%}
 .panel{display:none;animation:panelIn 0.3s ease}
@@ -1016,6 +1087,8 @@ body{
   .topbar .topbar-user .user-info{display:none}
   .topbar .topbar-left .page-title{font-size:13px}
   .topbar .topbar-divider{display:none}
+  .user-menu{position:fixed;top:calc(var(--topbar-h) + 8px);right:12px;left:12px;width:auto;max-width:300px;margin-left:auto;transform-origin:top right}
+  .user-menu.open{transform:translateY(0) scale(1)}
   .content{padding:14px;max-width:100%}
   .hero{padding:16px;border-radius:var(--radius-lg);flex-direction:column;align-items:flex-start;gap:10px;min-height:auto}
   .hero-left h1{font-size:18px}
@@ -1192,20 +1265,6 @@ a:focus-visible{
       <span class="material-symbols-outlined mat-icon">search</span>
       <span>Consultar</span>
     </button>
-    <div class="nav-label">Gestión</div>
-    <button class="nav-item" onclick="goTab('basedatos',this)">
-      <span class="material-symbols-outlined mat-icon">database</span>
-      <span>Base de datos</span>
-    </button>
-    <button class="nav-item" onclick="goTab('seguimiento',this)">
-      <span class="material-symbols-outlined mat-icon">troubleshoot</span>
-      <span>Seguimiento</span>
-    </button>
-    <button class="nav-item" onclick="goTab('dashboard',this)">
-      <span class="material-symbols-outlined mat-icon">dashboard</span>
-      <span>Dashboard</span>
-      <span class="badge-count" id="urg-badge"></span>
-    </button>
   </nav>
   <div class="sidebar-footer">
     <button class="nav-item" onclick="toggleTheme()" title="Modo oscuro/claro">
@@ -1243,11 +1302,49 @@ a:focus-visible{
         <span class="dot"></span>
       </button>
       <div class="topbar-divider" aria-hidden="true"></div>
-      <div class="topbar-user">
-        <div class="avatar">AC</div>
-        <div class="user-info">
-          <span class="user-name">Área Comercial</span>
-          <span class="user-role">Operador</span>
+      <div class="user-menu-wrap">
+        <button class="topbar-user" id="user-menu-trigger" onclick="toggleUserMenu()" aria-haspopup="true" aria-expanded="false" title="Menú de usuario">
+          <div class="avatar">AC</div>
+          <div class="user-info">
+            <span class="user-name">Área Comercial</span>
+            <span class="user-role" id="user-role-label">Administrador</span>
+          </div>
+          <span class="material-symbols-outlined user-chevron" id="user-chevron">expand_more</span>
+        </button>
+        <div class="user-menu" id="user-menu" role="menu">
+          <div class="user-menu-header">
+            <div class="user-menu-avatar">AC</div>
+            <div class="user-menu-id">
+              <div class="user-menu-name">Área Comercial</div>
+              <div class="user-menu-role" id="menu-role">Administrador</div>
+            </div>
+          </div>
+          <div class="user-menu-divider"></div>
+          <div class="user-menu-section" id="admin-section">
+            <div class="user-menu-label">Administración</div>
+            <button class="user-menu-item" onclick="goTab('basedatos',this);closeUserMenu()" role="menuitem">
+              <span class="material-symbols-outlined">database</span>
+              <span>Base de datos</span>
+            </button>
+            <button class="user-menu-item" onclick="goTab('seguimiento',this);closeUserMenu()" role="menuitem">
+              <span class="material-symbols-outlined">troubleshoot</span>
+              <span>Seguimiento</span>
+            </button>
+            <button class="user-menu-item" onclick="goTab('dashboard',this);closeUserMenu()" role="menuitem">
+              <span class="material-symbols-outlined">dashboard</span>
+              <span>Dashboard</span>
+              <span class="badge-count" id="urg-badge"></span>
+            </button>
+          </div>
+          <div class="user-menu-divider"></div>
+          <button class="user-menu-item" onclick="openProfile();closeUserMenu()" role="menuitem">
+            <span class="material-symbols-outlined">person</span>
+            <span>Mi perfil</span>
+          </button>
+          <button class="user-menu-item user-menu-danger" onclick="cerrarSesion();closeUserMenu()" role="menuitem">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Cerrar sesión</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1738,9 +1835,29 @@ a:focus-visible{
 
     <!-- ═══ DASHBOARD ═══ -->
     <div id="panel-dashboard" class="panel">
-      <div class="toolbar">
-        <h2>Dashboard ejecutivo</h2>
+      <div id="gate-dash">
+        <div class="card"><div class="card-body">
+          <div class="gate">
+            <div class="gate-icon"><span class="material-symbols-outlined mat-icon">lock</span></div>
+            <h2>Acceso restringido</h2>
+            <p>Esta sección es de uso exclusivo del Departamento de Calidad de INAPEL.</p>
+            <div class="gate-row">
+              <label for="p-dash" class="visually-hidden">Contraseña de acceso</label>
+              <input type="password" id="p-dash" placeholder="Contraseña" autocomplete="off" onkeydown="if(event.key==='Enter')abrir('dash')">
+              <button class="btn btn-primary" onclick="abrir('dash')">Ingresar</button>
+            </div>
+            <p id="e-dash" class="gate-error" role="alert"></p>
+          </div>
+        </div></div>
       </div>
+      <div id="con-dash" style="display:none">
+        <div class="toolbar">
+          <h2>Dashboard ejecutivo</h2>
+          <button class="btn btn-sm btn-ghost" onclick="cerrar('dash')">
+            <span class="material-symbols-outlined" style="font-size:16px">logout</span>
+            Cerrar sesión
+          </button>
+        </div>
       <div class="dashboard-grid">
         <div class="dash-card">
           <h4>Total PQR</h4>
@@ -1772,6 +1889,7 @@ a:focus-visible{
             <canvas id="grafTipos"></canvas>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -1819,6 +1937,7 @@ var STORE_KEY = 'inapel_pqr_v4';
 var db = [];
 var bdAuth = false;
 var segAuth = false;
+var dashAuth = false;
 var editRad = null;
 var SEARCH_KEY = 'inapel_search_v1';
 var THEME_KEY = 'inapel_theme_v1';
@@ -1949,6 +2068,76 @@ function goStep(n) {
 function nextStep(n) { goStep(n); }
 function prevStep(n) { goStep(n); }
 
+// ── USER MENU & ROLES ──────────────────────────────────────────────────
+var userRole = localStorage.getItem('inapel_role') || 'Administrador';
+
+function renderUserMenu() {
+  var label = document.getElementById('user-role-label');
+  if (label) label.textContent = userRole;
+  var role = document.getElementById('menu-role');
+  if (role) role.textContent = userRole;
+  var admin = document.getElementById('admin-section');
+  if (admin) admin.style.display = (userRole === 'Administrador') ? '' : 'none';
+}
+function toggleUserMenu() {
+  var m = document.getElementById('user-menu');
+  var w = document.querySelector('.user-menu-wrap');
+  if (!m) return;
+  var open = m.classList.toggle('open');
+  if (w) w.classList.toggle('open', open);
+  var t = document.getElementById('user-menu-trigger');
+  if (t) t.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeUserMenu() {
+  var m = document.getElementById('user-menu');
+  var w = document.querySelector('.user-menu-wrap');
+  if (m) m.classList.remove('open');
+  if (w) w.classList.remove('open');
+  var t = document.getElementById('user-menu-trigger');
+  if (t) t.setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('click', function(e) {
+  var w = document.querySelector('.user-menu-wrap');
+  if (w && !w.contains(e.target)) closeUserMenu();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeUserMenu();
+});
+
+function openProfile() {
+  var opts = ['Administrador','Operador','Supervisor','Cliente'];
+  var sel = opts.map(function(o) { return '<option' + (userRole === o ? ' selected' : '') + '>' + o + '</option>'; }).join('');
+  oModal('Mi perfil',
+    '<div class="form-grid">' +
+    '<div class="field full"><label>Nombre</label><input type="text" id="pf-nombre" value="Área Comercial"></div>' +
+    '<div class="field full"><label>Área</label><input type="text" id="pf-area" value="Comercial"></div>' +
+    '<div class="field full"><label>Rol del usuario</label><select id="pf-rol">' + sel + '</select></div>' +
+    '</div>' +
+    '<div class="action-row" style="margin-top:18px">' +
+    '<button class="btn" onclick="cModal()">Cancelar</button>' +
+    '<button class="btn btn-primary" onclick="guardarPerfil()">Guardar cambios</button>' +
+    '</div>');
+}
+function guardarPerfil() {
+  var r = document.getElementById('pf-rol');
+  if (!r) return;
+  userRole = r.value;
+  localStorage.setItem('inapel_role', userRole);
+  renderUserMenu();
+  cModal();
+  toast('Rol actualizado: ' + userRole, 'success');
+}
+function cerrarSesion() {
+  confirmar('Cerrar sesión', '¿Estás seguro de que deseas cerrar la sesión?', '🔒', function() {
+    toast('Sesión cerrada correctamente', 'info');
+    setTimeout(function() {
+      var btn = document.querySelector('.nav-item');
+      if (btn) goTab('formulario', btn);
+    }, 600);
+  });
+}
+renderUserMenu();
+
 // ── NAVEGACIÓN ──────────────────────────────────────────────────────────
 function goTab(name, btn) {
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
@@ -1959,7 +2148,7 @@ function goTab(name, btn) {
   var sub = document.getElementById('page-title-sub');
   if (sub) sub.textContent = titles[name] || 'Sistema de Gestión PQR';
   if (name === 'basedatos' && bdAuth) renderDB();
-  if (name === 'dashboard') {
+  if (name === 'dashboard' && dashAuth) {
     setTimeout(function(){ cargarDashboard(); iniciarDashboardAuto(); }, 200);
   }
   if (window.innerWidth <= 600) closeSidebar();
@@ -1999,7 +2188,7 @@ function iniciarDashboardAuto() {
   if (dashboardInterval) clearInterval(dashboardInterval);
   dashboardInterval = setInterval(function() {
     var panel = document.getElementById('panel-dashboard');
-    if (panel && panel.classList.contains('on')) cargarDashboard();
+    if (panel && panel.classList.contains('on') && dashAuth) cargarDashboard();
   }, 30000);
 }
 
@@ -2331,6 +2520,12 @@ function abrir(tipo) {
       document.getElementById('gate-bd').style.display = 'none';
       document.getElementById('con-bd').style.display = 'block';
       renderDB();
+    } else if (tipo === 'dash') {
+      dashAuth = true;
+      document.getElementById('gate-dash').style.display = 'none';
+      document.getElementById('con-dash').style.display = 'block';
+      cargarDashboard();
+      iniciarDashboardAuto();
     } else {
       segAuth = true;
       document.getElementById('gate-seg').style.display = 'none';
@@ -2348,6 +2543,12 @@ function cerrar(tipo) {
     document.getElementById('gate-bd').style.display = 'block';
     document.getElementById('con-bd').style.display = 'none';
     document.getElementById('p-bd').value = '';
+  } else if (tipo === 'dash') {
+    dashAuth = false;
+    document.getElementById('gate-dash').style.display = 'block';
+    document.getElementById('con-dash').style.display = 'none';
+    document.getElementById('p-dash').value = '';
+    if (dashboardInterval) { clearInterval(dashboardInterval); dashboardInterval = null; }
   } else {
     segAuth = false;
     document.getElementById('gate-seg').style.display = 'block';

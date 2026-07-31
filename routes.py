@@ -10,7 +10,8 @@ from excel_db import (
     guardar_historial,
     obtener_dashboard,
     guardar_adjunto,
-    generar_radicado
+    generar_radicado,
+    listar_pqrs
 )
 
 routes = Blueprint("routes", __name__)
@@ -35,6 +36,16 @@ def api_guardar_pqr():
         "radicado": radicado,
         "mensaje": "PQR guardado correctamente"
     })
+
+
+# ==========================================================
+# LISTAR TODOS LOS PQR
+# ==========================================================
+
+@routes.route("/api/pqr/todos", methods=["GET"])
+def api_pqr_todos():
+
+    return jsonify(listar_pqrs())
 
 
 # ==========================================================

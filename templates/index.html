@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="description" content="INAPEL - Sistema de Gestión de Peticiones, Quejas y Reclamos. Plataforma empresarial para la administración y trazabilidad de PQR.">
 <meta name="theme-color" content="#001E40">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="light">
 <meta name="application-name" content="INAPEL PQR">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/logo_inapel.png') }}">
@@ -24,7 +24,6 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
 tailwind.config = {
-  darkMode: "class",
   theme: {
     extend: {
       "colors": {
@@ -122,10 +121,6 @@ tailwind.config = {
   -webkit-backdrop-filter: blur(12px);
 }
 
-.dark .glass-morphism {
-  background: rgba(11, 28, 48, 0.7);
-}
-
 .ambient-shadow {
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.05);
 }
@@ -206,32 +201,6 @@ tailwind.config = {
   --sidebar-w: 260px;
   --topbar-h: 60px;
   --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
-}
-:root.dark{
-  --navy: #0f1a2e;
-  --navy-light: #1a2a4a;
-  --blue: #60a5fa;
-  --blue-light: #3b82f6;
-  --orange: #fb923c;
-  --surface: #0b0f1a;
-  --surface-dim: #10141e;
-  --surface-container: #161c2a;
-  --surface-container-low: #1c2232;
-  --surface-container-lowest: #0e1320;
-  --outline: #2e3440;
-  --outline-soft: #232838;
-  --on-surface: #eef1f8;
-  --on-surface-variant: #a0a8b8;
-  --success: #4ade80;
-  --success-bg: #14331e;
-  --error: #f87171;
-  --error-bg: #3a1414;
-  --warning: #fbbf24;
-  --warning-bg: #3a2e0a;
-  --info-bg: #1a2a4a;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.25);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.30);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.40);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -712,6 +681,11 @@ body{
   background:var(--success); color:#fff; border-color:var(--success);
 }
 .btn-success:hover{background:#16a34a;border-color:#16a34a;box-shadow:0 2px 8px rgba(34,197,94,0.2);transform:translateY(-1px)}
+.btn-danger{
+  background:var(--error); color:#fff; border-color:var(--error);
+  box-shadow:0 2px 8px rgba(186,26,26,0.15);
+}
+.btn-danger:hover{background:#991b1b;border-color:#991b1b;box-shadow:0 4px 12px rgba(186,26,26,0.25);transform:translateY(-1px)}
 .btn-ghost{background:transparent;border-color:transparent;color:var(--on-surface-variant)}
 .btn-ghost:hover{background:var(--surface-container);color:var(--on-surface)}
 .btn-sm{padding:8px 16px;font-size:12px;gap:6px}
@@ -1453,7 +1427,7 @@ a:focus-visible{
 <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
 
 <!-- ═══ LOGIN (HTML/CSS originales de Stitch AI, integrados con la lógica del sistema) ═══ -->
-<div id="login-screen" class="flex flex-col md:flex-row min-h-screen w-full fixed inset-0 z-[500] overflow-y-auto bg-background dark:bg-on-background">
+<div id="login-screen" class="flex flex-col md:flex-row min-h-screen w-full fixed inset-0 z-[500] overflow-y-auto bg-background ">
   <!-- Left Side: Hero Brand Area (45%) -->
   <section class="relative w-full md:w-[40%] overflow-hidden hidden md:flex flex-col justify-end p-margin-mobile md:p-6">
     <div class="absolute inset-0 z-0 overflow-hidden">
@@ -1473,31 +1447,25 @@ a:focus-visible{
     <div class="absolute bottom-[20%] left-[-5%] w-48 h-48 bg-tertiary-fixed-dim/10 rounded-full blur-2xl"></div>
   </section>
   <!-- Right Side: Interaction Area (55%) -->
-  <main class="relative w-full md:w-[60%] flex flex-col justify-between bg-surface-bright dark:bg-on-background p-margin-mobile md:p-6 login-main">
-    <!-- Top Actions -->
-    <div class="flex justify-end w-full">
-      <button class="p-2 rounded-full hover:bg-surface-container transition-colors text-on-surface-variant dark:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary" onclick="toggleTheme()" title="Modo oscuro/claro" aria-label="Cambiar modo oscuro o claro">
-        <span class="material-symbols-outlined" id="login-theme-icon">dark_mode</span>
-      </button>
-    </div>
+  <main class="relative w-full md:w-[60%] flex flex-col justify-between bg-surface-bright  p-margin-mobile md:p-6 login-main">
     <!-- Login Container -->
     <div class="max-w-3xl mx-auto w-full flex flex-col items-center justify-center flex-grow py-2 login-body">
       <!-- Header -->
       <header class="text-center mb-4 entrance-animation stagger-1">
-        <img alt="INAPEL Logo" class="h-[clamp(72px,6vw,96px)] w-auto mx-auto mb-4 drop-shadow-sm mix-blend-multiply dark:mix-blend-normal object-contain" src="{{ url_for('static', filename='img/logo_inapel.png') }}">
-        <p class="font-label-md text-[12.5px] leading-[18px] text-on-surface-variant dark:text-outline-variant tracking-wider uppercase">
+        <img alt="INAPEL Logo" class="h-[clamp(72px,6vw,96px)] w-auto mx-auto mb-4 drop-shadow-sm mix-blend-multiply  object-contain" src="{{ url_for('static', filename='img/logo_inapel.png') }}">
+        <p class="font-label-md text-[12.5px] leading-[18px] text-on-surface-variant  tracking-wider uppercase">
           Sistema Inteligente de Gestión de PQR
         </p>
       </header>
       <!-- Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
         <!-- User Access Card -->
-        <div class="group entrance-animation stagger-2 p-5 bg-white dark:bg-inverse-surface rounded-[20px] ambient-shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-outline-variant/30 flex flex-col h-full">
+        <div class="group entrance-animation stagger-2 p-5 bg-white  rounded-[20px] ambient-shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-outline-variant/30 flex flex-col h-full">
           <div class="w-10 h-10 rounded-2xl bg-secondary-container/10 flex items-center justify-center mb-3 text-secondary transition-colors group-hover:bg-secondary-container group-hover:text-white">
             <span class="material-symbols-outlined text-[24px] icon-fill">person</span>
           </div>
-          <h3 class="font-headline-md text-[clamp(17px,1.35vw,19px)] leading-[26px] text-on-surface dark:text-inverse-on-surface mb-1.5">Acceso de Usuario</h3>
-          <p class="font-body-md text-[14px] leading-[21px] text-on-surface-variant dark:text-outline-variant mb-3 flex-grow">
+          <h3 class="font-headline-md text-[clamp(17px,1.35vw,19px)] leading-[26px] text-on-surface  mb-1.5">Acceso de Usuario</h3>
+          <p class="font-body-md text-[14px] leading-[21px] text-on-surface-variant  mb-3 flex-grow">
             Registrar, consultar y realizar seguimiento a las solicitudes PQR de manera ágil.
           </p>
           <button class="w-full py-2.5 px-4 bg-secondary text-white font-label-md text-[12.5px] rounded-[20px] hover:bg-secondary/90 hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 btn-ripple" onclick="login('usuario')">
@@ -1506,18 +1474,18 @@ a:focus-visible{
           </button>
         </div>
         <!-- Admin Access Card -->
-        <div class="group entrance-animation stagger-3 p-5 bg-white dark:bg-inverse-surface rounded-[20px] ambient-shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-outline-variant/30 flex flex-col h-full">
+        <div class="group entrance-animation stagger-3 p-5 bg-white  rounded-[20px] ambient-shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-outline-variant/30 flex flex-col h-full">
           <div class="w-10 h-10 rounded-2xl bg-primary-container/10 flex items-center justify-center mb-3 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
             <span class="material-symbols-outlined text-[24px] icon-fill">admin_panel_settings</span>
           </div>
-          <h3 class="font-headline-md text-[clamp(17px,1.35vw,19px)] leading-[26px] text-on-surface dark:text-inverse-on-surface mb-1.5">Acceso de Administrador</h3>
-          <p class="font-body-md text-[14px] leading-[21px] text-on-surface-variant dark:text-outline-variant mb-3">
+          <h3 class="font-headline-md text-[clamp(17px,1.35vw,19px)] leading-[26px] text-on-surface  mb-1.5">Acceso de Administrador</h3>
+          <p class="font-body-md text-[14px] leading-[21px] text-on-surface-variant  mb-3">
             Acceso exclusivo para personal autorizado y gestión de herramientas del sistema.
           </p>
           <div class="space-y-2.5 flex-1 flex flex-col">
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">lock</span>
-              <input class="w-full pl-8 pr-8 py-2.5 bg-surface-container-lowest dark:bg-on-background border border-outline-variant rounded-[20px] focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-[14px]" id="login-pass" placeholder="Contraseña de administrador" type="password" autocomplete="off" onkeydown="if(event.key==='Enter')login('admin')">
+              <input class="w-full pl-8 pr-8 py-2.5 bg-surface-container-lowest  border border-outline-variant rounded-[20px] focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-[14px]" id="login-pass" placeholder="Contraseña de administrador" type="password" autocomplete="off" onkeydown="if(event.key==='Enter')login('admin')">
               <button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant hover:text-primary transition-colors" onclick="togglePass()" type="button" aria-label="Mostrar u ocultar contraseña" title="Mostrar contraseña">
                 <span class="material-symbols-outlined" id="pass-toggle-icon">visibility</span>
               </button>
@@ -1533,12 +1501,12 @@ a:focus-visible{
     </div>
     <!-- Footer (Shared Component) -->
     <footer class="flex flex-col md:flex-row justify-center items-center gap-stack-md w-full py-2">
-      <span class="text-[11px] leading-[15px] text-on-surface-variant dark:text-outline-variant text-center opacity-80">
+      <span class="text-[11px] leading-[15px] text-on-surface-variant  text-center opacity-80">
         Industria Nacional Papelera S.A.S. • Sistema de Gestión de PQR • FGC-PQR-01 v1
       </span>
       <div class="flex gap-4">
-        <a class="text-[11px] text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim underline transition-all" href="#">Privacidad</a>
-        <a class="text-[11px] text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim underline transition-all" href="#">Soporte</a>
+        <a class="text-[11px] text-on-surface-variant  hover:text-primary  underline transition-all" href="#">Privacidad</a>
+        <a class="text-[11px] text-on-surface-variant  hover:text-primary  underline transition-all" href="#">Soporte</a>
       </div>
     </footer>
   </main>
@@ -1561,12 +1529,6 @@ a:focus-visible{
       <span>Consultar</span>
     </button>
   </nav>
-  <div class="sidebar-footer">
-    <button class="nav-item" onclick="toggleTheme()" title="Modo oscuro/claro">
-      <span class="material-symbols-outlined mat-icon" id="theme-icon">dark_mode</span>
-      <span>Apariencia</span>
-    </button>
-  </div>
 </aside>
 
 <!-- ═══ MAIN ═══ -->
@@ -1589,9 +1551,6 @@ a:focus-visible{
       </div>
     </div>
     <div class="topbar-right">
-      <button class="topbar-btn" onclick="toggleTheme()" title="Modo oscuro/claro">
-        <span class="material-symbols-outlined" id="topbar-theme-icon">dark_mode</span>
-      </button>
       <button class="topbar-btn" title="Notificaciones">
         <span class="material-symbols-outlined">notifications</span>
         <span class="dot"></span>
@@ -2239,8 +2198,6 @@ var segAuth = false;
 var dashAuth = false;
 var editRad = null;
 var SEARCH_KEY = 'inapel_search_v1';
-var THEME_KEY = 'inapel_theme_v1';
-var darkMode = localStorage.getItem(THEME_KEY) === 'dark';
 var dashboardInterval = null;
 var chartEstados = null;
 var chartTipos = null;
@@ -2254,31 +2211,6 @@ function guardarDatos() {
   document.dispatchEvent(new Event('dbUpdated'));
 }
 cargarDatos();
-
-// ── THEME ──────────────────────────────────────────────────────────────
-function toggleTheme() {
-  darkMode = !darkMode;
-  document.documentElement.classList.toggle('dark', darkMode);
-  localStorage.setItem(THEME_KEY, darkMode ? 'dark' : 'light');
-  var icon = darkMode ? 'light_mode' : 'dark_mode';
-  var el1 = document.getElementById('theme-icon');
-  var el2 = document.getElementById('topbar-theme-icon');
-  var el3 = document.getElementById('login-theme-icon');
-  if (el1) el1.textContent = icon;
-  if (el2) el2.textContent = icon;
-  if (el3) el3.textContent = icon;
-}
-(function() {
-  if (darkMode) {
-    document.documentElement.classList.add('dark');
-    var icon = document.getElementById('theme-icon');
-    var icon2 = document.getElementById('topbar-theme-icon');
-    var icon3 = document.getElementById('login-theme-icon');
-    if (icon) icon.textContent = 'light_mode';
-    if (icon2) icon2.textContent = 'light_mode';
-    if (icon3) icon3.textContent = 'light_mode';
-  }
-})();
 
 // ── INIT ───────────────────────────────────────────────────────────────
 (function() {
@@ -2952,7 +2884,8 @@ function renderDB() {
       '<td>' + (p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') + '</td>' +
       '<td style="text-align:center;white-space:nowrap">' +
         '<button class="btn btn-xs btn-icon" title="Cambiar estado" onclick="mEstado(\'' + p.radicado + '\')" style="margin-right:4px">✏️</button>' +
-        '<button class="btn btn-xs btn-icon" title="Ver detalle" onclick="mDetalle(\'' + p.radicado + '\')">👁️</button>' +
+        '<button class="btn btn-xs btn-icon" title="Ver detalle" onclick="mDetalle(\'' + p.radicado + '\')" style="margin-right:4px">👁️</button>' +
+        '<button class="btn-del" title="Eliminar" onclick="mEliminar(\'' + p.radicado + '\')">🗑️</button>' +
       '</td>';
     tbody.appendChild(tr);
   });
@@ -3051,6 +2984,43 @@ function mDetalle(rad) {
 }
 function dd(label, val) {
   return '<div><div class="detail-label">' + label + '</div><div class="detail-value">' + (val||'—') + '</div></div>';
+}
+
+// ── ELIMINAR PQR ────────────────────────────────────────────────────────
+function mEliminar(rad) {
+  oModal('Eliminar registro · ' + rad,
+    '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 0 20px">' +
+    '<div style="width:54px;height:54px;border-radius:50%;background:var(--error-bg);display:flex;align-items:center;justify-content:center;margin-bottom:16px">' +
+    '<span class="material-symbols-outlined" style="font-size:27px;color:var(--error)">delete</span></div>' +
+    '<p style="font-size:15px;font-weight:600;margin-bottom:6px;color:var(--on-surface)">¿Está seguro de eliminar este registro?</p>' +
+    '<p style="font-size:13px;color:var(--on-surface-variant);max-width:340px;line-height:1.55">Esta acción eliminará toda la información relacionada con este PQR y no podrá deshacerse.</p></div>' +
+    '<div style="display:flex;gap:9px;justify-content:flex-end">' +
+    '<button class="btn" onclick="cModal()">Cancelar</button>' +
+    '<button class="btn btn-danger" onclick="ejecutarEliminar(\'' + rad + '\')">🗑 Eliminar</button></div>');
+}
+
+function ejecutarEliminar(rad) {
+  fetch('/api/pqr/' + encodeURIComponent(rad), { method: 'DELETE' })
+  .then(function(r) {
+    return r.json().then(function(d) { return { ok: r.ok, data: d }; });
+  })
+  .then(function(res) {
+    cModal();
+    if (res.ok) {
+      dbExcel = dbExcel.filter(function(x) { return x.radicado !== rad; });
+      db = db.filter(function(x) { return x.radicado !== rad; });
+      guardarDatos();
+      renderDB();
+      toast('Registro eliminado correctamente.', 'success');
+    } else {
+      toast(res.data.mensaje || 'No fue posible eliminar el registro.', 'error');
+    }
+  })
+  .catch(function(err) {
+    console.error(err);
+    cModal();
+    toast('No fue posible eliminar el registro.', 'error');
+  });
 }
 
 // ── EXPORT CSV ──────────────────────────────────────────────────────────

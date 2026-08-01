@@ -1638,6 +1638,9 @@ a:focus-visible{
         <div class="hero-dots" id="hero-dots"></div>
       </div>
 
+      <!-- AVISO DE VALIDACIÓN DE PASOS -->
+      <div id="step-alert" class="alert alert-error" style="display:none;margin-bottom:16px">⚠ Debe completar todos los campos obligatorios para continuar.</div>
+
       <!-- PROGRESS INDICATOR -->
       <div class="form-progress" id="form-progress">
         <div class="progress-step on" data-step="1" onclick="goStep(1)">
@@ -2283,6 +2286,18 @@ function closeSidebar() {
 var currentStep = 1;
 function goStep(n) {
   if (n < 1 || n > 5 || n === currentStep) return;
+  if (n > currentStep) {
+    var invalido = validarRangoPasos(currentStep, n);
+    if (invalido !== null) {
+      if (invalido === currentStep) {
+        ocultarAlertaPasos();
+        window.scrollTo({top: document.getElementById('form-progress').offsetTop - 80, behavior:'smooth'});
+        return;
+      }
+      goStep(invalido);
+      return;
+    }
+  }
   document.querySelectorAll('.form-step').forEach(function(s){ s.classList.remove('on'); });
   document.querySelectorAll('.progress-step').forEach(function(s){ s.classList.remove('on'); });
   document.querySelectorAll('.progress-line').forEach(function(l){ l.classList.remove('on'); });
@@ -2305,6 +2320,87 @@ function goStep(n) {
 }
 function nextStep(n) { goStep(n); }
 function prevStep(n) { goStep(n); }
+
+// ── VALIDACIÓN DE PASOS ──────────────────────────────────────────────────
+function marcarCampo(campo, mensaje) {
+  if (!campo) return;
+  campo.classList.add('error');
+  if (campo.parentElement) {
+    var aviso = campo.parentElement.querySelector('small[data-step-err]');
+    if (aviso) {
+      aviso.textContent = mensaje;
+    } else {
+      aviso = document.createElement('small');
+      aviso.setAttribute('data-step-err', '1');
+      aviso.style.cssText = 'display:block;font-size:11.5px;color:var(--error);margin-top:4px;font-weight:500';
+      aviso.textContent = mensaje;
+      campo.parentElement.appendChild(aviso);
+    }
+  }
+}
+
+function quitarErrorCampo(campo) {
+  if (!campo) return;
+  campo.classList.remove('error');
+  if (campo.parentElement) {
+    var aviso = campo.parentElement.querySelector('small[data-step-err]');
+    if (aviso) aviso.remove();
+  }
+}
+
+function ocultarAlertaPasos() {
+  var errores = document.querySelectorAll('.form-step input.error, .form-step select.error, .form-step textarea.error');
+  var alerta = document.getElementById('step-alert');
+  if (alerta) alerta.style.display = errores.length ? 'block' : 'none';
+}
+
+function validarPaso(n) {
+  var paso = document.querySelector('.form-step[data-step="' + n + '"]');
+  if (!paso) return true;
+  var ok = true;
+  paso.querySelectorAll('.field.required input, .field.required select, .field.required textarea').forEach(function(campo) {
+    var valor = (campo.value || '').trim();
+    if (!valor) {
+      marcarCampo(campo, campo.tagName === 'SELECT' ? 'Debe seleccionar una opción.' : 'Este campo es obligatorio.');
+      ok = false;
+    } else {
+      quitarErrorCampo(campo);
+    }
+  });
+  paso.querySelectorAll('input[type="email"]').forEach(function(campo) {
+    var valor = (campo.value || '').trim();
+    if (valor && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor)) {
+      marcarCampo(campo, 'Debe ingresar un correo válido.');
+      ok = false;
+    } else {
+      quitarErrorCampo(campo);
+    }
+  });
+  ocultarAlertaPasos();
+  return ok;
+}
+
+function validarRangoPasos(desde, hasta) {
+  for (var s = desde; s < hasta; s++) {
+    if (!validarPaso(s)) return s;
+  }
+  return null;
+}
+
+document.addEventListener('input', function(e) {
+  var t = e.target;
+  if (t && t.closest && t.closest('.form-step')) {
+    quitarErrorCampo(t);
+    ocultarAlertaPasos();
+  }
+});
+document.addEventListener('change', function(e) {
+  var t = e.target;
+  if (t && t.closest && t.closest('.form-step')) {
+    quitarErrorCampo(t);
+    ocultarAlertaPasos();
+  }
+});
 
 // ── SESIÓN Y MENÚ DE USUARIO ─────────────────────────────────────────
 var adminMode = false;
@@ -2777,6 +2873,9 @@ function limpiar() {
   tbody.rows[0].querySelectorAll('input').forEach(function(i) { i.value = ''; });
   document.getElementById('rad-num').textContent = 'PQR · 2026 · XXXX';
   document.getElementById('msg-form').innerHTML = '';
+  document.querySelectorAll('small[data-step-err]').forEach(function(el) { el.remove(); });
+  var stepAlerta = document.getElementById('step-alert');
+  if (stepAlerta) stepAlerta.style.display = 'none';
   var now = new Date();
   document.getElementById('f-fecha').value = now.toISOString().slice(0, 10);
   document.getElementById('f-hora').value = now.toTimeString().slice(0, 5);

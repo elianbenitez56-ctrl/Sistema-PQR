@@ -11,7 +11,8 @@ from excel_db import (
     obtener_dashboard,
     guardar_adjunto,
     generar_radicado,
-    listar_pqrs
+    listar_pqrs,
+    eliminar_pqr
 )
 
 routes = Blueprint("routes", __name__)
@@ -46,6 +47,33 @@ def api_guardar_pqr():
 def api_pqr_todos():
 
     return jsonify(listar_pqrs())
+
+
+# ==========================================================
+# ELIMINAR PQR
+# ==========================================================
+
+@routes.route("/api/pqr/<radicado>", methods=["DELETE"])
+def api_eliminar_pqr(radicado):
+
+    resultado = eliminar_pqr(radicado)
+
+    if resultado == "not_found":
+        return jsonify({
+            "ok": False,
+            "mensaje": "El registro ya fue eliminado o no existe."
+        }), 404
+
+    if resultado != True:
+        return jsonify({
+            "ok": False,
+            "mensaje": "No fue posible eliminar el registro."
+        }), 500
+
+    return jsonify({
+        "ok": True,
+        "mensaje": "Registro eliminado correctamente."
+    })
 
 
 # ==========================================================

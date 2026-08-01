@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 from datetime import datetime
 from collections import Counter
 from openpyxl import Workbook, load_workbook
@@ -668,4 +669,62 @@ def guardar_adjunto(
 
     return True
 
-    
+# ==========================================================
+# ELIMINAR PQR
+# ==========================================================
+
+def eliminar_pqr(radicado):
+
+    actualizar_estructura_excel()
+
+    wb = load_workbook(ARCHIVO)
+
+    ws = wb["PQR"]
+
+    encontrado = False
+
+    for fila in range(2, ws.max_row + 1):
+
+        if str(ws.cell(fila, 1).value).strip().upper() == str(radicado).strip().upper():
+
+            ws.delete_rows(fila)
+            encontrado = True
+            break
+
+    if not encontrado:
+
+        wb.close()
+        return "not_found"
+
+    for hoja in ["Historial", "Investigaciones", "Adjuntos"]:
+
+        if hoja not in wb.sheetnames:
+            continue
+
+        ws_h = wb[hoja]
+
+        filas_a_eliminar = []
+
+        for fila in range(2, ws_h.max_row + 1):
+
+            if str(ws_h.cell(fila, 1).value).strip().upper() == str(radicado).strip().upper():
+                filas_a_eliminar.append(fila)
+
+        for fila in reversed(filas_a_eliminar):
+            ws_h.delete_rows(fila)
+
+    try:
+
+        wb.save(ARCHIVO)
+        wb.close()
+
+    except Exception:
+
+        return "save_error"
+
+    carpeta = os.path.join("Base_Datos", "Evidencias", str(radicado))
+
+    if os.path.isdir(carpeta):
+        shutil.rmtree(carpeta, ignore_errors=True)
+
+    return True

@@ -1431,7 +1431,10 @@ a:focus-visible{
   <!-- Left Side: Hero Brand Area (45%) -->
   <section class="relative w-full md:w-[40%] overflow-hidden hidden md:flex flex-col justify-end p-margin-mobile md:p-6">
     <div class="absolute inset-0 z-0 overflow-hidden">
-      <img alt="Logistics facility background" class="absolute left-0 top-[-8.4%] w-full h-[108.4%] max-w-none object-cover object-bottom" src="{{ url_for('static', filename='img/hero_login.jpg') }}">
+      <picture>
+        <source type="image/webp" srcset="{{ url_for('static', filename='img/hero_login.webp') }}">
+        <img alt="Logistics facility background" class="absolute left-0 top-[-8.4%] w-full h-[108.4%] max-w-none object-cover object-bottom" src="{{ url_for('static', filename='img/hero_login.jpg') }}">
+      </picture>
       <div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent"></div>
     </div>
     <div class="relative z-10 entrance-animation">

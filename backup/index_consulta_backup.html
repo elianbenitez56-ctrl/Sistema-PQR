@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INAPEL · Sistema PQR</title>
+<style>
+:root{
+  --az1:#0D2B5E; --az2:#1A4A9B; --az3:#2E6DD4; --azs:#EAF1FB; --azb:#C5D9F5;
+  --vd:#1E6B3C; --vds:#E6F4EC;
+  --rj:#8B1A1A; --rjs:#FDEAEA;
+  --am:#7A4F00; --ams:#FDF3E0;
+  --g1:#F4F6FA; --g2:#E8ECF4; --g3:#D0D6E4; --g4:#A0ABBC; --g5:#6B7A90; --g7:#2C3347; --g9:#111827;
+  --bl:#FFFFFF;
+  --sh:0 1px 4px rgba(13,43,94,.08),0 4px 16px rgba(13,43,94,.07);
+  --sh2:0 6px 24px rgba(13,43,94,.13);
+  --r:10px; --rl:14px; --rp:999px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;color:var(--g9);background:var(--g1);min-height:100vh}
+
+/* NAV */
+.nav{background:var(--az1);color:#fff;display:flex;align-items:center;gap:12px;padding:0 24px;height:58px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logobox{width:34px;height:34px;background:var(--az3);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.nav-logobox svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nav-brand strong{font-size:14px;font-weight:700;display:block;line-height:1.2}
+.nav-brand small{font-size:9px;opacity:.5;letter-spacing:.08em;text-transform:uppercase}
+.nav-sep{width:1px;height:26px;background:rgba(255,255,255,.15)}
+.nav-tabs{display:flex;gap:2px}
+.nav-tabs button{background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;padding:7px 13px;border-radius:7px;font-size:12.5px;font-family:inherit;display:flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap}
+.nav-tabs button:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-tabs button.on{background:var(--az3);color:#fff;font-weight:600}
+.nav-tabs button .lk{font-size:9px;background:rgba(255,255,255,.18);padding:1px 5px;border-radius:3px;margin-left:2px}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-date{font-size:11px;opacity:.45}
+.nav-user{display:flex;align-items:center;gap:7px;font-size:12px;opacity:.75}
+.nav-av{width:28px;height:28px;border-radius:50%;background:var(--az3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+
+/* LAYOUT */
+.wrap{max-width:1080px;margin:0 auto;padding:26px 20px}
+.panel{display:none}.panel.on{display:block}
+
+/* CARDS */
+.card{background:var(--bl);border:1px solid var(--g2);border-radius:var(--rl);box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+.ch{padding:13px 18px;border-bottom:1px solid var(--g2);display:flex;align-items:center;gap:9px}
+.ch-ico{width:28px;height:28px;border-radius:7px;background:var(--azs);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ch-ico svg{width:14px;height:14px;stroke:var(--az3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ch h3{font-size:12.5px;font-weight:600;color:var(--g9)}
+.ch .sub{font-size:11px;color:var(--g4);margin-left:auto}
+.cb{padding:18px 20px}
+
+/* BANNER */
+.banner{background:linear-gradient(130deg,var(--az1) 0%,var(--az2) 60%,var(--az3) 100%);border-radius:var(--rl);padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sh2)}
+.banner-l label{font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px}
+.banner-num{font-size:20px;font-weight:700;color:#fff;letter-spacing:.07em;font-family:'Courier New',monospace}
+.banner-r{text-align:right}
+.banner-r .dl{font-size:9px;color:rgba(255,255,255,.4);margin-bottom:2px}
+.banner-r .dv{font-size:13px;color:rgba(255,255,255,.85);font-weight:500}
+.banner-r .dh{font-size:11px;color:rgba(255,255,255,.45)}
+
+/* FIELDS */
+.fg{display:grid;gap:10px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.full{grid-column:1/-1}
+.f{display:flex;flex-direction:column;gap:4px}
+.f label{font-size:10.5px;font-weight:600;color:var(--g7);text-transform:uppercase;letter-spacing:.05em}
+.f input,.f select,.f textarea{padding:8px 11px;border:1.5px solid var(--g3);border-radius:8px;font-size:13px;font-family:inherit;color:var(--g9);background:var(--bl);outline:none;transition:.15s;width:100%}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--az3);box-shadow:0 0 0 3px rgba(46,109,212,.11)}
+.f textarea{resize:vertical;min-height:88px;line-height:1.6}
+.req label::after{content:" *";color:var(--rj)}
+.err-field{border-color:var(--rj) !important;box-shadow:0 0 0 3px rgba(139,26,26,.1) !important}
+
+/* TWO COL */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+
+/* PRODUCT TABLE */
+.ptw{overflow-x:auto}
+.pt{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
+.pt thead th{background:var(--az1);color:#fff;padding:8px 9px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.pt tbody tr:nth-child(even) td{background:var(--g1)}
+.pt tbody tr:hover td{background:var(--azs)}
+.pt td{padding:3px 3px;border-bottom:1px solid var(--g2)}
+.pt td input,.pt td select{border:none;background:transparent;width:100%;font-size:12px;color:var(--g9);padding:5px 7px;font-family:inherit;outline:none;border-radius:5px}
+.pt td input:focus,.pt td select:focus{background:#fff;box-shadow:0 0 0 2px var(--azb)}
+.pt td:last-child{width:32px;text-align:center}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:8px;border:1.5px solid var(--g3);background:var(--bl);color:var(--g7);font-size:13px;font-family:inherit;font-weight:500;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{background:var(--g1);border-color:var(--g4)}
+.btn-p{background:var(--az2);color:#fff;border-color:var(--az2)}
+.btn-p:hover{background:var(--az1);border-color:var(--az1)}
+.btn-s{background:var(--vd);color:#fff;border-color:var(--vd)}
+.btn-s:hover{background:#155030}
+.btn-sm{padding:5px 10px;font-size:12px;gap:5px}
+.btn-ico{padding:5px 7px}
+.btn-del{border:none;background:none;color:var(--rj);cursor:pointer;padding:4px 7px;border-radius:5px;font-size:14px;line-height:1}
+.btn-del:hover{background:var(--rjs)}
+.act-row{display:flex;align-items:center;gap:9px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--g2)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:var(--rp);font-size:11px;font-weight:600;white-space:nowrap}
+.bs-rec{background:#DBEAFE;color:#1E40AF}
+.bs-rad{background:#EDE9FE;color:#4C1D95}
+.bs-rev{background:#FEF3C7;color:#92400E}
+.bs-inv{background:#FDE68A;color:#78350F}
+.bs-pen{background:#FFE4E6;color:#9F1239}
+.bs-acc{background:#DCFCE7;color:#14532D}
+.bs-res{background:#CCFBF1;color:#134E4A}
+.bs-cer{background:#F1F5F9;color:#334155}
+.bs-nop{background:#FEE2E2;color:#7F1D1D}
+.bp-alt{background:#FEE2E2;color:#991B1B}
+.bp-med{background:#FEF3C7;color:#92400E}
+.bp-baj{background:#DCFCE7;color:#14532D}
+
+/* ALERTS */
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;display:flex;align-items:flex-start;gap:8px;margin-top:10px;line-height:1.5}
+.a-ok{background:var(--vds);color:var(--vd);border:1px solid #b2dfcc}
+.a-err{background:var(--rjs);color:var(--rj);border:1px solid #f5c6c6}
+.a-inf{background:var(--azs);color:var(--az2);border:1px solid var(--azb)}
+
+/* GATE */
+.gate{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 24px;gap:14px;text-align:center}
+.gate-ico{width:68px;height:68px;background:var(--azs);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid var(--azb)}
+.gate-ico svg{width:30px;height:30px;stroke:var(--az2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gate h2{font-size:17px;font-weight:700;color:var(--g9)}
+.gate p{font-size:13px;color:var(--g5);max-width:300px;line-height:1.6}
+.gate-row{display:flex;gap:9px;margin-top:6px}
+.gate-row input{padding:9px 13px;border:1.5px solid var(--g3);border-radius:8px;font-size:14px;font-family:inherit;outline:none;width:200px;transition:.15s}
+.gate-row input:focus{border-color:var(--az3);box-shadow:0 0 0 3px rgba(46,109,212,.12)}
+.gate-err{font-size:12px;color:var(--rj);min-height:16px;font-weight:500}
+
+/* DB TABLE */
+.dw{overflow-x:auto}
+.dt{width:100%;border-collapse:collapse;font-size:13px;min-width:780px}
+.dt thead th{background:var(--az1);color:#fff;padding:10px 13px;text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.05em;white-space:nowrap}
+.dt tbody tr:nth-child(even) td{background:var(--g1)}
+.dt tbody tr:hover td{background:var(--azs)}
+.dt td{padding:9px 13px;border-bottom:1px solid var(--g2);vertical-align:middle}
+.timer{font-weight:700;font-size:11.5px;padding:2px 8px;border-radius:var(--rp)}
+.tok{background:var(--vds);color:var(--vd)}
+.twn{background:var(--ams);color:var(--am)}
+.tbd{background:var(--rjs);color:var(--rj)}
+.rad-cod{color:var(--az2);font-weight:700;font-family:'Courier New',monospace;font-size:12px}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.sc{background:var(--bl);border:1px solid var(--g2);border-radius:var(--rl);padding:15px 17px;box-shadow:var(--sh)}
+.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sc-lbl{font-size:10.5px;font-weight:600;color:var(--g5);text-transform:uppercase;letter-spacing:.05em}
+.sc-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.sc-ico svg{width:15px;height:15px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sc-val{font-size:26px;font-weight:700;color:var(--g9)}
+.sc-sub{font-size:11px;color:var(--g4);margin-top:2px}
+
+/* PROGRESS */
+.prog{margin:10px 0 14px}
+.prog-track{height:5px;background:var(--g2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--az3),var(--az2));border-radius:3px;transition:.4s}
+.prog-labs{display:flex;justify-content:space-between;font-size:10px;color:var(--g4);margin-top:4px}
+
+/* TIMELINE */
+.tl{display:flex;flex-direction:column}
+.tl-it{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--g2)}
+.tl-it:last-child{border:none}
+.tl-dot{width:9px;height:9px;border-radius:50%;background:var(--az3);margin-top:4px;flex-shrink:0;border:2px solid var(--azs)}
+.tl-est{font-size:13px;font-weight:500;color:var(--g9)}
+.tl-fch{font-size:11px;color:var(--g4)}
+
+/* TOOLBAR */
+.tb{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.tb h2{font-size:16px;font-weight:700;color:var(--g9)}
+.tb-acts{display:flex;gap:8px}
+
+/* SEARCH */
+.sb{display:flex;gap:9px;margin-bottom:14px}
+.sb input{flex:1;padding:8px 13px;border:1.5px solid var(--g3);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--bl);transition:.15s}
+.sb input:focus{border-color:var(--az3);box-shadow:0 0 0 3px rgba(46,109,212,.11)}
+.sb select{padding:8px 11px;border:1.5px solid var(--g3);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--bl);min-width:185px}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(13,43,94,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
+.mo.open{display:flex}
+.mb{background:var(--bl);border-radius:var(--rl);box-shadow:var(--sh2);width:100%;max-width:510px;max-height:88vh;overflow-y:auto}
+.mh{padding:16px 20px 13px;border-bottom:1px solid var(--g2);display:flex;align-items:center;justify-content:space-between}
+.mh h3{font-size:14px;font-weight:700;color:var(--g9)}
+.mc{font-size:18px;background:none;border:none;cursor:pointer;color:var(--g4);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.mc:hover{background:var(--g2);color:var(--g7)}
+.md{padding:18px 20px}
+
+/* RESULT */
+.rc{background:var(--bl);border:1.5px solid var(--azb);border-radius:var(--rl);padding:18px;margin-top:12px;box-shadow:var(--sh)}
+.rc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rc-rad{font-size:16px;font-weight:700;color:var(--az1);font-family:'Courier New',monospace}
+.ddl{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-bottom:14px}
+.ddt{font-size:10.5px;font-weight:600;color:var(--g5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.ddd{font-size:13px;color:var(--g9)}
+
+/* AVISO */
+.aviso{background:var(--azs);border:1px solid var(--azb);border-radius:9px;padding:12px 16px;font-size:11px;color:#2D4A8A;line-height:1.7;margin-top:14px}
+.aviso strong{font-weight:600}
+
+/* ATTACH */
+.az{border:2px dashed var(--g3);border-radius:9px;padding:18px;text-align:center;color:var(--g5);cursor:pointer;background:var(--g1);transition:.15s}
+.az:hover{border-color:var(--az3);color:var(--az3);background:var(--azs)}
+.az-icon{font-size:26px;display:block;margin-bottom:5px}
+.az p{font-size:13px;font-weight:500}
+.az small{font-size:11px;margin-top:2px;display:block}
+.fl{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.fl li{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--g7);background:var(--azs);padding:5px 10px;border-radius:6px}
+
+/* FOOTER */
+footer{text-align:center;padding:26px 0 18px;font-size:11px;color:var(--g4)}
+svg{display:inline-block;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-logobox">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+    </div>
+    <div class="nav-brand">
+      <strong>INAPEL</strong>
+      <small>Sistema de Gestión PQR · FGC-PQR-01</small>
+    </div>
+  </div>
+  <div class="nav-sep"></div>
+  <div class="nav-tabs">
+    <button class="on" onclick="goTab('formulario',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>
+      Nuevo PQR
+    </button>
+    <button onclick="goTab('consultar',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Consultar estado
+    </button>
+    <button onclick="goTab('basedatos',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Base de datos <span class="lk">🔒</span>
+    </button>
+    <button onclick="goTab('seguimiento',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Seguimiento PQR <span class="lk">🔒</span>
+    </button>
+  </div>
+  <div class="nav-right">
+    <span class="nav-date" id="nav-date"></span>
+    <div class="nav-sep"></div>
+    <div class="nav-user">
+      <div class="nav-av">AC</div>
+      <span>Área Comercial</span>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ===== FORMULARIO ===== -->
+<div id="panel-formulario" class="panel on">
+  <div class="banner">
+    <div class="banner-l">
+      <label>Número de radicado</label>
+      <div class="banner-num" id="rad-num">PQR · 2026 · XXXX</div>
+    </div>
+    <div class="banner-r">
+      <div class="dl">Fecha</div>
+      <div class="dv" id="ban-fecha"></div>
+      <div class="dh" id="ban-hora"></div>
+    </div>
+  </div>
+
+  <div class="two">
+    <!-- RECEPCIÓN -->
+    <div class="card">
+      <div class="ch">
+        <div class="ch-ico"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 019.69 17.6a19.5 19.5 0 01-3.33-3.33 19.79 19.79 0 01-4.32-10.13A2 2 0 014 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81A2 2 0 019 8.27L7.91 9.36a16 16 0 006.73 6.73l1.09-1.09a2 2 0 012.18-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div>
+        <h3>Información de recepción</h3>
+      </div>
+      <div class="cb">
+        <div class="fg g2">
+          <div class="f req"><label>Fecha de recepción</label><input type="date" id="f-fecha"></div>
+          <div class="f"><label>Hora</label><input type="time" id="f-hora"></div>
+          <div class="f req full"><label>Nombre de quien recibe</label><input type="text" id="f-recibe" placeholder="Nombre completo"></div>
+          <div class="f"><label>Cargo</label><input type="text" id="f-cargo" placeholder="Cargo del receptor"></div>
+          <div class="f"><label>Centro de costo / Área</label><input type="text" id="f-centro" placeholder="Ej: Comercial"></div>
+          <div class="f"><label>Ciudad / Municipio</label><input type="text" id="f-ciudad-r"></div>
+          <div class="f"><label>Departamento</label><input type="text" id="f-dpto-r"></div>
+          <div class="f req full"><label>Medio de recepción</label>
+            <select id="f-medio" onchange="tog('f-medio','Otros','f-otro-medio')">
+              <option value="">Seleccionar...</option>
+              <option>Correo electrónico</option><option>Llamada</option>
+              <option>Visita comercial</option><option>WhatsApp</option>
+              <option>Página web</option><option>Presencial</option><option>Otros</option>
+            </select>
+          </div>
+          <div class="f full" id="f-otro-medio" style="display:none">
+            <label>Especifique el medio</label>
+            <input type="text" id="f-otro-m" placeholder="Describa el canal...">
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- CLIENTE -->
+    <div class="card">
+      <div class="ch">
+        <div class="ch-ico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <h3>Información del cliente</h3>
+      </div>
+      <div class="cb">
+        <div class="fg g2">
+          <div class="f req full"><label>Tipo de solicitud</label>
+            <select id="f-tipo">
+              <option value="">Seleccionar...</option>
+              <option>Petición</option><option>Queja</option><option>Reclamo</option>
+              <option>Sugerencia</option><option>Solicitud de información</option>
+            </select>
+          </div>
+          <div class="f req full"><label>Nombre o razón social</label><input type="text" id="f-cliente" placeholder="Empresa o nombre del cliente"></div>
+          <div class="f"><label>NIT o C.C.</label><input type="text" id="f-nit"></div>
+          <div class="f"><label>Contacto</label><input type="text" id="f-contacto"></div>
+          <div class="f full"><label>Dirección</label><input type="text" id="f-dir"></div>
+          <div class="f"><label>Ciudad / Municipio</label><input type="text" id="f-ciudad-c"></div>
+          <div class="f"><label>Departamento</label><input type="text" id="f-dpto-c"></div>
+          <div class="f"><label>Teléfono</label><input type="text" id="f-tel"></div>
+          <div class="f"><label>WhatsApp</label><input type="text" id="f-wa"></div>
+          <div class="f full"><label>Correo electrónico</label><input type="email" id="f-email"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESCRIPCIÓN -->
+  <div class="card">
+    <div class="ch">
+      <div class="ch-ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <h3>Descripción detallada del PQR</h3>
+    </div>
+    <div class="cb">
+      <div class="f">
+        <label>Descripción completa</label>
+        <textarea id="f-desc" rows="5" placeholder="Describa con detalle la petición, queja, reclamo o sugerencia. Incluya fechas, impacto y cualquier información relevante..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div class="card">
+    <div class="ch">
+      <div class="ch-ico"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <h3>Productos del reclamo</h3>
+      <span class="sub">Una fila por producto</span>
+    </div>
+    <div class="cb" style="padding-bottom:12px">
+      <div class="ptw">
+        <table class="pt">
+          <thead><tr>
+            <th style="min-width:155px">Producto involucrado</th>
+            <th style="min-width:85px">Referencia</th>
+            <th style="min-width:95px">Lote / OP</th>
+            <th style="min-width:105px">Fecha empaque</th>
+            <th style="min-width:60px">Cant.</th>
+            <th style="min-width:100px">Unidad</th>
+            <th style="min-width:115px">Tipo doc.</th>
+            <th style="min-width:85px">N° doc.</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="prod-tbody">
+            <tr>
+              <td><input type="text" placeholder="Nombre del producto"></td>
+              <td><input type="text" placeholder="Ref."></td>
+              <td><input type="text" placeholder="Lote/OP"></td>
+              <td><input type="date"></td>
+              <td><input type="number" min="0" placeholder="0"></td>
+              <td><select><option>Kilogramos</option><option>Gramos</option><option>Unidades</option><option>Pliegos</option><option>Display</option><option>Cajas</option><option>Paquetes</option><option>Metros</option></select></td>
+              <td><select><option>Remisión</option><option>Orden de compra</option><option>Factura de venta</option></select></td>
+              <td><input type="text" placeholder="N°"></td>
+              <td><button class="btn-del" onclick="rmRow(this)" title="Eliminar">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn btn-sm" style="margin-top:10px" onclick="addRow()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar producto
+      </button>
+    </div>
+  </div>
+
+  <div class="two">
+    <!-- EVIDENCIAS -->
+    <div class="card">
+      <div class="ch">
+        <div class="ch-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <h3>Evidencias</h3>
+      </div>
+      <div class="cb">
+        <div class="fg g2">
+          <div class="f"><label>Tipo de evidencia</label>
+            <select id="f-tip-ev" onchange="tog('f-tip-ev','Otros','f-otro-ev')">
+              <option value="">Seleccionar...</option>
+              <option>Fotografía</option><option>Video</option><option>Muestra física</option>
+              <option>Factura</option><option>Correos electrónicos</option><option>Remisión</option><option>Otros</option>
+            </select>
+          </div>
+          <div class="f"><label>Número de evidencias</label><input type="number" id="f-num-ev" min="0" placeholder="0"></div>
+          <div class="f full" id="f-otro-ev" style="display:none">
+            <label>Especifique el tipo</label>
+            <input type="text" id="f-otro-ev-txt" placeholder="Describa el tipo de evidencia...">
+          </div>
+          <div class="f full">
+            <label>Adjuntar archivos</label>
+            <div class="az" onclick="document.getElementById('f-files').click()">
+              <span class="az-icon">📎</span>
+              <p>Haz clic para adjuntar</p>
+              <small>Fotos, videos, documentos, etc.</small>
+            </div>
+            <input type="file" id="f-files" multiple style="display:none" onchange="showFiles()">
+            <ul class="fl" id="file-list"></ul>
+          </div>
+          <div class="f full">
+            <label>Información adicional</label>
+            <textarea id="f-info-ad" rows="3" placeholder="Observaciones adicionales relevantes..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- RESULTADO -->
+    <div class="card">
+      <div class="ch">
+        <div class="ch-ico"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+        <h3>Resultado esperado</h3>
+      </div>
+      <div class="cb">
+        <div class="fg g2">
+          <div class="f full"><label>¿Qué espera el cliente como solución?</label>
+            <select id="f-exp">
+              <option value="">Seleccionar...</option>
+              <option>Cambio de producto</option><option>Nota crédito</option>
+              <option>Reposición</option><option>Revisión técnica</option>
+              <option>Aclaración de información</option>
+            </select>
+          </div>
+          <div class="f"><label>¿Producto fue utilizado?</label>
+            <select id="f-util">
+              <option value="">Seleccionar...</option>
+              <option>Sí</option><option>No</option><option>Parcialmente</option><option>No aplica</option>
+            </select>
+          </div>
+          <div class="f"><label>Prioridad</label>
+            <select id="f-pri">
+              <option value="">Seleccionar...</option>
+              <option>Alta</option><option>Media</option><option>Baja</option>
+            </select>
+          </div>
+        </div>
+        <div class="aviso">
+          <strong>Aviso de datos personales:</strong> La información suministrada será tratada por INAPEL conforme a la Ley 1581 de 2012, el Decreto 1074 de 2015 y la Política interna de Protección de Datos Personales.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="act-row">
+    <button class="btn" onclick="limpiar()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      Limpiar
+    </button>
+    <button class="btn btn-p" onclick="guardar()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Guardar PQR
+    </button>
+  </div>
+  <div id="msg-form"></div>
+</div>
+
+<!-- ===== CONSULTAR ===== -->
+<div id="panel-consultar" class="panel">
+  <div class="card">
+    <div class="ch">
+      <div class="ch-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <h3>Consultar estado del trámite</h3>
+    </div>
+    <div class="cb">
+      <p style="color:var(--g5);font-size:13px;margin-bottom:14px;line-height:1.6">Ingresa el número de radicado asignado al registrar el PQR para ver el estado actual e historial de tu solicitud.</p>
+      <div class="sb">
+        <input type="text" id="c-rad" placeholder="Ej: PQR-2026-0001" style="font-family:'Courier New',monospace;font-weight:600;letter-spacing:.05em;text-transform:uppercase" onkeydown="if(event.key==='Enter')consultar()">
+        <button class="btn btn-p" onclick="consultar()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Buscar
+        </button>
+      </div>
+      <div id="c-res"></div>
+    </div>
+  </div>
+  <div class="alert a-inf">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Si no tienes el número de radicado, comunícate con el área de Calidad o con tu asesor comercial.
+  </div>
+</div>
+
+<!-- ===== BASE DE DATOS ===== -->
+<div id="panel-basedatos" class="panel">
+  <div id="gate-bd">
+    <div class="card"><div class="cb">
+      <div class="gate">
+        <div class="gate-ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h2>Acceso restringido</h2>
+        <p>Esta sección es de uso exclusivo del Departamento de Calidad de INAPEL.</p>
+        <div class="gate-row">
+          <input type="password" id="p-bd" placeholder="Contraseña" onkeydown="if(event.key==='Enter')abrir('bd')">
+          <button class="btn btn-p" onclick="abrir('bd')">Ingresar</button>
+        </div>
+        <p id="e-bd" class="gate-err"></p>
+      </div>
+    </div></div>
+  </div>
+  <div id="con-bd" style="display:none">
+    <div class="tb">
+      <h2>Base de datos PQR</h2>
+      <div class="tb-acts">
+        <button class="btn btn-sm" onclick="expCSV()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar CSV
+        </button>
+        <button class="btn btn-sm" onclick="cerrar('bd')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+    <div class="sg" id="sg"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="cb" style="padding-bottom:10px">
+        <div class="sb">
+          <input type="text" id="db-q" placeholder="Buscar por radicado, cliente..." oninput="renderDB()">
+          <select id="db-est" onchange="renderDB()">
+            <option value="">Todos los estados</option>
+            <option>Recibido</option><option>Radicado</option><option>En revisión</option>
+            <option>En investigación</option><option>Pendiente de información</option>
+            <option>Pendiente de decisión</option><option>Acción en proceso</option>
+            <option>Respuesta enviada</option><option>Cerrado</option><option>No procede</option>
+          </select>
+        </div>
+      </div>
+      <div class="dw">
+        <table class="dt">
+          <thead><tr>
+            <th>Radicado</th><th>Fecha</th><th>Días</th><th>Cliente</th>
+            <th>Tipo</th><th>Estado</th><th>Prioridad</th><th style="text-align:center">Acciones</th>
+          </tr></thead>
+          <tbody id="db-tb"></tbody>
+        </table>
+      </div>
+      <div id="db-empty" style="display:none;text-align:center;padding:38px;color:var(--g4)">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="display:block;margin:0 auto 10px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <p style="font-size:14px;font-weight:500">Sin PQR registrados aún</p>
+        <p style="font-size:12px;margin-top:3px">Los PQR aparecerán aquí cuando sean guardados desde el formulario.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SEGUIMIENTO ===== -->
+<div id="panel-seguimiento" class="panel">
+  <div id="gate-seg">
+    <div class="card"><div class="cb">
+      <div class="gate">
+        <div class="gate-ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h2>Acceso restringido</h2>
+        <p>Esta sección es de uso exclusivo del Departamento de Calidad de INAPEL.</p>
+        <div class="gate-row">
+          <input type="password" id="p-seg" placeholder="Contraseña" onkeydown="if(event.key==='Enter')abrir('seg')">
+          <button class="btn btn-p" onclick="abrir('seg')">Ingresar</button>
+        </div>
+        <p id="e-seg" class="gate-err"></p>
+      </div>
+    </div></div>
+  </div>
+  <div id="con-seg" style="display:none">
+    <div class="tb">
+      <h2>Seguimiento y trazabilidad PQR</h2>
+      <button class="btn btn-sm" onclick="cerrar('seg')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+    <div class="card">
+      <div class="cb">
+        <p style="color:var(--g5);font-size:13px;margin-bottom:13px">Carga un PQR por número de radicado para iniciar o continuar la investigación.</p>
+        <div class="sb">
+          <input type="text" id="seg-q" placeholder="Ej: PQR-2026-0001" style="font-family:'Courier New',monospace;font-weight:600;text-transform:uppercase" onkeydown="if(event.key==='Enter')cargarSeg()">
+          <button class="btn btn-p" onclick="cargarSeg()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Cargar PQR
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="seg-con"></div>
+  </div>
+</div>
+
+</div><!-- end wrap -->
+
+<footer>Industria Nacional Papelera S.A.S. &nbsp;·&nbsp; Sistema de Gestión de PQR &nbsp;·&nbsp; FGC-PQR-01 v1 &nbsp;·&nbsp; 2026</footer>
+
+<!-- MODAL -->
+<div id="modal" class="mo" onclick="if(event.target===this)cModal()">
+  <div class="mb">
+    <div class="mh">
+      <h3 id="m-title"></h3>
+      <button class="mc" onclick="cModal()">✕</button>
+    </div>
+    <div class="md" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTES ─────────────────────────────────────────────────────────
+var PASS = 'calidad2026';
+var STORE_KEY = 'inapel_pqr_v4';
+var CONS_KEY  = 'inapel_cons_v4';
+
+// ── DATOS ──────────────────────────────────────────────────────────────
+var db = [];
+var cons = 0;
+var bdAuth = false;
+var segAuth = false;
+var editRad = null;
+
+function cargarDatos() {
+  try { db = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch(e) { db = []; }
+  cons = parseInt(localStorage.getItem(CONS_KEY) || '0') || 0;
+}
+function guardarDatos() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(db));
+  localStorage.setItem(CONS_KEY, String(cons));
+}
+cargarDatos();
+
+// ── INIT ───────────────────────────────────────────────────────────────
+(function() {
+  var now = new Date();
+  var opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  var el = document.getElementById('nav-date');
+  if (el) el.textContent = now.toLocaleDateString('es-CO', opts);
+  var bf = document.getElementById('ban-fecha');
+  if (bf) bf.textContent = now.toLocaleDateString('es-CO', opts);
+  var bh = document.getElementById('ban-hora');
+  if (bh) bh.textContent = now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+  var fd = document.getElementById('f-fecha');
+  if (fd) fd.value = now.toISOString().slice(0, 10);
+  var fh = document.getElementById('f-hora');
+  if (fh) fh.value = now.toTimeString().slice(0, 5);
+})();
+
+// ── NAVEGACIÓN ──────────────────────────────────────────────────────────
+function goTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('on'); });
+  document.querySelectorAll('.nav-tabs button').forEach(function(b) { b.classList.remove('on'); });
+  document.getElementById('panel-' + name).classList.add('on');
+  btn.classList.add('on');
+  if (name === 'basedatos' && bdAuth) renderDB();
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────────
+function tog(selId, val, wrapId) {
+  document.getElementById(wrapId).style.display =
+    document.getElementById(selId).value === val ? 'block' : 'none';
+}
+function dias(iso) { return Math.floor((Date.now() - new Date(iso)) / 864e5); }
+function timerCls(d) { return d <= 3 ? 'tok' : d <= 7 ? 'twn' : 'tbd'; }
+function badgeCls(est) {
+  var m = {
+    'Recibido':'bs-rec','Radicado':'bs-rad','En revisión':'bs-rev',
+    'En investigación':'bs-inv','Pendiente de información':'bs-pen',
+    'Pendiente de decisión':'bs-pen','Acción en proceso':'bs-acc',
+    'Respuesta enviada':'bs-res','Cerrado':'bs-cer','No procede':'bs-nop'
+  };
+  return 'badge ' + (m[est] || 'bs-rec');
+}
+function priCls(p) {
+  return p === 'Alta' ? 'badge bp-alt' : p === 'Media' ? 'badge bp-med' : p === 'Baja' ? 'badge bp-baj' : '';
+}
+function msg(id, html, tipo) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '<div class="alert a-' + tipo + '" style="margin-top:10px">' + html + '</div>';
+  if (tipo === 'ok') setTimeout(function() { el.innerHTML = ''; }, 6000);
+}
+
+// ── TABLA PRODUCTOS ────────────────────────────────────────────────────
+function addRow() {
+  var tbody = document.getElementById('prod-tbody');
+  var row = tbody.rows[0].cloneNode(true);
+  row.querySelectorAll('input').forEach(function(i) { i.value = ''; });
+  tbody.appendChild(row);
+}
+function rmRow(btn) {
+  var tbody = document.getElementById('prod-tbody');
+  if (tbody.rows.length > 1) btn.closest('tr').remove();
+}
+function showFiles() {
+  var files = document.getElementById('f-files').files;
+  var list = document.getElementById('file-list');
+  list.innerHTML = '';
+  for (var i = 0; i < files.length; i++) {
+    var li = document.createElement('li');
+    li.innerHTML = '📄 ' + files[i].name + ' <span style="color:var(--g4);margin-left:auto">' + (files[i].size/1024).toFixed(1) + ' KB</span>';
+    list.appendChild(li);
+  }
+}
+function getProds() {
+  return Array.from(document.querySelectorAll('#prod-tbody tr')).map(function(r) {
+    var inp = r.querySelectorAll('input, select');
+    return {
+      producto: inp[0].value, ref: inp[1].value, lote: inp[2].value,
+      fechaEmp: inp[3].value, cant: inp[4].value, unidad: inp[5].value,
+      tipoDoc: inp[6].value, numDoc: inp[7].value
+    };
+  }).filter(function(p) { return p.producto.trim(); });
+}
+
+// ── GUARDAR PQR ────────────────────────────────────────────────────────
+function genRad() {
+  cons++;
+  return 'PQR-' + new Date().getFullYear() + '-' + String(cons).padStart(4, '0');
+}
+function guardar() {
+  var req = [
+    {id:'f-fecha', label:'Fecha de recepción'},
+    {id:'f-recibe', label:'Nombre de quien recibe'},
+    {id:'f-medio', label:'Medio de recepción'},
+    {id:'f-tipo', label:'Tipo de solicitud'},
+    {id:'f-cliente', label:'Nombre del cliente'}
+  ];
+  var ok = true;
+  req.forEach(function(r) {
+    var el = document.getElementById(r.id);
+    if (!el || !el.value.trim()) {
+      if (el) { el.classList.add('err-field'); }
+      ok = false;
+    } else {
+      if (el) el.classList.remove('err-field');
+    }
+  });
+  if (!ok) {
+    msg('msg-form', 'Completa los campos obligatorios marcados con *.', 'err');
+    return;
+  }
+  var rad = genRad();
+  var now = new Date();
+  var pqr = {
+    radicado: rad,
+    savedAt: now.toISOString(),
+    fechaRec: document.getElementById('f-fecha').value,
+    horaRec: document.getElementById('f-hora').value,
+    quienRecibe: document.getElementById('f-recibe').value,
+    cargo: document.getElementById('f-cargo').value,
+    centro: document.getElementById('f-centro').value,
+    ciudadRec: document.getElementById('f-ciudad-r').value,
+    dptoRec: document.getElementById('f-dpto-r').value,
+    medio: document.getElementById('f-medio').value,
+    otroMedio: document.getElementById('f-otro-m').value,
+    tipoSol: document.getElementById('f-tipo').value,
+    cliente: document.getElementById('f-cliente').value,
+    nit: document.getElementById('f-nit').value,
+    contacto: document.getElementById('f-contacto').value,
+    dir: document.getElementById('f-dir').value,
+    ciudadCli: document.getElementById('f-ciudad-c').value,
+    dptoCli: document.getElementById('f-dpto-c').value,
+    tel: document.getElementById('f-tel').value,
+    whatsapp: document.getElementById('f-wa').value,
+    email: document.getElementById('f-email').value,
+    desc: document.getElementById('f-desc').value,
+    productos: getProds(),
+    tipoEvid: document.getElementById('f-tip-ev').value,
+    numEvid: document.getElementById('f-num-ev').value,
+    otroEvid: document.getElementById('f-otro-ev-txt').value,
+    infoAd: document.getElementById('f-info-ad').value,
+    expectativa: document.getElementById('f-exp').value,
+    utilizado: document.getElementById('f-util').value,
+    estado: 'Recibido',
+    prioridad: document.getElementById('f-pri').value,
+    historial: [{ estado: 'Recibido', fecha: now.toISOString() }]
+  };
+  db.push(pqr);
+  guardarDatos();
+  document.getElementById('rad-num').textContent = rad.replace(/-/g, ' · ');
+  msg('msg-form', '&#10003; PQR registrado exitosamente. Radicado: <strong>' + rad + '</strong>. Guarda este número para hacer seguimiento.', 'ok');
+  setTimeout(limpiar, 5000);
+}
+
+// ── LIMPIAR FORMULARIO ─────────────────────────────────────────────────
+function limpiar() {
+  var ids = ['f-fecha','f-hora','f-recibe','f-cargo','f-centro','f-ciudad-r','f-dpto-r',
+             'f-cliente','f-nit','f-contacto','f-dir','f-ciudad-c','f-dpto-c','f-tel',
+             'f-wa','f-email','f-desc','f-num-ev','f-info-ad','f-otro-m','f-otro-ev-txt'];
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('err-field'); }
+  });
+  var sels = ['f-medio','f-tipo','f-tip-ev','f-exp','f-util','f-pri'];
+  sels.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('err-field'); }
+  });
+  document.getElementById('f-otro-medio').style.display = 'none';
+  document.getElementById('f-otro-ev').style.display = 'none';
+  document.getElementById('file-list').innerHTML = '';
+  document.getElementById('f-files').value = '';
+  var tbody = document.getElementById('prod-tbody');
+  while (tbody.rows.length > 1) tbody.deleteRow(1);
+  tbody.rows[0].querySelectorAll('input').forEach(function(i) { i.value = ''; });
+  document.getElementById('rad-num').textContent = 'PQR · 2026 · XXXX';
+  document.getElementById('msg-form').innerHTML = '';
+  var now = new Date();
+  document.getElementById('f-fecha').value = now.toISOString().slice(0, 10);
+  document.getElementById('f-hora').value = now.toTimeString().slice(0, 5);
+}
+
+// ── AUTH ────────────────────────────────────────────────────────────────
+function abrir(tipo) {
+  var inp = document.getElementById('p-' + tipo);
+  var err = document.getElementById('e-' + tipo);
+  if (!inp) return;
+  var val = inp.value;
+  inp.value = '';
+  if (val === PASS) {
+    err.textContent = '';
+    if (tipo === 'bd') {
+      bdAuth = true;
+      document.getElementById('gate-bd').style.display = 'none';
+      document.getElementById('con-bd').style.display = 'block';
+      renderDB();
+    } else {
+      segAuth = true;
+      document.getElementById('gate-seg').style.display = 'none';
+      document.getElementById('con-seg').style.display = 'block';
+    }
+  } else {
+    err.textContent = 'Contraseña incorrecta. Inténtalo de nuevo.';
+    inp.focus();
+    setTimeout(function() { err.textContent = ''; }, 3500);
+  }
+}
+function cerrar(tipo) {
+  if (tipo === 'bd') {
+    bdAuth = false;
+    document.getElementById('gate-bd').style.display = 'block';
+    document.getElementById('con-bd').style.display = 'none';
+    document.getElementById('p-bd').value = '';
+  } else {
+    segAuth = false;
+    document.getElementById('gate-seg').style.display = 'block';
+    document.getElementById('con-seg').style.display = 'none';
+    document.getElementById('seg-con').innerHTML = '';
+    document.getElementById('p-seg').value = '';
+  }
+}
+
+// ── RENDER DB ───────────────────────────────────────────────────────────
+function renderDB() {
+  if (!bdAuth) return;
+  var q   = (document.getElementById('db-q').value || '').toLowerCase();
+  var est = document.getElementById('db-est').value || '';
+  var data = db.filter(function(p) {
+    return (!q || p.radicado.toLowerCase().indexOf(q) > -1 || (p.cliente||'').toLowerCase().indexOf(q) > -1) &&
+           (!est || p.estado === est);
+  });
+
+  // Stats
+  var total = db.length;
+  var abier = db.filter(function(p) { return ['Cerrado','No procede'].indexOf(p.estado) === -1; }).length;
+  var urgen = db.filter(function(p) { return dias(p.savedAt) > 7 && ['Cerrado','No procede'].indexOf(p.estado) === -1; }).length;
+  var cerr  = db.filter(function(p) { return p.estado === 'Cerrado'; }).length;
+  document.getElementById('sg').innerHTML =
+    sc('Total PQR', total, '#EAF1FB', '#2E6DD4', 'registros totales', 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2L14 8 20 8') +
+    sc('Abiertos', abier, '#DBEAFE', '#1A4A9B', 'en trámite activo', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', 'var(--az2)') +
+    sc('Urgentes +7d', urgen, '#FEE2E2', '#8B1A1A', 'requieren atención', 'M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z M12 9L12 13 M12 17L12.01 17', 'var(--rj)') +
+    sc('Cerrados', cerr, '#DCFCE7', '#1E6B3C', 'resueltos', 'M20 6L9 17 4 12', 'var(--vd)');
+
+  var tbody = document.getElementById('db-tb');
+  tbody.innerHTML = '';
+  document.getElementById('db-empty').style.display = data.length ? 'none' : 'block';
+  data.forEach(function(p) {
+    var d = dias(p.savedAt);
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><span class="rad-cod">' + p.radicado + '</span></td>' +
+      '<td>' + (p.fechaRec || p.savedAt.slice(0,10)) + '</td>' +
+      '<td><span class="timer ' + timerCls(d) + '">' + d + 'd</span></td>' +
+      '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (p.cliente||'—') + '</td>' +
+      '<td>' + (p.tipoSol||'—') + '</td>' +
+      '<td><span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></td>' +
+      '<td>' + (p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') + '</td>' +
+      '<td style="text-align:center;white-space:nowrap">' +
+        '<button class="btn btn-sm btn-ico" title="Cambiar estado" onclick="mEstado(\'' + p.radicado + '\')" style="margin-right:4px">✏️</button>' +
+        '<button class="btn btn-sm btn-ico" title="Ver detalle" onclick="mDetalle(\'' + p.radicado + '\')">👁️</button>' +
+      '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function sc(lbl, val, bg, stroke, sub, path, color) {
+  color = color || 'var(--az3)';
+  return '<div class="sc"><div class="sc-top"><span class="sc-lbl">' + lbl + '</span>' +
+    '<div class="sc-ico" style="background:' + bg + '">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="' + path + '"/></svg>' +
+    '</div></div><div class="sc-val" style="color:' + color + '">' + val + '</div><div class="sc-sub">' + sub + '</div></div>';
+}
+
+// ── MODAL ───────────────────────────────────────────────────────────────
+function oModal(title, html) {
+  document.getElementById('m-title').textContent = title;
+  document.getElementById('m-body').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+function cModal() { document.getElementById('modal').classList.remove('open'); }
+
+function mEstado(rad) {
+  editRad = rad;
+  var p = db.filter(function(x) { return x.radicado === rad; })[0];
+  var opts = ['Recibido','Radicado','En revisión','En investigación','Pendiente de información','Pendiente de decisión','Acción en proceso','Respuesta enviada','Cerrado','No procede'];
+  var sel = opts.map(function(o) { return '<option' + (p && p.estado === o ? ' selected' : '') + '>' + o + '</option>'; }).join('');
+  oModal('Cambiar estado · ' + rad,
+    '<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--g5);margin-bottom:3px">Cliente</div>' +
+    '<div style="font-size:14px;font-weight:500">' + (p ? p.cliente : '—') + '</div></div>' +
+    '<div class="f" style="margin-bottom:18px"><label>Nuevo estado</label><select id="m-est">' + sel + '</select></div>' +
+    '<div style="display:flex;gap:9px;justify-content:flex-end">' +
+    '<button class="btn" onclick="cModal()">Cancelar</button>' +
+    '<button class="btn btn-p" onclick="aplicarEst()">✓ Guardar cambio</button></div>');
+}
+
+function aplicarEst() {
+  var p = db.filter(function(x) { return x.radicado === editRad; })[0];
+  if (p) {
+    p.estado = document.getElementById('m-est').value;
+    if (!p.historial) p.historial = [];
+    p.historial.push({ estado: p.estado, fecha: new Date().toISOString() });
+    guardarDatos();
+    renderDB();
+  }
+  cModal();
+}
+
+function mDetalle(rad) {
+  var p = db.filter(function(x) { return x.radicado === rad; })[0];
+  if (!p) return;
+  var d = dias(p.savedAt);
+  var states = ['Recibido','Radicado','En revisión','En investigación','Acción en proceso','Respuesta enviada','Cerrado'];
+  var idx = Math.max(states.indexOf(p.estado), 0);
+  var pct = Math.round((idx + 1) / states.length * 100);
+  var prods = p.productos && p.productos.length
+    ? p.productos.map(function(x) {
+        return '<div style="font-size:12px;padding:5px 9px;background:var(--g1);border-radius:6px;margin-bottom:3px">' +
+               '<strong>' + (x.producto||'—') + '</strong> · Ref: ' + (x.ref||'—') + ' · Lote: ' + (x.lote||'—') + ' · ' + (x.cant||'—') + ' ' + (x.unidad||'') + '</div>';
+      }).join('')
+    : '<p style="font-size:13px;color:var(--g4)">Sin productos</p>';
+  var hist = (p.historial || [{estado:p.estado, fecha:p.savedAt}]).map(function(h) {
+    return '<div class="tl-it"><div class="tl-dot"></div><div><div class="tl-est">' + h.estado + '</div>' +
+           '<div class="tl-fch">' + new Date(h.fecha).toLocaleString('es-CO') + '</div></div></div>';
+  }).join('');
+  oModal('Detalle · ' + rad,
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+    '<span style="font-family:Courier New,monospace;font-size:16px;font-weight:700;color:var(--az1)">' + p.radicado + '</span>' +
+    '<span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></div>' +
+    '<div class="prog"><div class="prog-track"><div class="prog-fill" style="width:' + pct + '%"></div></div>' +
+    '<div class="prog-labs"><span>Recibido</span><span>Investigación</span><span>Cerrado</span></div></div>' +
+    '<div class="ddl" style="margin-bottom:12px">' +
+    dd('Cliente', p.cliente) + dd('Tipo', p.tipoSol) +
+    dd('Fecha recepción', p.fechaRec) + dd('Días', '<span class="timer ' + timerCls(d) + '">' + d + ' días</span>') +
+    dd('Prioridad', p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') +
+    dd('Expectativa', p.expectativa) + '</div>' +
+    '<div style="margin-bottom:12px"><div class="ddt" style="margin-bottom:5px">Productos</div>' + prods + '</div>' +
+    '<div style="margin-bottom:12px"><div class="ddt" style="margin-bottom:5px">Descripción</div>' +
+    '<p style="font-size:13px;color:var(--g7);line-height:1.6;background:var(--g1);padding:9px 12px;border-radius:7px">' + (p.desc||'—') + '</p></div>' +
+    '<div><div class="ddt" style="margin-bottom:6px">Historial de estados</div><div class="tl">' + hist + '</div></div>' +
+    '<div style="margin-top:18px;text-align:right"><button class="btn" onclick="cModal()">Cerrar</button></div>');
+}
+function dd(label, val) {
+  return '<div><div class="ddt">' + label + '</div><div class="ddd">' + (val||'—') + '</div></div>';
+}
+
+// ── EXPORT CSV ──────────────────────────────────────────────────────────
+function expCSV() {
+  if (!db.length) { alert('No hay datos para exportar.'); return; }
+  var hdrs = ['Radicado','Fecha guardado','Fecha recepción','Hora','Quien recibe','Cargo','Ciudad','Dpto','Centro','Medio','Tipo solicitud','Cliente','NIT','Contacto','Tel','Email','Descripción','Productos','Tipo evidencia','N° evidencias','Expectativa','Utilizado','Estado','Prioridad'];
+  var rows = db.map(function(p) {
+    return [
+      p.radicado, p.savedAt, p.fechaRec, p.horaRec, p.quienRecibe, p.cargo,
+      p.ciudadRec, p.dptoRec, p.centro, p.medio + (p.otroMedio ? ': '+p.otroMedio : ''),
+      p.tipoSol, p.cliente, p.nit, p.contacto, p.tel, p.email,
+      '"' + (p.desc||'').replace(/"/g,'""') + '"',
+      p.productos ? p.productos.map(function(x) { return x.producto; }).join('; ') : '',
+      p.tipoEvid, p.numEvid, p.expectativa, p.utilizado, p.estado, p.prioridad
+    ];
+  });
+  var csv = [hdrs.join(',')].concat(rows.map(function(r) { return r.join(','); })).join('\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = 'INAPEL_PQR_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ── CONSULTAR ───────────────────────────────────────────────────────────
+function consultar_old() {
+  var rad = document.getElementById('c-rad').value.trim().toUpperCase();
+  var p = db.filter(function(x) { return x.radicado === rad; })[0];
+  var div = document.getElementById('c-res');
+  if (!p) {
+    div.innerHTML = '<div class="alert a-err">No se encontró el radicado <strong>' + rad + '</strong>. Verifica el número e intenta nuevamente.</div>';
+    return;
+  }
+  var d = dias(p.savedAt);
+  var states = ['Recibido','Radicado','En revisión','En investigación','Acción en proceso','Respuesta enviada','Cerrado'];
+  var idx = Math.max(states.indexOf(p.estado), 0);
+  var pct = Math.round((idx + 1) / states.length * 100);
+  var hist = (p.historial || [{estado:p.estado, fecha:p.savedAt}]).map(function(h) {
+    return '<div class="tl-it"><div class="tl-dot"></div><div><div class="tl-est">' + h.estado + '</div>' +
+           '<div class="tl-fch">' + new Date(h.fecha).toLocaleString('es-CO') + '</div></div></div>';
+  }).join('');
+  div.innerHTML =
+    '<div class="rc">' +
+    '<div class="rc-top"><span class="rc-rad">' + p.radicado + '</span><span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></div>' +
+    '<div class="prog"><div class="prog-track"><div class="prog-fill" style="width:' + pct + '%"></div></div>' +
+    '<div class="prog-labs"><span>Recibido</span><span>En revisión</span><span>Cerrado</span></div></div>' +
+    '<div class="ddl" style="margin-bottom:12px">' +
+    dd('Cliente', p.cliente) + dd('Tipo de solicitud', p.tipoSol) +
+    dd('Fecha de recepción', p.fechaRec) + dd('Días en trámite', '<span class="timer ' + timerCls(d) + '">' + d + ' días</span>') +
+    dd('Prioridad', p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') +
+    dd('Expectativa del cliente', p.expectativa) + '</div>' +
+    '<div style="border-top:1px solid var(--g2);padding-top:12px">' +
+    '<div class="ddt" style="margin-bottom:7px">Historial de estados</div>' +
+    '<div class="tl">' + hist + '</div></div></div>';
+}
+async function consultar() {
+
+    const rad = document.getElementById("c-rad").value.trim();
+
+    if (!rad) {
+        alert("Ingrese un número de radicado.");
+        return;
+    }
+
+    try {
+
+        const respuesta = await fetch("/api/consultar/" + encodeURIComponent(rad));
+
+        if (!respuesta.ok) {
+            throw new Error("PQR no encontrado");
+        }
+
+        const p = await respuesta.json();
+
+        console.log(p);
+
+    }
+    catch(error){
+
+        alert("No se encontró el PQR.");
+
+    }
+
+}
+
+// ── SEGUIMIENTO ─────────────────────────────────────────────────────────
+function cargarSeg() {
+  var rad = document.getElementById('seg-q').value.trim().toUpperCase();
+  var p = db.filter(function(x) { return x.radicado === rad; })[0];
+  var div = document.getElementById('seg-con');
+  if (!p) {
+    div.innerHTML = '<div class="alert a-err">No se encontró el radicado <strong>' + rad + '</strong>.</div>';
+    return;
+  }
+  var inv = p.investigacion || {};
+  var prodRows = p.productos && p.productos.length
+    ? p.productos.map(function(x) {
+        return '<tr><td style="padding:7px 11px;border-bottom:1px solid var(--g2)">' + (x.producto||'—') + '</td>' +
+               '<td style="padding:7px 11px;border-bottom:1px solid var(--g2)">' + (x.ref||'—') + '</td>' +
+               '<td style="padding:7px 11px;border-bottom:1px solid var(--g2)">' + (x.lote||'—') + '</td>' +
+               '<td style="padding:7px 11px;border-bottom:1px solid var(--g2)">' + (x.cant||'—') + ' ' + (x.unidad||'') + '</td>' +
+               '<td style="padding:7px 11px;border-bottom:1px solid var(--g2)">' + (x.tipoDoc||'—') + ' ' + (x.numDoc||'') + '</td></tr>';
+      }).join('')
+    : '<tr><td colspan="5" style="padding:10px;color:var(--g4);text-align:center">Sin productos</td></tr>';
+
+  var mkSel = function(id, opts, val) {
+    return '<select id="' + id + '">' + opts.map(function(o) {
+      return '<option' + (val === o ? ' selected' : '') + '>' + o + '</option>';
+    }).join('') + '</select>';
+  };
+
+  div.innerHTML =
+    '<div class="card">' +
+    '<div class="ch"><div class="ch-ico"><svg viewBox="0 0 24 24" stroke="var(--az3)" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>' +
+    '<h3>PQR · ' + p.radicado + '</h3><span class="' + badgeCls(p.estado) + '" style="margin-left:auto">' + p.estado + '</span></div>' +
+    '<div class="cb">' +
+    '<div class="fg g2" style="margin-bottom:14px">' +
+    '<div><div class="ddt">Cliente</div><div style="font-size:14px;font-weight:500">' + (p.cliente||'—') + '</div></div>' +
+    '<div><div class="ddt">Tipo de solicitud</div><div style="font-size:13px">' + (p.tipoSol||'—') + '</div></div></div>' +
+    '<div class="ddt" style="margin-bottom:5px">Descripción</div>' +
+    '<p style="font-size:13px;color:var(--g7);line-height:1.6;background:var(--g1);padding:9px 13px;border-radius:7px;margin-bottom:14px">' + (p.desc||'—') + '</p>' +
+    '<div class="ddt" style="margin-bottom:6px">Productos involucrados</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:13px;background:var(--bl);border:1px solid var(--g2);border-radius:8px;overflow:hidden">' +
+    '<thead><tr style="background:var(--az1)"><th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Producto</th>' +
+    '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Ref.</th>' +
+    '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Lote/OP</th>' +
+    '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Cantidad</th>' +
+    '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Documento</th></tr></thead>' +
+    '<tbody>' + prodRows + '</tbody></table>' +
+    '</div></div>' +
+
+    '<div class="card">' +
+    '<div class="ch"><div class="ch-ico"><svg viewBox="0 0 24 24" stroke="var(--az3)" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div><h3>Investigación y análisis de causas</h3></div>' +
+    '<div class="cb">' +
+    '<div class="fg g2">' +
+    '<div class="f"><label>Responsable de investigación</label><input type="text" id="si-resp" value="' + (inv.resp||'') + '"></div>' +
+    '<div class="f"><label>Cargo</label><input type="text" id="si-cargo" value="' + (inv.cargo||'') + '"></div>' +
+    '<div class="f"><label>Asignación de causa</label>' + mkSel('si-causa',['Materias primas','Máquina o equipo','Mano de obra','Medición/Inspección','Diseño del producto','Empaque','Transporte','Almacenamiento','Proveedor','Cliente (Uso inadecuado)'],inv.causa) + '</div>' +
+    '<div class="f"><label>Herramienta utilizada</label>' + mkSel('si-herr',['5 ¿Por qué?','Diagrama Ishikawa','Análisis Pareto','Inspección visual','Ensayos de laboratorio','Comparación muestra patrón'],inv.herr) + '</div>' +
+    '<div class="f full"><label>Departamentos involucrados</label><input type="text" id="si-deptos" value="' + (inv.deptos||'') + '" placeholder="Ej: Calidad, Logística, Producción"></div>' +
+    '<div class="f"><label>Acciones tomadas</label>' + mkSel('si-acc',['Reposición','Retrabajo','Nota crédito','Capacitación','Acción correctiva','Acción preventiva','Mejora del proceso'],inv.acc) + '</div>' +
+    '<div class="f"><label>Notificación al cliente</label>' + mkSel('si-notif',['Sí','No'],inv.notif) + '</div>' +
+    '<div class="f"><label>Fecha de respuesta</label><input type="date" id="si-fresp" value="' + (inv.fResp||'') + '"></div>' +
+    '<div class="f"><label>Cierre del PQR</label>' + mkSel('si-cierre',['No','Sí'],inv.cierre) + '</div>' +
+    '<div class="f"><label>Fecha de cierre</label><input type="date" id="si-fcierre" value="' + (inv.fCierre||'') + '"></div>' +
+    '<div class="f full"><label>Respuesta detallada al cliente</label>' +
+    '<textarea id="si-txt" rows="6" placeholder="Redacte el análisis de causa raíz y la respuesta completa para el cliente...">' + (inv.respTxt||'') + '</textarea></div>' +
+    '</div>' +
+    '<div class="act-row">' +
+    '<button class="btn btn-s" onclick="expSeg(\'' + p.radicado + '\')">⬇ Descargar respuesta</button>' +
+    '<button class="btn btn-p" onclick="guardarSeg(\'' + p.radicado + '\')">💾 Guardar investigación</button>' +
+    '</div>' +
+    '<div id="seg-msg"></div>' +
+    '</div></div>';
+}
+
+function guardarSeg(rad) {
+  var p = db.filter(function(x) { return x.radicado === rad; })[0];
+  if (!p) return;
+  p.investigacion = {
+    resp:    document.getElementById('si-resp').value,
+    cargo:   document.getElementById('si-cargo').value,
+    causa:   document.getElementById('si-causa').value,
+    herr:    document.getElementById('si-herr').value,
+    deptos:  document.getElementById('si-deptos').value,
+    acc:     document.getElementById('si-acc').value,
+    notif:   document.getElementById('si-notif').value,
+    fResp:   document.getElementById('si-fresp').value,
+    cierre:  document.getElementById('si-cierre').value,
+    fCierre: document.getElementById('si-fcierre').value,
+    respTxt: document.getElementById('si-txt').value
+  };
+  if (p.investigacion.cierre === 'Sí') {
+    p.estado = 'Cerrado';
+    p.historial = p.historial || [];
+    p.historial.push({ estado: 'Cerrado', fecha: new Date().toISOString() });
+  }
+  guardarDatos();
+  msg('seg-msg', '&#10003; Investigación guardada correctamente.', 'ok');
+}
+
+function expSeg(rad) {
+  var p = db.filter(function(x) { return x.radicado === rad; })[0];
+  if (!p) { alert('PQR no encontrado.'); return; }
+  var inv = p.investigacion || {};
+  var respTxt = (document.getElementById('si-txt') ? document.getElementById('si-txt').value : '') || inv.respTxt || '';
+  var prods = p.productos ? p.productos.map(function(x) { return x.producto + ' | Ref: ' + x.ref + ' | Lote: ' + x.lote + ' | ' + x.cant + ' ' + x.unidad; }).join('; ') : '—';
+  var rows = [
+    ['INDUSTRIA NACIONAL PAPELERA S.A.S. — INAPEL',''],
+    ['RESPUESTA FORMAL A PQR — FGC-PQR-01 v1',''],
+    ['',''],
+    ['DATOS DEL PQR',''],
+    ['Radicado', p.radicado],
+    ['Fecha recepción', p.fechaRec||'—'],
+    ['Hora', p.horaRec||'—'],
+    ['Quien recibió', p.quienRecibe||'—'],
+    ['Cargo', p.cargo||'—'],
+    ['Cliente', p.cliente||'—'],
+    ['NIT', p.nit||'—'],
+    ['Contacto', p.contacto||'—'],
+    ['Teléfono', p.tel||'—'],
+    ['Correo', p.email||'—'],
+    ['Tipo de solicitud', p.tipoSol||'—'],
+    ['Estado final', p.estado||'—'],
+    ['Prioridad', p.prioridad||'—'],
+    ['',''],
+    ['DESCRIPCIÓN',''],
+    ['Descripción', '"' + (p.desc||'').replace(/"/g,'""') + '"'],
+    ['',''],
+    ['PRODUCTOS',''],
+    ['Detalle', '"' + prods.replace(/"/g,'""') + '"'],
+    ['',''],
+    ['INVESTIGACIÓN',''],
+    ['Responsable', inv.resp||'—'],
+    ['Cargo responsable', inv.cargo||'—'],
+    ['Causa asignada', inv.causa||'—'],
+    ['Herramienta', inv.herr||'—'],
+    ['Departamentos', inv.deptos||'—'],
+    ['Acciones tomadas', inv.acc||'—'],
+    ['Notificación cliente', inv.notif||'—'],
+    ['Fecha respuesta', inv.fResp||'—'],
+    ['Cierre', inv.cierre||'—'],
+    ['Fecha cierre', inv.fCierre||'—'],
+    ['',''],
+    ['RESPUESTA AL CLIENTE',''],
+    ['Análisis y respuesta', '"' + respTxt.replace(/"/g,'""') + '"']
+  ];
+  var csv = rows.map(function(r) { return r.map(function(c) { return String(c||''); }).join(','); }).join('\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = 'Respuesta_' + rad + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+</script>
+</body>
+</html>

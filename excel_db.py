@@ -41,7 +41,21 @@ def crear_excel():
         "Prioridad",
         "Descripcion",
         "Expectativa",
-        "ProductosJSON"
+        "ProductosJSON",
+        "Empresa",
+        "Vendedor",
+        "Linea",
+        "UsuarioID",
+        "CorreoConfirmacionEnviado",
+        "DocumentoReceptor",
+        "CorreoReceptor",
+        "TelefonoReceptor",
+        "CargoReceptor",
+        "AreaReceptor",
+        "CiudadRecepcion",
+        "DepartamentoRecepcion",
+        "MedioRecepcion",
+        "OtroMedioRecepcion"
     ])
 
     # ---------------- Historial ----------------
@@ -125,12 +139,54 @@ def actualizar_estructura_excel():
             "Prioridad",
             "Descripcion",
             "Expectativa",
-            "ProductosJSON"
+            "ProductosJSON",
+            "Empresa",
+            "Vendedor",
+            "Linea",
+            "UsuarioID",
+            "CorreoConfirmacionEnviado",
+            "DocumentoReceptor",
+            "CorreoReceptor",
+            "TelefonoReceptor",
+            "CargoReceptor",
+            "AreaReceptor",
+            "CiudadRecepcion",
+            "DepartamentoRecepcion",
+            "MedioRecepcion",
+            "OtroMedioRecepcion"
         ])
     else:
         ws = wb["PQR"]
         if ws.max_column < 14:
             ws.cell(1, 14).value = "ProductosJSON"
+        if ws.max_column < 15:
+            ws.cell(1, 15).value = "Empresa"
+        if ws.max_column < 16:
+            ws.cell(1, 16).value = "Vendedor"
+        if ws.max_column < 17:
+            ws.cell(1, 17).value = "Linea"
+        if ws.max_column < 18:
+            ws.cell(1, 18).value = "UsuarioID"
+        if ws.max_column < 19:
+            ws.cell(1, 19).value = "CorreoConfirmacionEnviado"
+        if ws.max_column < 20:
+            ws.cell(1, 20).value = "DocumentoReceptor"
+        if ws.max_column < 21:
+            ws.cell(1, 21).value = "CorreoReceptor"
+        if ws.max_column < 22:
+            ws.cell(1, 22).value = "TelefonoReceptor"
+        if ws.max_column < 23:
+            ws.cell(1, 23).value = "CargoReceptor"
+        if ws.max_column < 24:
+            ws.cell(1, 24).value = "AreaReceptor"
+        if ws.max_column < 25:
+            ws.cell(1, 25).value = "CiudadRecepcion"
+        if ws.max_column < 26:
+            ws.cell(1, 26).value = "DepartamentoRecepcion"
+        if ws.max_column < 27:
+            ws.cell(1, 27).value = "MedioRecepcion"
+        if ws.max_column < 28:
+            ws.cell(1, 28).value = "OtroMedioRecepcion"
 
     if "Historial" not in hojas:
         ws = wb.create_sheet("Historial")
@@ -269,7 +325,21 @@ def guardar_pqr(datos):
         datos.get("prioridad",""),
         datos.get("desc",""),
         datos.get("expectativa",""),
-        productos_json
+        productos_json,
+        datos.get("empresa","INAPEL"),
+        datos.get("vendedor",""),
+        datos.get("linea",""),
+        datos.get("usuario_id",""),
+        "NO",
+        datos.get("documento_receptor", ""),
+        datos.get("correo_receptor", ""),
+        datos.get("telefono_receptor", ""),
+        datos.get("cargo_receptor", ""),
+        datos.get("area_receptor", ""),
+        datos.get("ciudadRec", ""),
+        datos.get("dptoRec", ""),
+        datos.get("medio", ""),
+        datos.get("otroMedio", "")
 
     ])
 
@@ -286,6 +356,41 @@ def guardar_pqr(datos):
     )
 
     return True
+
+
+# ==========================================================
+# CORREO DE CONFIRMACIÓN
+# ==========================================================
+
+def correo_confirmacion_enviado(radicado):
+    """Devuelve True si el correo de confirmación ya fue enviado para el radicado."""
+
+    wb = load_workbook(ARCHIVO)
+    ws = wb["PQR"]
+
+    for fila in ws.iter_rows(min_row=2):
+        if fila[0].value is not None and str(fila[0].value).strip() == str(radicado).strip():
+            valor = fila[18].value if len(fila) > 18 else None
+            wb.close()
+            return str(valor or "").strip().upper() == "SI"
+
+    wb.close()
+    return False
+
+
+def marcar_correo_confirmacion(radicado, enviado):
+    """Actualiza la columna CorreoConfirmacionEnviado (SI/NO) del radicado."""
+
+    wb = load_workbook(ARCHIVO)
+    ws = wb["PQR"]
+
+    for fila in ws.iter_rows(min_row=2):
+        if fila[0].value is not None and str(fila[0].value).strip() == str(radicado).strip():
+            fila[18].value = "SI" if enviado else "NO"
+            break
+
+    wb.save(ARCHIVO)
+    wb.close()
 
 # ==========================================================
 # CONSULTAR PQR
@@ -361,6 +466,19 @@ def consultar_pqr(valor_busqueda):
                 "desc": fila[11],
                 "expectativa": fila[12] if len(fila) > 12 else "",
                 "productos": productos,
+                "empresa": fila[14] if len(fila) > 14 and fila[14] else "",
+                "vendedor": fila[15] if len(fila) > 15 and fila[15] else "",
+                "linea": fila[16] if len(fila) > 16 and fila[16] else "",
+                "usuario_id": fila[17] if len(fila) > 17 and fila[17] else "",
+                "documento_receptor": fila[19] if len(fila) > 19 and fila[19] else "",
+                "correo_receptor": fila[20] if len(fila) > 20 and fila[20] else "",
+                "telefono_receptor": fila[21] if len(fila) > 21 and fila[21] else "",
+                "cargo_receptor": fila[22] if len(fila) > 22 and fila[22] else "",
+                "area_receptor": fila[23] if len(fila) > 23 and fila[23] else "",
+                "ciudad_recepcion": fila[24] if len(fila) > 24 and fila[24] else "",
+                "departamento_recepcion": fila[25] if len(fila) > 25 and fila[25] else "",
+                "medio_recepcion": fila[26] if len(fila) > 26 and fila[26] else "",
+                "otro_medio_recepcion": fila[27] if len(fila) > 27 and fila[27] else "",
                 "investigacion": investigacion,
                 "historial": historial,
                 "savedAt": f"{fila[1]}T{fila[2]}"
@@ -412,6 +530,19 @@ def listar_pqrs():
             "desc": fila[11] or "",
             "expectativa": fila[12] if len(fila) > 12 else "",
             "productos": productos,
+            "empresa": fila[14] if len(fila) > 14 and fila[14] else "",
+            "vendedor": fila[15] if len(fila) > 15 and fila[15] else "",
+            "linea": fila[16] if len(fila) > 16 and fila[16] else "",
+            "usuario_id": fila[17] if len(fila) > 17 and fila[17] else "",
+            "documento_receptor": fila[19] if len(fila) > 19 and fila[19] else "",
+            "correo_receptor": fila[20] if len(fila) > 20 and fila[20] else "",
+            "telefono_receptor": fila[21] if len(fila) > 21 and fila[21] else "",
+            "cargo_receptor": fila[22] if len(fila) > 22 and fila[22] else "",
+            "area_receptor": fila[23] if len(fila) > 23 and fila[23] else "",
+            "ciudad_recepcion": fila[24] if len(fila) > 24 and fila[24] else "",
+            "departamento_recepcion": fila[25] if len(fila) > 25 and fila[25] else "",
+            "medio_recepcion": fila[26] if len(fila) > 26 and fila[26] else "",
+            "otro_medio_recepcion": fila[27] if len(fila) > 27 and fila[27] else "",
             "savedAt": f"{fecha}T{hora}" if hora else fecha
         })
 
@@ -550,7 +681,12 @@ def inicializar_excel():
         "PQR": [
             "Radicado", "Fecha", "Hora", "Tipo", "Cliente", "Nit",
             "Contacto", "Telefono", "Correo", "Estado",
-            "Prioridad", "Descripcion", "Expectativa", "ProductosJSON"
+            "Prioridad", "Descripcion", "Expectativa", "ProductosJSON",
+            "Empresa", "Vendedor", "Linea", "UsuarioID",
+            "CorreoConfirmacionEnviado", "DocumentoReceptor",
+            "CorreoReceptor", "TelefonoReceptor", "CargoReceptor",
+            "AreaReceptor", "CiudadRecepcion", "DepartamentoRecepcion",
+            "MedioRecepcion", "OtroMedioRecepcion"
         ],
         "Historial": [
             "Radicado", "Estado", "Usuario",

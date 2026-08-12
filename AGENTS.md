@@ -22,7 +22,7 @@ No `requirements.txt` — install manually if missing.
 | `routes.py` | Blueprint with 6 endpoints (`/api/pqr`, `/api/consultar/<valor>`, `/api/seguimiento`, `/api/cambiar_estado`, `/api/dashboard`, `/api/evidencias`) |
 | `excel_db.py` | **Active DB layer**. All DB logic. Prints `>>> USANDO excel_db.py <<<` on import. Creates `BaseDatos_PQR.xlsx` in project root. |
 | `pdf_generator.py` | Uses reportlab. Currently incomplete (`doc.build` called but no content added). |
-| `templates/index.html` | Single-page app (inline CSS/JS, ~2270 lines). Password gate (`calidad2026`). No external JS files. |
+| `templates/index.html` | Single-page app (inline CSS/JS, ~2270 lines). Uses the current session login. No external JS files. |
 | `templates/dashboard.html` | Standalone dashboard (unused — dashboard is inside index.html). |
 | `Base_Datos/Evidencias/` | Upload directory for PQR evidence files, organized by radicado. |
 
@@ -34,18 +34,30 @@ No `requirements.txt` — install manually if missing.
 
 ## Database
 - **File**: `BaseDatos_PQR.xlsx` (auto-created in project root)
-- **Sheets**: PQR, Historial, Investigaciones, Adjuntos
-- **No migrations** — schema is created/updated on app start via `crear_excel()` / `actualizar_estructura_excel()`
+- **Sheets**: PQR, Historial, Investigaciones, Adjuntos, Usuarios
+- **No migrations** — schema is created/updated on app start via `crear_excel()` / `actualizar_estructura_excel()`; users seeded via `sembrar_usuarios()` (in `users_db.py`, fed by `usuarios_iniciales.py`)
+
+## Auth & roles
+- Login required for all `/api/*` (except `/api/login`). The legacy password gate was removed — users/passwords are hashed with Werkzeug scrypt in hoja Usuarios.
+- Roles: ADMIN, VENDEDOR, LIDER_CALIDAD, LIDER_COMERCIAL. `rol_requerido(*roles)` / `sesion_requerida` in `routes.py`.
+- ADMIN: full access. VENDEDOR: own PQRs only. LIDER_CALIDAD: dashboard, BD, seguimiento, **users list + create users (any role) + edit credentials**. LIDER_COMERCIAL: dashboard + BD (read-only).
+- PQR saved server-side associates `usuario_id`/`vendedor`/`linea`/`empresa` from session (vendors cannot choose).
+- Credentials editable ONLY via `PUT /api/usuarios/<id>/credenciales` (username+password, no rol/doc/linea/empresa; LIDER_CALIDAD cannot touch ADMIN accounts). Full user management (incl. role/activo) is ADMIN-only.
 
 ## API endpoints
-| Endpoint | Method | Notes |
-|---|---|---|
-| `/api/pqr` | POST | Save PQR + auto-save to localStore (dual persistence) |
-| `/api/consultar/<valor>` | GET | Search by radicado, cliente, or nit |
-| `/api/seguimiento` | POST | Save investigation data, auto-updates estado |
-| `/api/cambiar_estado` | POST | Update estado + logs to Historial sheet |
-| `/api/dashboard` | GET | Returns counts by estado/tipo/prioridad |
-| `/api/evidencias` | POST | Multipart file upload to `Base_Datos/Evidencias/{radicado}/` |
+| Endpoint | Method | Roles | Notes |
+|---|---|---|---|
+| `/api/login`, `/api/logout`, `/api/sesion` | POST/POST/GET | — | Session auth; permanent 12h cookie |
+| `/api/usuarios` | GET | ADMIN, LIDER_CALIDAD | List all users |
+| `/api/usuarios` | POST | ADMIN, LIDER_CALIDAD | Create user (rol: VENDEDOR/LIDER_CALIDAD/LIDER_COMERCIAL/ADMIN) |
+| `/api/usuarios/<id>` | PUT/DELETE | ADMIN | Full edit / deactivate |
+| `/api/usuarios/<id>/credenciales` | PUT | ADMIN, LIDER_CALIDAD | Only username + password (hashed); duplicate check ignores self |
+| `/api/pqr` | POST | session | Save PQR + auto-save to localStore (dual persistence) |
+| `/api/consultar/<valor>` | GET | session | Search by radicado, cliente, or nit |
+| `/api/seguimiento` | POST | ADMIN, LIDER_CALIDAD | Save investigation data, auto-updates estado |
+| `/api/cambiar_estado` | POST | ADMIN, LIDER_CALIDAD | Update estado + logs to Historial sheet |
+| `/api/dashboard` | GET | ADMIN, LIDER_CALIDAD, LIDER_COMERCIAL | Returns counts by estado/tipo/prioridad |
+| `/api/evidencias` | POST | session | Multipart file upload to `Base_Datos/Evidencias/{radicado}/` |
 
 ## Known bugs / code issues
 - Duplicate `obtener_dashboard()` in `excel_db.py:509` and `:550` — second overwrites first, and both stay in module scope

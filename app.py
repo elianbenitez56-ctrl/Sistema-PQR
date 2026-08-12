@@ -1,7 +1,9 @@
 from flask import Flask, render_template
 from excel_db import crear_excel, actualizar_estructura_excel
+from users_db import sembrar_usuarios
 from routes import routes
 import os
+from datetime import timedelta
 
 app = Flask(__name__)
 
@@ -17,6 +19,13 @@ app.config["UPLOAD_FOLDER"] = os.path.join(
     "Evidencias"
 )
 
+# Clave para firmar las sesiones (cookies).
+# En Render debe configurarse siempre SECRET_KEY como variable de entorno.
+app.secret_key = os.getenv("SECRET_KEY", "development-only-not-for-production")
+
+# Duración máxima de la sesión (12 horas).
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
+
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # =====================================================
@@ -25,6 +34,7 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 crear_excel()
 actualizar_estructura_excel()
+sembrar_usuarios()
 
 # =====================================================
 # RUTAS

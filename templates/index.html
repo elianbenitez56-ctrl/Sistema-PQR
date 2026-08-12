@@ -630,6 +630,10 @@ body{
 .field input:hover,.field select:hover,.field textarea:hover{
   border-color:var(--outline);
 }
+.field input[readonly]{
+  background:var(--surface-dim);border-style:dashed;color:var(--on-surface-variant);cursor:not-allowed;
+}
+.field-auto{font-size:9px;font-weight:700;color:var(--blue);letter-spacing:.05em;margin-left:5px}
 .field input:focus,.field select:focus,.field textarea:focus{
   border-color:var(--blue); box-shadow:0 0 0 3px rgba(31,94,172,0.12);
   background:var(--surface-container-lowest);
@@ -769,6 +773,9 @@ body{
 .db-table tbody tr:hover td{background:var(--surface-container)}
 .db-table td{padding:10px 14px;border-bottom:1px solid var(--outline-soft);vertical-align:middle}
 .db-table .rad-cell{color:var(--blue);font-weight:700;font-family:'Courier New',monospace;font-size:13px}
+.cell-email{display:inline-block;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;cursor:help}
+.form-section{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--primary);margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--outline-soft)}
+.form-section:first-of-type{border-top:none;margin-top:4px;padding-top:0}
 
 /* ─── STATS GRID ─── */
 .stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-bottom:28px}
@@ -1460,43 +1467,32 @@ a:focus-visible{
           Sistema Inteligente de Gestión de PQR
         </p>
       </header>
-      <!-- Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-        <!-- User Access Card -->
-        <div class="group entrance-animation stagger-2 p-5 bg-white  rounded-[20px] ambient-shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-outline-variant/30 flex flex-col h-full">
-          <div class="w-10 h-10 rounded-2xl bg-secondary-container/10 flex items-center justify-center mb-3 text-secondary transition-colors group-hover:bg-secondary-container group-hover:text-white">
-            <span class="material-symbols-outlined text-[24px] icon-fill">person</span>
-          </div>
-          <h3 class="font-headline-md text-[clamp(17px,1.35vw,19px)] leading-[26px] text-on-surface  mb-1.5">Acceso de Usuario</h3>
-          <p class="font-body-md text-[14px] leading-[21px] text-on-surface-variant  mb-3 flex-grow">
-            Registrar, consultar y realizar seguimiento a las solicitudes PQR de manera ágil.
-          </p>
-          <button class="w-full py-2.5 px-4 bg-secondary text-white font-label-md text-[12.5px] rounded-[20px] hover:bg-secondary/90 hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 btn-ripple" onclick="login('usuario')">
-            Entrar como usuario
-            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </button>
-        </div>
-        <!-- Admin Access Card -->
-        <div class="group entrance-animation stagger-3 p-5 bg-white  rounded-[20px] ambient-shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-outline-variant/30 flex flex-col h-full">
+      <!-- Login Form -->
+      <div class="w-full max-w-md mx-auto">
+        <div class="group entrance-animation stagger-2 p-6 bg-white  rounded-[20px] ambient-shadow hover:shadow-xl transition-all duration-300 border border-outline-variant/30">
           <div class="w-10 h-10 rounded-2xl bg-primary-container/10 flex items-center justify-center mb-3 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-            <span class="material-symbols-outlined text-[24px] icon-fill">admin_panel_settings</span>
+            <span class="material-symbols-outlined text-[24px] icon-fill">lock</span>
           </div>
-          <h3 class="font-headline-md text-[clamp(17px,1.35vw,19px)] leading-[26px] text-on-surface  mb-1.5">Acceso de Administrador</h3>
-          <p class="font-body-md text-[14px] leading-[21px] text-on-surface-variant  mb-3">
-            Acceso exclusivo para personal autorizado y gestión de herramientas del sistema.
+          <h3 class="font-headline-md text-[clamp(17px,1.35vw,19px)] leading-[26px] text-on-surface  mb-1.5">Iniciar sesión</h3>
+          <p class="font-body-md text-[14px] leading-[21px] text-on-surface-variant  mb-4">
+            Ingrese su usuario y contraseña para acceder al sistema.
           </p>
-          <div class="space-y-2.5 flex-1 flex flex-col">
+          <div class="space-y-2.5 flex flex-col">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">person</span>
+              <input class="w-full pl-8 pr-3 py-2.5 bg-surface-container-lowest  border border-outline-variant rounded-[20px] focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-[14px]" id="login-user" placeholder="Usuario" autocomplete="username" onkeydown="if(event.key==='Enter')loginUsuarios()">
+            </div>
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">lock</span>
-              <input class="w-full pl-8 pr-8 py-2.5 bg-surface-container-lowest  border border-outline-variant rounded-[20px] focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-[14px]" id="login-pass" placeholder="Contraseña de administrador" type="password" autocomplete="off" onkeydown="if(event.key==='Enter')login('admin')">
+              <input class="w-full pl-8 pr-8 py-2.5 bg-surface-container-lowest  border border-outline-variant rounded-[20px] focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-[14px]" id="login-pass" placeholder="Contraseña" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginUsuarios()">
               <button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant hover:text-primary transition-colors" onclick="togglePass()" type="button" aria-label="Mostrar u ocultar contraseña" title="Mostrar contraseña">
                 <span class="material-symbols-outlined" id="pass-toggle-icon">visibility</span>
               </button>
             </div>
             <p id="login-err" role="alert" class="text-error font-label-sm text-label-sm text-center min-h-3"></p>
-            <button class="w-full py-2.5 px-4 bg-primary text-white font-label-md text-[12.5px] rounded-[20px] hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 btn-ripple mt-auto" onclick="login('admin')">
-              Ingresar como administrador
+            <button class="w-full py-2.5 px-4 bg-primary text-white font-label-md text-[12.5px] rounded-[20px] hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 btn-ripple mt-auto" onclick="loginUsuarios()" id="login-btn">
               <span class="material-symbols-outlined text-[18px]">login</span>
+              INICIAR SESIÓN
             </button>
           </div>
         </div>
@@ -1565,36 +1561,40 @@ a:focus-visible{
       </span>
       <div class="user-menu-wrap">
         <button class="topbar-user" id="user-menu-trigger" onclick="toggleUserMenu()" aria-haspopup="true" aria-expanded="false" title="Menú de usuario">
-          <div class="avatar">AC</div>
+          <div class="avatar" id="user-avatar">US</div>
           <div class="user-info">
-            <span class="user-name">Área Comercial</span>
+            <span class="user-name" id="user-name">Usuario</span>
             <span class="user-role" id="user-role-label">Usuario</span>
           </div>
           <span class="material-symbols-outlined user-chevron" id="user-chevron">expand_more</span>
         </button>
         <div class="user-menu" id="user-menu" role="menu">
           <div class="user-menu-header">
-            <div class="user-menu-avatar">AC</div>
+            <div class="user-menu-avatar" id="user-menu-avatar">US</div>
             <div class="user-menu-id">
-              <div class="user-menu-name">Área Comercial</div>
+              <div class="user-menu-name" id="user-menu-name">Usuario</div>
               <div class="user-menu-role" id="menu-role">Usuario</div>
             </div>
           </div>
           <div class="user-menu-divider"></div>
           <div class="user-menu-section" id="admin-section">
             <div class="user-menu-label">Administración</div>
-            <button class="user-menu-item" onclick="goTab('dashboard',this);closeUserMenu()" role="menuitem">
+            <button class="user-menu-item" id="dash-item" onclick="goTab('dashboard',this);closeUserMenu()" role="menuitem">
               <span class="material-symbols-outlined">dashboard</span>
               <span>Dashboard</span>
               <span class="badge-count" id="urg-badge"></span>
             </button>
-            <button class="user-menu-item" onclick="goTab('basedatos',this);closeUserMenu()" role="menuitem">
+            <button class="user-menu-item" id="bd-item" onclick="goTab('basedatos',this);closeUserMenu()" role="menuitem">
               <span class="material-symbols-outlined">database</span>
               <span>Base de datos</span>
             </button>
-            <button class="user-menu-item" onclick="goTab('seguimiento',this);closeUserMenu()" role="menuitem">
+            <button class="user-menu-item" id="seg-item" onclick="goTab('seguimiento',this);closeUserMenu()" role="menuitem">
               <span class="material-symbols-outlined">troubleshoot</span>
               <span>Seguimiento</span>
+            </button>
+            <button class="user-menu-item" id="us-item" onclick="goTab('usuarios',this);closeUserMenu()" role="menuitem">
+              <span class="material-symbols-outlined">manage_accounts</span>
+              <span>Gestión de usuarios</span>
             </button>
           </div>
           <div class="user-menu-divider"></div>
@@ -1678,11 +1678,14 @@ a:focus-visible{
           </div>
           <div class="card-body">
             <div class="form-grid">
-              <div class="field required"><label>Fecha de recepción</label><input type="date" id="f-fecha"></div>
-              <div class="field"><label>Hora</label><input type="time" id="f-hora"></div>
-              <div class="field required full"><label>Nombre de quien recibe</label><input type="text" id="f-recibe" placeholder="Nombre completo"></div>
-              <div class="field"><label>Cargo</label><input type="text" id="f-cargo" placeholder="Cargo del receptor"></div>
-              <div class="field"><label>Centro de costo / Área</label><input type="text" id="f-centro" placeholder="Ej: Comercial"></div>
+              <div class="field required"><label>Fecha de recepción <span class="field-auto">AUTOMÁTICA</span></label><input type="date" id="f-fecha"></div>
+              <div class="field"><label>Hora <span class="field-auto">AUTOMÁTICA</span></label><input type="time" id="f-hora"></div>
+              <div class="field required full"><label>Nombre de quien recibe <span class="field-auto">USUARIO AUTENTICADO</span></label><input type="text" id="f-recibe" placeholder="Se carga con el usuario autenticado" readonly></div>
+              <div class="field"><label>Documento de quien recibe <span class="field-auto">AUTOMÁTICO</span></label><input type="text" id="f-doc-rec" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Correo de quien recibe <span class="field-auto">AUTOMÁTICO</span></label><input type="email" id="f-correo-rec" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Teléfono de quien recibe <span class="field-auto">AUTOMÁTICO</span></label><input type="text" id="f-tel-rec" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Cargo <span class="field-auto">AUTOMÁTICO</span></label><input type="text" id="f-cargo" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Centro de costo / Área <span class="field-auto">AUTOMÁTICO</span></label><input type="text" id="f-centro" placeholder="No registrado" readonly></div>
               <div class="field"><label>Ciudad / Municipio</label><input type="text" id="f-ciudad-r"></div>
               <div class="field"><label>Departamento</label><input type="text" id="f-dpto-r"></div>
               <div class="field required full"><label>Medio de recepción</label>
@@ -1723,8 +1726,8 @@ a:focus-visible{
                 </select>
               </div>
               <div class="field required full"><label>Nombre o razón social</label><input type="text" id="f-cliente" placeholder="Empresa o nombre del cliente"></div>
-              <div class="field"><label>NIT o C.C.</label><input type="text" id="f-nit"></div>
-              <div class="field"><label>Contacto</label><input type="text" id="f-contacto"></div>
+              <div class="field"><label>NIT o Cédula del cliente</label><input type="text" id="f-nit" placeholder="Ingrese NIT o cédula del cliente"></div>
+              <div class="field"><label>Contacto del cliente</label><input type="text" id="f-contacto" placeholder="Nombre del contacto del cliente"></div>
               <div class="field full"><label>Dirección</label><input type="text" id="f-dir"></div>
               <div class="field"><label>Ciudad / Municipio</label><input type="text" id="f-ciudad-c"></div>
               <div class="field"><label>Departamento</label><input type="text" id="f-dpto-c"></div>
@@ -1764,6 +1767,7 @@ a:focus-visible{
             <div class="table-wrap">
               <table class="table-pqr">
                 <thead><tr>
+                  <th style="min-width:85px">PLU</th>
                   <th style="min-width:155px">Producto involucrado</th>
                   <th style="min-width:85px">Referencia</th>
                   <th style="min-width:95px">Lote / OP</th>
@@ -1776,6 +1780,7 @@ a:focus-visible{
                 </tr></thead>
                 <tbody id="prod-tbody">
                   <tr>
+                    <td><input type="text" class="plu-input" inputmode="numeric" placeholder="PLU"></td>
                     <td><input type="text" placeholder="Nombre del producto"></td>
                     <td><input type="text" placeholder="Ref."></td>
                     <td><input type="text" placeholder="Lote/OP"></td>
@@ -2097,6 +2102,62 @@ a:focus-visible{
       </div>
     </div>
 
+    <!-- ═══ GESTIÓN DE USUARIOS ═══ -->
+    <div id="panel-usuarios" class="panel">
+      <div id="con-us" style="display:none">
+        <div class="toolbar">
+          <h2>Gestión de usuarios</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="crearUsuarioModal()">
+              <span class="material-symbols-outlined" style="font-size:16px">person_add</span>
+              Agregar usuario
+            </button>
+            <button class="btn btn-sm btn-ghost" onclick="logout()">
+              <span class="material-symbols-outlined" style="font-size:16px">logout</span>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">manage_accounts</span></div>
+            <h3>Usuarios del sistema</h3>
+          </div>
+          <div class="card-body">
+            <p style="color:var(--on-surface-variant);font-size:13px;margin-bottom:13px">
+              Aquí puede agregar usuarios, editar sus datos (nombre, documento, correo, teléfono, rol, línea y estado),
+              modificar credenciales o eliminar su acceso al sistema.
+            </p>
+            <div class="search-bar">
+              <input type="text" id="us-q" placeholder="Buscar por nombre, usuario, documento, correo o teléfono..." oninput="renderUsuarios()">
+            </div>
+            <div class="db-wrap" style="margin-top:14px">
+              <table class="db-table">
+                <thead><tr>
+                  <th>Nombre</th>
+                  <th>Documento</th>
+                  <th>Usuario</th>
+                  <th>Correo</th>
+                  <th>Teléfono</th>
+                  <th>Rol</th>
+                  <th>Línea</th>
+                  <th>Estado</th>
+                  <th style="text-align:center">Acciones</th>
+                </tr></thead>
+                <tbody id="us-tb"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="us-empty" style="display:none">
+              <span class="material-symbols-outlined empty-icon">search_off</span>
+              <p>No se encontraron usuarios.</p>
+              <small>Verifique el término de búsqueda e intente de nuevo.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ DASHBOARD ═══ -->
     <div id="panel-dashboard" class="panel">
       <div id="gate-dash">
@@ -2196,12 +2257,12 @@ a:focus-visible{
 
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────────────────
-var PASS = 'calidad2026';
 var STORE_KEY = 'inapel_pqr_v4';
 var db = [];
 var bdAuth = false;
 var segAuth = false;
 var dashAuth = false;
+var usuAuth = false;
 var editRad = null;
 var SEARCH_KEY = 'inapel_search_v1';
 var dashboardInterval = null;
@@ -2376,6 +2437,15 @@ function validarPaso(n) {
       quitarErrorCampo(campo);
     }
   });
+  if (n === 3) {
+    paso.querySelectorAll('.plu-input').forEach(function(campo) {
+      var valor = (campo.value || '').trim();
+      if (valor && !/^\d+$/.test(valor)) {
+        marcarCampo(campo, 'El PLU solo puede contener números.');
+        ok = false;
+      }
+    });
+  }
   ocultarAlertaPasos();
   return ok;
 }
@@ -2405,42 +2475,121 @@ document.addEventListener('change', function(e) {
 // ── SESIÓN Y MENÚ DE USUARIO ─────────────────────────────────────────
 var adminMode = false;
 var loggedIn = false;
+var currentUser = null;
+
+function rolActual() { return currentUser ? currentUser.rol : null; }
+function cargarDatosRecepcion() {
+  if (!currentUser) return;
+
+  var valores = {
+    'f-recibe': currentUser.nombre || '',
+    'f-doc-rec': currentUser.documento || '',
+    'f-correo-rec': currentUser.correo || '',
+    'f-tel-rec': currentUser.telefono ? fmtTel(currentUser.telefono) : '',
+    'f-cargo': currentUser.cargo || '',
+    'f-centro': currentUser.area || currentUser.linea_producto || ''
+  };
+
+  Object.keys(valores).forEach(function(id) {
+    var campo = document.getElementById(id);
+    if (campo) campo.value = valores[id];
+  });
+}
+
+function rolPuede(rol, tipo) {
+  if (tipo === 'seg') return rol === 'ADMIN' || rol === 'LIDER_CALIDAD';
+  if (tipo === 'us') return rol === 'ADMIN' || rol === 'LIDER_CALIDAD';
+  if (tipo === 'dash' || tipo === 'bd') return rol === 'ADMIN' || rol === 'LIDER_CALIDAD' || rol === 'LIDER_COMERCIAL';
+  return false;
+}
 
 function renderUserMenu() {
+  var nombre = currentUser ? currentUser.nombre : 'Usuario';
+  var rol = currentUser ? currentUser.rol : null;
+  var rolLabel = rol ? rol.replace(/_/g, ' ') : 'Usuario';
+  var ini = currentUser
+    ? currentUser.nombre.trim().split(/\s+/).map(function(x){ return x.charAt(0); }).join('').slice(0,2).toUpperCase()
+    : 'US';
+  var un = document.getElementById('user-name');
+  if (un) un.textContent = nombre;
+  var umn = document.getElementById('user-menu-name');
+  if (umn) umn.textContent = nombre;
+  var av = document.getElementById('user-avatar');
+  if (av) av.textContent = ini;
+  var uma = document.getElementById('user-menu-avatar');
+  if (uma) uma.textContent = ini;
   var label = document.getElementById('user-role-label');
-  if (label) label.textContent = adminMode ? 'Administrador' : 'Usuario';
+  if (label) label.textContent = rolLabel;
   var role = document.getElementById('menu-role');
-  if (role) role.textContent = adminMode ? 'Administrador' : 'Usuario';
+  if (role) role.textContent = rolLabel;
   var badge = document.getElementById('admin-badge');
   if (badge) badge.style.display = adminMode ? '' : 'none';
+  var items = { dash: rolPuede(rol,'dash'), bd: rolPuede(rol,'bd'), seg: rolPuede(rol,'seg'), us: rolPuede(rol,'us') };
+  var ids = { dash: 'dash-item', bd: 'bd-item', seg: 'seg-item', us: 'us-item' };
+  Object.keys(items).forEach(function(k) {
+    var el = document.getElementById(ids[k]);
+    if (el) el.style.display = items[k] ? '' : 'none';
+  });
   var adm = document.getElementById('admin-section');
-  if (adm) adm.style.display = adminMode ? '' : 'none';
+  if (adm) adm.style.display = (items.dash || items.bd || items.seg || items.us) ? '' : 'none';
 }
-function login(tipo) {
-  if (tipo === 'admin') {
-    if (!comprobarPassword(document.getElementById('login-pass'), document.getElementById('login-err'))) return;
-    adminMode = true;
-    activarModulo('bd');
-    activarModulo('seg');
-    activarModulo('dash');
-    toast('Modo Administrador activado', 'success');
-  }
-  loggedIn = true;
-  document.getElementById('login-screen').classList.add('hide');
-  renderUserMenu();
-  var btn = document.querySelector('.nav-item');
-  if (btn) goTab('formulario', btn);
+function mostrarErrorLogin(msg) {
+  var err = document.getElementById('login-err');
+  if (!err) return;
+  err.textContent = msg;
+  setTimeout(function() { err.textContent = ''; }, 4000);
+}
+function loginUsuarios() {
+  var u = document.getElementById('login-user').value.trim();
+  var p = document.getElementById('login-pass').value;
+  if (!u || !p) { mostrarErrorLogin('Ingrese usuario y contraseña.'); return; }
+  var btn = document.getElementById('login-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin" style="width:16px;height:16px;border-color:#fff transparent #fff transparent"></span> Validando...'; }
+  fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ usuario: u, contrasena: p })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">login</span> INICIAR SESIÓN'; }
+    if (!d.ok) { mostrarErrorLogin(d.mensaje || 'Credenciales incorrectas.'); return; }
+    currentUser = d.usuario;
+    adminMode = currentUser.rol === 'ADMIN';
+    loggedIn = true;
+    if (rolPuede(currentUser.rol, 'bd')) activarModulo('bd');
+    if (rolPuede(currentUser.rol, 'dash')) activarModulo('dash');
+    if (rolPuede(currentUser.rol, 'seg')) activarModulo('seg');
+    if (rolPuede(currentUser.rol, 'us')) activarModulo('us');
+    document.getElementById('login-screen').classList.add('hide');
+    renderUserMenu();
+    cargarDatosRecepcion();
+    var btnNav = document.querySelector('.nav-item');
+    if (btnNav) goTab('formulario', btnNav);
+    toast('Bienvenido, ' + currentUser.nombre, 'success');
+  })
+  .catch(function(err) {
+    console.error(err);
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">login</span> INICIAR SESIÓN'; }
+    mostrarErrorLogin('Error de conexión con el servidor.');
+  });
 }
 function logout() {
-  if (adminMode) {
-    adminMode = false;
-    cerrar('bd'); cerrar('seg'); cerrar('dash');
-  }
+  fetch('/api/logout', { method: 'POST', cache: 'no-store' }).catch(function() {});
+  if (adminMode) { adminMode = false; }
+  cerrar('bd'); cerrar('seg'); cerrar('dash'); cerrar('us');
+  currentUser = null;
   loggedIn = false;
+  ['f-recibe','f-doc-rec','f-correo-rec','f-tel-rec','f-cargo','f-centro'].forEach(function(id) {
+    var campo = document.getElementById(id);
+    if (campo) campo.value = '';
+  });
   renderUserMenu();
   document.getElementById('login-screen').classList.remove('hide');
   var lp = document.getElementById('login-pass');
   if (lp) lp.value = '';
+  var lu = document.getElementById('login-user');
+  if (lu) lu.value = '';
   toast('Sesión cerrada correctamente', 'info');
 }
 function togglePass() {
@@ -2494,11 +2643,15 @@ document.addEventListener('keydown', function(e) {
 });
 
 function openProfile() {
+  var u = currentUser || { nombre: '—', usuario: '—', rol: '—', linea_producto: '', empresa: 'INAPEL' };
+  var lineaLbl = u.linea_producto ? u.linea_producto : 'No aplica';
   oModal('Mi perfil',
     '<div class="form-grid">' +
-    '<div class="field full"><label>Nombre</label><input type="text" value="Área Comercial" disabled></div>' +
-    '<div class="field full"><label>Área</label><input type="text" value="Comercial" disabled></div>' +
-    '<div class="field full"><label>Tipo de acceso</label><input type="text" value="' + (adminMode ? 'Administrador' : 'Usuario') + '" disabled></div>' +
+    '<div class="field full"><label>Nombre</label><input type="text" value="' + u.nombre + '" disabled></div>' +
+    '<div class="field"><label>Usuario</label><input type="text" value="' + u.usuario + '" disabled></div>' +
+    '<div class="field"><label>Rol</label><input type="text" value="' + u.rol.replace(/_/g, ' ') + '" disabled></div>' +
+    '<div class="field"><label>Línea de producto</label><input type="text" value="' + lineaLbl + '" disabled></div>' +
+    '<div class="field"><label>Empresa</label><input type="text" value="' + u.empresa + '" disabled></div>' +
     '</div>' +
     '<div class="action-row" style="margin-top:18px">' +
     '<button class="btn btn-primary" onclick="cModal()">Cerrar</button>' +
@@ -2509,19 +2662,55 @@ function cerrarSesion() {
 }
 renderUserMenu();
 
+// Restaurar sesión activa al recargar la página
+(function() {
+  fetch('/api/sesion', { cache: 'no-store' })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (!d.ok || !d.usuario) return;
+    currentUser = d.usuario;
+    adminMode = currentUser.rol === 'ADMIN';
+    loggedIn = true;
+    if (rolPuede(currentUser.rol, 'bd')) activarModulo('bd');
+    if (rolPuede(currentUser.rol, 'dash')) activarModulo('dash');
+    if (rolPuede(currentUser.rol, 'seg')) activarModulo('seg');
+    if (rolPuede(currentUser.rol, 'us')) activarModulo('us');
+    document.getElementById('login-screen').classList.add('hide');
+    renderUserMenu();
+    cargarDatosRecepcion();
+  })
+  .catch(function() {});
+})();
+
 // ── NAVEGACIÓN ──────────────────────────────────────────────────────────
 function goTab(name, btn) {
+  var rol = rolActual();
+  var modTipo = name === 'basedatos' ? 'bd' : name === 'seguimiento' ? 'seg' : name === 'dashboard' ? 'dash' : name === 'usuarios' ? 'us' : null;
+  if (modTipo && !rolPuede(rol, modTipo)) {
+    toast('No tiene permisos para acceder a esta sección.', 'error');
+    return;
+  }
+  var prev = document.querySelector('.panel.on');
+  if (prev && prev.id === 'panel-consultar' && name !== 'consultar') resetConsulta();
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('on'); });
   document.getElementById('panel-' + name).classList.add('on');
   btn.classList.add('on');
-  var titles = { formulario:'Nuevo PQR', consultar:'Consultar', basedatos:'Base de datos', seguimiento:'Seguimiento', dashboard:'Dashboard' };
+  var titles = { formulario:'Nuevo PQR', consultar:'Consultar', basedatos:'Base de datos', seguimiento:'Seguimiento', dashboard:'Dashboard', usuarios:'Gestión de usuarios' };
   var sub = document.getElementById('page-title-sub');
   if (sub) sub.textContent = titles[name] || 'Sistema de Gestión PQR';
   if (name === 'basedatos' && bdAuth) renderDB();
+  if (name === 'formulario' && loggedIn) cargarDatosRecepcion();
+  if (name === 'usuarios' && usuAuth) setTimeout(renderUsuarios, 50);
   if (name === 'dashboard' && dashAuth) {
     setTimeout(function(){ cargarDashboard(); iniciarDashboardAuto(); }, 200);
   }
+  var ev = null;
+  try {
+    ev = new CustomEvent('sectionchange', { detail: { from: prev ? prev.id.replace('panel-', '') : null, to: name } });
+  } catch (e) { ev = null; }
+  if (ev) document.dispatchEvent(ev);
+  if (name === 'consultar') resetConsulta();
   if (window.innerWidth <= 600) closeSidebar();
 }
 
@@ -2635,15 +2824,13 @@ function loadBtn(btn, loading) {
   }
 }
 
-// ── RECENT SEARCHES ────────────────────────────────────────────────────
-function getRecentSearches() {
-  try { return JSON.parse(localStorage.getItem(SEARCH_KEY) || '[]'); } catch(e) { return []; }
-}
+// ── RECENT SEARCHES (solo en memoria: se limpian al salir de CONSULTAR) ─
+var _RECENT_SEARCHES = [];
+function getRecentSearches() { return _RECENT_SEARCHES.slice(); }
 function addRecentSearch(val) {
-  var list = getRecentSearches().filter(function(s) { return s !== val; });
-  list.unshift(val);
-  if (list.length > 5) list = list.slice(0, 5);
-  localStorage.setItem(SEARCH_KEY, JSON.stringify(list));
+  _RECENT_SEARCHES = _RECENT_SEARCHES.filter(function(s) { return s !== val; });
+  _RECENT_SEARCHES.unshift(val);
+  if (_RECENT_SEARCHES.length > 5) _RECENT_SEARCHES = _RECENT_SEARCHES.slice(0, 5);
   renderRecentSearches();
 }
 function renderRecentSearches() {
@@ -2664,8 +2851,7 @@ function setSearch(val) {
   consultar();
 }
 function removeSearch(val) {
-  var list = getRecentSearches().filter(function(s) { return s !== val; });
-  localStorage.setItem(SEARCH_KEY, JSON.stringify(list));
+  _RECENT_SEARCHES = _RECENT_SEARCHES.filter(function(s) { return s !== val; });
   renderRecentSearches();
 }
 document.addEventListener('click', function(e) {
@@ -2747,14 +2933,33 @@ function getProds() {
   return Array.from(document.querySelectorAll('#prod-tbody tr')).map(function(r) {
     var inp = r.querySelectorAll('input, select');
     return {
-      producto: inp[0].value, ref: inp[1].value, lote: inp[2].value,
-      fechaEmp: inp[3].value, cant: inp[4].value, unidad: inp[5].value,
-      tipoDoc: inp[6].value, numDoc: inp[7].value
+      plu: inp[0].value.trim(), producto: inp[1].value, ref: inp[2].value, lote: inp[3].value,
+      fechaEmp: inp[4].value, cant: inp[5].value, unidad: inp[6].value,
+      tipoDoc: inp[7].value, numDoc: inp[8].value
     };
   }).filter(function(p) { return p.producto.trim(); });
 }
+function pluProducto(producto) {
+  var valor = producto && producto.plu !== undefined && producto.plu !== null
+    ? String(producto.plu).trim()
+    : '';
+  return valor || '—';
+}
 
 // ── GUARDAR PQR ────────────────────────────────────────────────────────
+function msjRegistro(rad, data) {
+  var base = '&#10003; PQR registrada correctamente.<br><br><strong>Radicado:</strong> ' + rad;
+  if (data && data.email_enviado) {
+    base += '<br><br>Se envió una confirmación al correo registrado.';
+  } else if (data && data.email_estado === 'no_enviado') {
+    base += '<br><br>&#9888; No fue posible enviar el correo de confirmación.';
+  } else if (data && data.email_estado === 'sin_correo') {
+    base += '<br><br>&#8505; La PQR fue registrada correctamente, pero no tiene un correo electrónico registrado para enviar la confirmación.';
+  } else if (data && data.email_estado === 'correo_invalido') {
+    base += '<br><br>&#9888; No fue posible enviar el correo de confirmación (el correo del cliente no es válido).';
+  }
+  return base;
+}
 function guardar() {
   var req = [
     {id:'f-fecha', label:'Fecha de recepción'},
@@ -2782,8 +2987,13 @@ function guardar() {
     fechaRec: document.getElementById('f-fecha').value,
     horaRec: document.getElementById('f-hora').value,
     quienRecibe: document.getElementById('f-recibe').value,
+    documentoReceptor: document.getElementById('f-doc-rec').value,
+    correoReceptor: document.getElementById('f-correo-rec').value,
+    telefonoReceptor: document.getElementById('f-tel-rec').value,
     cargo: document.getElementById('f-cargo').value,
     centro: document.getElementById('f-centro').value,
+    cargoReceptor: document.getElementById('f-cargo').value,
+    areaReceptor: document.getElementById('f-centro').value,
     ciudadRec: document.getElementById('f-ciudad-r').value,
     dptoRec: document.getElementById('f-dpto-r').value,
     medio: document.getElementById('f-medio').value,
@@ -2831,14 +3041,14 @@ function guardar() {
       .then(function(r) { return r.json(); })
       .then(function(res) {
         document.getElementById('rad-num').textContent = rad.replace(/-/g, ' · ');
-        msg('msg-form', '&#10003; PQR registrado correctamente.<br><br><strong>Radicado:</strong> ' + rad + '<br><br>Las evidencias fueron cargadas exitosamente.', 'success');
+        msg('msg-form', msjRegistro(rad, data) + '<br><br>Las evidencias fueron cargadas exitosamente.', 'success');
         toast("PQR " + rad + " registrado con evidencias", "success", 5000);
         setTimeout(limpiar, 5000);
       })
       .catch(function(err) { console.error("Error adjuntos:", err); });
     } else {
       document.getElementById('rad-num').textContent = rad.replace(/-/g, ' · ');
-      msg('msg-form', '&#10003; PQR registrado correctamente.<br><br><strong>Radicado:</strong> ' + rad, 'success');
+      msg('msg-form', msjRegistro(rad, data), 'success');
       toast("PQR " + rad + " registrado exitosamente", "success", 5000);
       setTimeout(limpiar, 5000);
     }
@@ -2852,7 +3062,7 @@ function guardar() {
 
 // ── LIMPIAR ─────────────────────────────────────────────────────────────
 function limpiar() {
-  var ids = ['f-fecha','f-hora','f-recibe','f-cargo','f-centro','f-ciudad-r','f-dpto-r',
+  var ids = ['f-fecha','f-hora','f-ciudad-r','f-dpto-r',
              'f-cliente','f-nit','f-contacto','f-dir','f-ciudad-c','f-dpto-c','f-tel',
              'f-wa','f-email','f-desc','f-num-ev','f-info-ad','f-otro-m','f-otro-ev-txt'];
   ids.forEach(function(id) {
@@ -2882,19 +3092,6 @@ function limpiar() {
 }
 
 // ── AUTH ────────────────────────────────────────────────────────────────
-function comprobarPassword(inp, err) {
-  if (!inp || !err) return false;
-  var val = inp.value;
-  inp.value = '';
-  if (val === PASS) {
-    err.textContent = '';
-    return true;
-  }
-  err.textContent = 'Contraseña incorrecta. Inténtalo de nuevo.';
-  inp.focus();
-  setTimeout(function() { err.textContent = ''; }, 3500);
-  return false;
-}
 function activarModulo(tipo) {
   if (tipo === 'bd') {
     bdAuth = true;
@@ -2907,6 +3104,9 @@ function activarModulo(tipo) {
     document.getElementById('con-dash').style.display = 'block';
     cargarDashboard();
     iniciarDashboardAuto();
+  } else if (tipo === 'us') {
+    usuAuth = true;
+    document.getElementById('con-us').style.display = 'block';
   } else {
     segAuth = true;
     document.getElementById('gate-seg').style.display = 'none';
@@ -2914,7 +3114,6 @@ function activarModulo(tipo) {
   }
 }
 function abrir(tipo) {
-  if (!comprobarPassword(document.getElementById('p-' + tipo), document.getElementById('e-' + tipo))) return;
   activarModulo(tipo);
 }
 function cerrar(tipo) {
@@ -2929,6 +3128,9 @@ function cerrar(tipo) {
     document.getElementById('con-dash').style.display = 'none';
     document.getElementById('p-dash').value = '';
     if (dashboardInterval) { clearInterval(dashboardInterval); dashboardInterval = null; }
+  } else if (tipo === 'us') {
+    usuAuth = false;
+    document.getElementById('con-us').style.display = 'none';
   } else {
     segAuth = false;
     document.getElementById('gate-seg').style.display = 'block';
@@ -2936,6 +3138,409 @@ function cerrar(tipo) {
     document.getElementById('seg-con').innerHTML = '';
     document.getElementById('p-seg').value = '';
   }
+}
+
+// ── GESTIÓN DE USUARIOS ─────────────────────────────────────────────────
+var usuariosCache = null;
+
+function crearUsuarioModal() {
+  oModal('Agregar usuario',
+    '<div class="form-section">Datos personales</div>' +
+    '<div class="form-grid">' +
+      '<div class="field full"><label for="nu-nombre">Nombre completo</label>' +
+        '<input type="text" id="nu-nombre" placeholder="Nombre completo del usuario" autocomplete="off"></div>' +
+      '<div class="field"><label for="nu-documento">Documento</label>' +
+        '<input type="text" id="nu-documento" placeholder="Número de identificación" autocomplete="off"></div>' +
+      '<div class="field"><label for="nu-correo">Correo electrónico</label>' +
+        '<input type="email" id="nu-correo" placeholder="usuario@empresa.com" autocomplete="off"></div>' +
+      '<div class="field"><label for="nu-telefono">Teléfono</label>' +
+        '<input type="tel" id="nu-telefono" placeholder="310 123 4567" autocomplete="off"></div>' +
+    '</div>' +
+    '<div class="form-section">Datos de acceso</div>' +
+    '<div class="form-grid">' +
+      '<div class="field"><label for="nu-usuario">Usuario</label>' +
+        '<input type="text" id="nu-usuario" placeholder="Nombre de usuario" autocomplete="off"></div>' +
+      '<div class="field"><label for="nu-pass">Contraseña</label>' +
+        '<input type="password" id="nu-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>' +
+      '<div class="field"><label for="nu-pass2">Confirmar contraseña</label>' +
+        '<input type="password" id="nu-pass2" placeholder="Confirmar contraseña" autocomplete="new-password"></div>' +
+    '</div>' +
+    '<div class="form-section">Configuración</div>' +
+    '<div class="form-grid">' +
+      '<div class="field"><label for="nu-rol">Rol</label>' +
+        '<select id="nu-rol" onchange="toggleLineaRol()">' +
+          '<option value="VENDEDOR">VENDEDOR</option>' +
+          '<option value="LIDER_CALIDAD">LÍDER DE CALIDAD</option>' +
+          '<option value="LIDER_COMERCIAL">LÍDER COMERCIAL</option>' +
+          '<option value="ADMIN">ADMIN</option>' +
+        '</select></div>' +
+      '<div class="field"><label for="nu-linea">Línea de producto</label>' +
+        '<select id="nu-linea"><option value="INAPEL">INAPEL</option><option value="TOROFIL">TOROFIL</option></select></div>' +
+      '<div class="field"><label for="nu-empresa">Empresa</label>' +
+        '<select id="nu-empresa"><option value="INAPEL">INAPEL</option><option value="TOROFIL">TOROFIL</option><option value="OTRA">OTRA</option></select></div>' +
+      '<div class="field"><label for="nu-estado">Estado</label>' +
+        '<select id="nu-estado"><option value="1">Activo</option><option value="0">Inactivo</option></select></div>' +
+    '</div>' +
+    '<p id="nu-err" class="gate-error" role="alert" style="min-height:16px"></p>' +
+    '<div class="action-row">' +
+      '<button class="btn" onclick="cModal()">Cancelar</button>' +
+      '<button class="btn btn-primary" onclick="guardarNuevoUsuario()">Crear usuario</button>' +
+    '</div>');
+  setTimeout(function() {
+    var inp = document.getElementById('nu-nombre');
+    if (inp) inp.focus();
+  }, 100);
+}
+
+function toggleLineaRol() {
+  var rol = document.getElementById('nu-rol');
+  var linea = document.getElementById('nu-linea');
+  if (!rol || !linea) return;
+  var f = linea.closest('.field');
+  if (f) f.style.display = rol.value === 'VENDEDOR' ? '' : 'none';
+}
+
+function guardarNuevoUsuario() {
+  var nombre = document.getElementById('nu-nombre').value.trim();
+  var documento = document.getElementById('nu-documento').value.trim();
+  var correo = document.getElementById('nu-correo').value.trim();
+  var telefono = document.getElementById('nu-telefono').value.trim();
+  var usuario = document.getElementById('nu-usuario').value.trim();
+  var rol = document.getElementById('nu-rol').value;
+  var linea = document.getElementById('nu-linea').value;
+  var empresa = document.getElementById('nu-empresa').value;
+  var estado = document.getElementById('nu-estado').value;
+  var pass = document.getElementById('nu-pass').value;
+  var pass2 = document.getElementById('nu-pass2').value;
+  var err = document.getElementById('nu-err');
+
+  if (!nombre || !usuario || !pass) { err.textContent = 'Nombre, usuario y contraseña son obligatorios.'; return; }
+  if (pass !== pass2) { err.textContent = 'Las contraseñas no coinciden.'; return; }
+  if (pass.length < 6) { err.textContent = 'La contraseña debe tener al menos 6 caracteres.'; return; }
+  if (!/^[A-Za-z0-9._@-]+$/.test(usuario)) { err.textContent = 'El usuario solo puede contener letras, números y los símbolos . _ @ -'; return; }
+  if (usuario.length < 3) { err.textContent = 'El usuario debe tener al menos 3 caracteres.'; return; }
+  if (documento && !/^\d+$/.test(documento)) { err.textContent = 'El documento solo puede contener números.'; return; }
+  if (correo && !/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(correo)) { err.textContent = 'Ingrese un correo electrónico válido.'; return; }
+  var telDigit = telefono.replace(/\D/g, '');
+  if (telefono && (telDigit.length < 7 || telDigit.length > 10)) { err.textContent = 'El teléfono debe tener entre 7 y 10 dígitos.'; return; }
+
+  var body = { nombre: nombre, documento: documento, correo: correo, telefono: telefono, usuario: usuario, contrasena: pass, rol: rol, linea_producto: linea, empresa: empresa, activo: estado === '1' };
+
+  fetch('/api/usuarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(function(r) {
+    return r.json().then(function(d) { return { status: r.status, data: d }; });
+  })
+  .then(function(res) {
+    if (!res.data.ok) {
+      err.textContent = res.data.mensaje || 'No fue posible crear el usuario.';
+      return;
+    }
+    cModal();
+    toast('Usuario creado correctamente.', 'success');
+    usuariosCache = null;
+    renderUsuarios();
+  })
+  .catch(function(e) {
+    console.error(e);
+    err.textContent = 'Error de conexión con el servidor.';
+  });
+}
+
+function renderUsuarios() {
+  if (!usuAuth) return;
+  if (!usuariosCache) {
+    cargarUsuarios().then(renderUsuarios);
+    return;
+  }
+  var q = (document.getElementById('us-q').value || '').toLowerCase();
+  var data = usuariosCache.filter(function(u) {
+    if (!q) return true;
+    return (u.nombre || '').toLowerCase().indexOf(q) > -1
+        || (u.usuario || '').toLowerCase().indexOf(q) > -1
+        || (u.documento || '').toLowerCase().indexOf(q) > -1
+        || (u.correo || '').toLowerCase().indexOf(q) > -1
+        || fmtTel(u.telefono).toLowerCase().indexOf(q) > -1;
+  });
+  var tbody = document.getElementById('us-tb');
+  var empty = document.getElementById('us-empty');
+  if (!tbody || !empty) return;
+  tbody.innerHTML = '';
+  empty.style.display = data.length ? 'none' : 'block';
+  var puedeEditar = currentUser && currentUser.rol === 'ADMIN';
+  data.forEach(function(u) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + (u.nombre || '—') + '</td>' +
+      '<td>' + (u.documento || '—') + '</td>' +
+      '<td><span style="font-family:\'Courier New\',monospace;font-weight:600">' + u.usuario + '</span></td>' +
+      '<td><span class="cell-email" title="' + (u.correo || '') + '">' + (u.correo || '—') + '</span></td>' +
+      '<td>' + fmtTel(u.telefono) + '</td>' +
+      '<td>' + String(u.rol || '').replace(/_/g, ' ') + '</td>' +
+      '<td>' + (u.linea_producto || '—') + '</td>' +
+      '<td><span class="' + (u.activo ? 'badge bs-cer' : 'badge bs-nop') + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
+      '<td style="text-align:center">' +
+        (puedeEditar ? '<button class="btn btn-xs" title="Editar usuario" onclick="editarUsuario(' + u.id + ')">✏️ Editar</button> ' : '') +
+        '<button class="btn btn-xs" onclick="editarCredenciales(' + u.id + ')">Editar credenciales</button> ' +
+        '<button class="btn btn-xs btn-danger" title="Eliminar usuario" onclick="mEliminarUsuario(' + u.id + ')">🗑 Eliminar</button>' +
+      '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function fmtTel(t) {
+  if (!t) return '—';
+  var d = String(t).replace(/\D/g, '');
+  return d.length === 10 ? d.slice(0,3) + ' ' + d.slice(3,6) + ' ' + d.slice(6) : d;
+}
+
+function cargarUsuarios() {
+  return fetch('/api/usuarios', { cache: 'no-store' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      usuariosCache = d.ok ? (d.usuarios || []) : [];
+    })
+    .catch(function(err) {
+      console.error(err);
+      usuariosCache = [];
+    });
+}
+
+function editarCredenciales(uid) {
+  if (!usuariosCache) return;
+  var u = null;
+  for (var i = 0; i < usuariosCache.length; i++) {
+    if (usuariosCache[i].id === uid) { u = usuariosCache[i]; break; }
+  }
+  if (!u) return;
+  if (u.rol === 'ADMIN' && currentUser && currentUser.rol === 'LIDER_CALIDAD') {
+    toast('No puede modificar las credenciales de usuarios administradores.', 'error');
+    return;
+  }
+  var nombre = u.nombre || 'Usuario';
+  oModal('Editar credenciales',
+    '<div style="margin-bottom:14px;padding:10px 12px;background:var(--surface-dim);border-radius:8px">' +
+      '<div style="font-size:11px;color:var(--on-surface-variant)">Usuario seleccionado</div>' +
+      '<div style="font-size:14px;font-weight:600">' + nombre + ' · <span style="font-family:\'Courier New\',monospace">' + u.usuario + '</span></div>' +
+    '</div>' +
+    '<div class="form-grid">' +
+      '<div class="field full"><label for="uc-usuario">Nuevo usuario</label>' +
+        '<input type="text" id="uc-usuario" value="' + u.usuario + '" placeholder="Nombre de usuario" autocomplete="off">' +
+        '<small style="color:var(--on-surface-variant)">El usuario actual se conserva si no se cambia.</small></div>' +
+      '<div class="field"><label for="uc-pass">Nueva contraseña</label>' +
+        '<input type="password" id="uc-pass" placeholder="Nueva contraseña" autocomplete="new-password"></div>' +
+      '<div class="field"><label for="uc-pass2">Confirmar contraseña</label>' +
+        '<input type="password" id="uc-pass2" placeholder="Confirmar contraseña" autocomplete="new-password"></div>' +
+    '</div>' +
+    '<p id="uc-err" class="gate-error" role="alert" style="min-height:16px"></p>' +
+    '<div class="action-row">' +
+      '<button class="btn" onclick="cModal()">Cancelar</button>' +
+      '<button class="btn btn-primary" onclick="guardarCredenciales(' + u.id + ')">Guardar cambios</button>' +
+    '</div>');
+  setTimeout(function() {
+    var inp = document.getElementById('uc-usuario');
+    if (inp) { inp.focus(); inp.select(); }
+  }, 100);
+}
+
+function guardarCredenciales(uid) {
+  var usuario = document.getElementById('uc-usuario').value.trim();
+  var pass = document.getElementById('uc-pass').value;
+  var pass2 = document.getElementById('uc-pass2').value;
+  var err = document.getElementById('uc-err');
+  if (pass !== pass2) { err.textContent = 'Las contraseñas no coinciden.'; return; }
+  if (!usuario && !pass) { err.textContent = 'Ingrese un nuevo usuario o una nueva contraseña.'; return; }
+  var body = { usuario: usuario, contrasena: pass };
+  fetch('/api/usuarios/' + uid + '/credenciales', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(function(r) {
+    return r.json().then(function(d) { return { status: r.status, data: d }; });
+  })
+  .then(function(res) {
+    if (!res.data.ok) {
+      err.textContent = res.data.mensaje || 'No fue posible guardar los cambios.';
+      return;
+    }
+    cModal();
+    toast(res.data.mensaje || 'Credenciales actualizadas correctamente.', 'success');
+    usuariosCache = null;
+    renderUsuarios();
+  })
+  .catch(function(e) {
+    console.error(e);
+    err.textContent = 'Error de conexión con el servidor.';
+  });
+}
+
+// ── ELIMINAR USUARIO ────────────────────────────────────────────────────
+function mEliminarUsuario(uid) {
+  if (!usuariosCache) return;
+  var u = null;
+  for (var i = 0; i < usuariosCache.length; i++) {
+    if (usuariosCache[i].id === uid) { u = usuariosCache[i]; break; }
+  }
+  if (!u) return;
+  var rolTxt = String(u.rol || '').replace(/_/g, ' ');
+  oModal('Eliminar usuario',
+    '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 0 20px">' +
+    '<div style="width:54px;height:54px;border-radius:50%;background:var(--error-bg);display:flex;align-items:center;justify-content:center;margin-bottom:16px">' +
+    '<span class="material-symbols-outlined" style="font-size:27px;color:var(--error)">delete</span></div>' +
+    '<p style="font-size:15px;font-weight:600;margin-bottom:6px;color:var(--on-surface)">¿Está seguro de eliminar este usuario?</p>' +
+    '<p style="font-size:13px;color:var(--on-surface-variant);max-width:340px;line-height:1.55;margin-bottom:12px">Esta acción eliminará el acceso del usuario al sistema y no podrá deshacerse.</p>' +
+    '<div style="width:100%;max-width:300px;background:var(--surface-dim);border:1px solid var(--outline-soft);border-radius:10px;padding:12px 14px;text-align:left;font-size:13px">' +
+      '<div style="display:flex;justify-content:space-between;gap:10px;padding:3px 0"><span style="color:var(--on-surface-variant)">Nombre</span><strong>' + (u.nombre || '—') + '</strong></div>' +
+      '<div style="display:flex;justify-content:space-between;gap:10px;padding:3px 0"><span style="color:var(--on-surface-variant)">Rol</span><strong>' + rolTxt + '</strong></div>' +
+      '<div style="display:flex;justify-content:space-between;gap:10px;padding:3px 0"><span style="color:var(--on-surface-variant)">Usuario</span><strong style="font-family:\'Courier New\',monospace">' + (u.usuario || '—') + '</strong></div>' +
+    '</div></div>' +
+    '<div style="display:flex;gap:9px;justify-content:flex-end">' +
+    '<button class="btn" onclick="cModal()">Cancelar</button>' +
+    '<button class="btn btn-danger" onclick="eliminarUsuario(' + u.id + ')">🗑 Eliminar usuario</button></div>');
+}
+
+function eliminarUsuario(uid) {
+  fetch('/api/usuarios/' + uid, { method: 'DELETE' })
+  .then(function(r) {
+    return r.json().then(function(d) { return { status: r.status, data: d }; });
+  })
+  .then(function(res) {
+    cModal();
+    if (res.data.ok) {
+      toast(res.data.mensaje || 'Usuario eliminado correctamente.', 'success');
+      usuariosCache = null;
+      renderUsuarios();
+    } else {
+      toast(res.data.mensaje || 'No fue posible eliminar el usuario.', 'error');
+    }
+  })
+  .catch(function(e) {
+    console.error(e);
+    cModal();
+    toast('Error de conexión con el servidor. No fue posible eliminar el usuario.', 'error');
+  });
+}
+
+// ── EDITAR USUARIO (ADMIN) ──────────────────────────────────────────────
+function editarUsuario(uid) {
+  if (!usuariosCache) return;
+  if (currentUser && currentUser.rol !== 'ADMIN') {
+    toast('No tiene permisos para editar usuarios.', 'error');
+    return;
+  }
+  var u = null;
+  for (var i = 0; i < usuariosCache.length; i++) {
+    if (usuariosCache[i].id === uid) { u = usuariosCache[i]; break; }
+  }
+  if (!u) return;
+  var lineaVisible = u.rol === 'VENDEDOR' ? '' : 'none';
+  oModal('Editar usuario',
+    '<div style="margin-bottom:6px;padding:10px 12px;background:var(--surface-dim);border-radius:8px">' +
+      '<div style="font-size:11px;color:var(--on-surface-variant)">Usuario seleccionado</div>' +
+      '<div style="font-size:14px;font-weight:600">' + (u.nombre || 'Usuario') + ' · <span style="font-family:\'Courier New\',monospace">' + u.usuario + '</span></div>' +
+    '</div>' +
+    '<div class="form-section">Datos personales</div>' +
+    '<div class="form-grid">' +
+      '<div class="field full"><label for="ue-nombre">Nombre completo</label>' +
+        '<input type="text" id="ue-nombre" value="' + u.nombre + '" autocomplete="off"></div>' +
+      '<div class="field"><label for="ue-documento">Documento</label>' +
+        '<input type="text" id="ue-documento" value="' + (u.documento || '') + '" placeholder="Número de identificación" autocomplete="off"></div>' +
+      '<div class="field"><label for="ue-correo">Correo electrónico</label>' +
+        '<input type="email" id="ue-correo" value="' + (u.correo || '') + '" placeholder="usuario@empresa.com" autocomplete="off"></div>' +
+      '<div class="field"><label for="ue-telefono">Teléfono</label>' +
+        '<input type="tel" id="ue-telefono" value="' + (u.telefono || '') + '" placeholder="310 123 4567" autocomplete="off"></div>' +
+    '</div>' +
+    '<div class="form-section">Datos de acceso</div>' +
+    '<div class="form-grid">' +
+      '<div class="field full"><label for="ue-usuario">Usuario</label>' +
+        '<input type="text" id="ue-usuario" value="' + u.usuario + '" autocomplete="off"></div>' +
+    '</div>' +
+    '<div class="form-section">Configuración</div>' +
+    '<div class="form-grid">' +
+      '<div class="field"><label for="ue-rol">Rol</label>' +
+        '<select id="ue-rol" onchange="toggleLineaRolEdit()">' +
+          '<option value="VENDEDOR"' + (u.rol === 'VENDEDOR' ? ' selected' : '') + '>VENDEDOR</option>' +
+          '<option value="LIDER_CALIDAD"' + (u.rol === 'LIDER_CALIDAD' ? ' selected' : '') + '>LÍDER DE CALIDAD</option>' +
+          '<option value="LIDER_COMERCIAL"' + (u.rol === 'LIDER_COMERCIAL' ? ' selected' : '') + '>LÍDER COMERCIAL</option>' +
+          '<option value="ADMIN"' + (u.rol === 'ADMIN' ? ' selected' : '') + '>ADMIN</option>' +
+        '</select></div>' +
+      '<div class="field" id="ue-linea-field" style="display:' + lineaVisible + '"><label for="ue-linea">Línea de producto</label>' +
+        '<select id="ue-linea">' +
+          '<option value="INAPEL"' + (u.linea_producto === 'INAPEL' ? ' selected' : '') + '>INAPEL</option>' +
+          '<option value="TOROFIL"' + (u.linea_producto === 'TOROFIL' ? ' selected' : '') + '>TOROFIL</option>' +
+        '</select></div>' +
+      '<div class="field"><label for="ue-estado">Estado</label>' +
+        '<select id="ue-estado">' +
+          '<option value="1"' + (u.activo ? ' selected' : '') + '>Activo</option>' +
+          '<option value="0"' + (!u.activo ? ' selected' : '') + '>Inactivo</option>' +
+        '</select></div>' +
+    '</div>' +
+    '<p id="ue-err" class="gate-error" role="alert" style="min-height:16px"></p>' +
+    '<div class="action-row">' +
+      '<button class="btn" onclick="cModal()">Cancelar</button>' +
+      '<button class="btn btn-primary" onclick="guardarUsuarioEditado(' + u.id + ')">Guardar cambios</button>' +
+    '</div>');
+  setTimeout(function() {
+    var inp = document.getElementById('ue-nombre');
+    if (inp) inp.focus();
+  }, 100);
+}
+
+function toggleLineaRolEdit() {
+  var rol = document.getElementById('ue-rol');
+  var f = document.getElementById('ue-linea-field');
+  if (!rol || !f) return;
+  f.style.display = rol.value === 'VENDEDOR' ? '' : 'none';
+}
+
+function guardarUsuarioEditado(uid) {
+  var nombre = document.getElementById('ue-nombre').value.trim();
+  var documento = document.getElementById('ue-documento').value.trim();
+  var correo = document.getElementById('ue-correo').value.trim();
+  var telefono = document.getElementById('ue-telefono').value.trim();
+  var usuario = document.getElementById('ue-usuario').value.trim();
+  var rol = document.getElementById('ue-rol').value;
+  var linea = document.getElementById('ue-linea').value;
+  var estado = document.getElementById('ue-estado').value;
+  var err = document.getElementById('ue-err');
+
+  if (!nombre) { err.textContent = 'El nombre es obligatorio.'; return; }
+  if (!usuario) { err.textContent = 'El nombre de usuario es obligatorio.'; return; }
+  if (!/^[A-Za-z0-9._@-]+$/.test(usuario)) { err.textContent = 'El usuario solo puede contener letras, números y los símbolos . _ @ -'; return; }
+  if (usuario.length < 3) { err.textContent = 'El usuario debe tener al menos 3 caracteres.'; return; }
+  if (documento && !/^\d+$/.test(documento)) { err.textContent = 'El documento solo puede contener números.'; return; }
+  if (correo && !/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(correo)) { err.textContent = 'Ingrese un correo electrónico válido.'; return; }
+  var telDigit = telefono.replace(/\D/g, '');
+  if (telefono && (telDigit.length < 7 || telDigit.length > 10)) { err.textContent = 'El teléfono debe tener entre 7 y 10 dígitos.'; return; }
+
+  var body = { nombre: nombre, documento: documento, correo: correo, telefono: telefono, usuario: usuario, rol: rol, linea_producto: rol === 'VENDEDOR' ? linea : '', activo: estado === '1' };
+
+  fetch('/api/usuarios/' + uid, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(function(r) {
+    return r.json().then(function(d) { return { status: r.status, data: d }; });
+  })
+  .then(function(res) {
+    if (!res.data.ok) {
+      err.textContent = res.data.mensaje || 'No fue posible guardar los cambios.';
+      return;
+    }
+    cModal();
+    toast(res.data.mensaje || 'Usuario actualizado correctamente.', 'success');
+    usuariosCache = null;
+    renderUsuarios();
+  })
+  .catch(function(e) {
+    console.error(e);
+    err.textContent = 'Error de conexión con el servidor.';
+  });
 }
 
 // ── RENDER DB ───────────────────────────────────────────────────────────
@@ -2965,6 +3570,7 @@ function renderDB() {
   var abier = dbExcel.filter(function(p) { return ['Cerrado','No procede'].indexOf(p.estado) === -1; }).length;
   var urgen = dbExcel.filter(function(p) { return dias(p.savedAt) > 7 && ['Cerrado','No procede'].indexOf(p.estado) === -1; }).length;
   var cerr  = dbExcel.filter(function(p) { return p.estado === 'Cerrado'; }).length;
+  var puedeEditar = currentUser && (currentUser.rol === 'ADMIN' || currentUser.rol === 'LIDER_CALIDAD');
   document.getElementById('sg').innerHTML =
     sc('Total PQR', total, '#eaf1fb', '#1F5EAC', 'registros totales', 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2L14 8 20 8') +
     sc('Abiertos', abier, '#dbeafe', '#001E40', 'en trámite activo', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z') +
@@ -2985,9 +3591,9 @@ function renderDB() {
       '<td><span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></td>' +
       '<td>' + (p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') + '</td>' +
       '<td style="text-align:center;white-space:nowrap">' +
-        '<button class="btn btn-xs btn-icon" title="Cambiar estado" onclick="mEstado(\'' + p.radicado + '\')" style="margin-right:4px">✏️</button>' +
+        (puedeEditar ? '<button class="btn btn-xs btn-icon" title="Cambiar estado" onclick="mEstado(\'' + p.radicado + '\')" style="margin-right:4px">✏️</button>' : '') +
         '<button class="btn btn-xs btn-icon" title="Ver detalle" onclick="mDetalle(\'' + p.radicado + '\')" style="margin-right:4px">👁️</button>' +
-        '<button class="btn-del" title="Eliminar" onclick="mEliminar(\'' + p.radicado + '\')">🗑️</button>' +
+        (puedeEditar ? '<button class="btn-del" title="Eliminar" onclick="mEliminar(\'' + p.radicado + '\')">🗑️</button>' : '') +
       '</td>';
     tbody.appendChild(tr);
   });
@@ -3056,8 +3662,8 @@ function mDetalle(rad) {
   var pct = Math.round((idx + 1) / states.length * 100);
   var prods = p.productos && p.productos.length
     ? p.productos.map(function(x) {
-        return '<div style="font-size:12px;padding:5px 9px;background:var(--surface-dim);border-radius:6px;margin-bottom:3px">' +
-               '<strong>' + (x.producto||'—') + '</strong> · Ref: ' + (x.ref||'—') + ' · Lote: ' + (x.lote||'—') + ' · ' + (x.cant||'—') + ' ' + (x.unidad||'') + '</div>';
+         return '<div style="font-size:12px;padding:5px 9px;background:var(--surface-dim);border-radius:6px;margin-bottom:3px">' +
+               '<strong>' + (x.producto||'—') + '</strong> · PLU: ' + pluProducto(x) + ' · Ref: ' + (x.ref||'—') + ' · Lote: ' + (x.lote||'—') + ' · ' + (x.cant||'—') + ' ' + (x.unidad||'') + '</div>';
       }).join('')
     : '<p style="font-size:13px;color:var(--on-surface-variant)">Sin productos</p>';
   var hist = (p.historial || [{estado:p.estado, fecha:p.savedAt}]).map(function(h){
@@ -3147,6 +3753,28 @@ function expCSV() {
 }
 
 // ── CONSULTAR ───────────────────────────────────────────────────────────
+var _CONSULTA_STATE_KEYS = ['resultadoActual','consultaActual','ultimoResultado','currentPQR','searchState','cacheConsulta'];
+function resetConsulta() {
+  var rad = document.getElementById('c-rad');
+  if (rad) { rad.value = ''; rad.blur(); }
+  var list = document.getElementById('rs-list');
+  if (list) list.innerHTML = '';
+  var drop = document.getElementById('rs-drop');
+  if (drop) drop.classList.remove('show');
+  var res = document.getElementById('c-res');
+  if (res) res.innerHTML = '';
+  _RECENT_SEARCHES = [];
+  try { localStorage.removeItem(SEARCH_KEY); } catch (e) {}
+  var btn = document.querySelector('#panel-consultar .btn-primary');
+  if (btn) loadBtn(btn, false);
+  _CONSULTA_STATE_KEYS.forEach(function(k) {
+    try { window[k] = null; } catch (e) {}
+  });
+}
+document.addEventListener('sectionchange', function(e) {
+  var d = (e && e.detail) || {};
+  if (d.from === 'consultar' || d.to === 'consultar') resetConsulta();
+});
 async function consultar() {
   var rad = document.getElementById("c-rad").value.trim();
   var btn = document.querySelector('#panel-consultar .btn-primary');
@@ -3155,14 +3783,21 @@ async function consultar() {
   document.getElementById("c-res").innerHTML = '<div style="text-align:center;padding:28px;color:var(--on-surface-variant)"><span class="spin-dark"></span> Consultando...</div>';
   try {
     var respuesta = await fetch("/api/consultar/" + encodeURIComponent(rad));
-    if (!respuesta.ok) throw new Error("PQR no encontrado");
+    if (!respuesta.ok) {
+      var mensajeErr = "PQR no encontrado";
+      try {
+        var er = await respuesta.json();
+        if (er && er.error) mensajeErr = er.error;
+      } catch (e) {}
+      throw new Error(mensajeErr);
+    }
     var p = await respuesta.json();
     renderConsulta(p);
     addRecentSearch(rad);
     toast("PQR encontrado correctamente", "success", 3000);
   } catch (error) {
     console.error(error);
-    document.getElementById("c-res").innerHTML = '<div class="alert alert-error">No se encontró ningún PQR con el radicado <strong>' + rad + '</strong>.</div>';
+    document.getElementById("c-res").innerHTML = '<div class="alert alert-error">' + error.message + '</div>';
     toast(error.message || "Error al consultar", "error", 4000);
   } finally { loadBtn(btn, false); }
 }
@@ -3180,6 +3815,24 @@ function renderConsulta(p) {
            '<div><div class="timeline-state">' + h.estado + '</div>' +
            '<div class="timeline-date">' + h.fecha + ' - ' + (h.hora || '') + '</div></div></div>';
   }).join('');
+  var prodRows = p.productos && p.productos.length
+    ? p.productos.map(function(x) {
+        return '<tr>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.producto || '—') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + pluProducto(x) + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.ref || '—') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.lote || '—') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.cant || '—') + ' ' + (x.unidad || '') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.tipoDoc || '—') + ' ' + (x.numDoc || '') + '</td>' +
+          '</tr>';
+      }).join('')
+    : '<tr><td colspan="6" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
+  var productosHtml =
+    '<div style="margin-top:18px;border-top:1px solid var(--outline-soft);padding-top:14px">' +
+    '<div class="detail-label" style="margin-bottom:6px">Productos involucrados</div>' +
+    '<div class="table-wrap"><table class="table-pqr" style="min-width:620px;font-size:12px">' +
+    '<thead><tr><th>Producto</th><th>PLU</th><th>Referencia</th><th>Lote / OP</th><th>Cantidad</th><th>Documento</th></tr></thead>' +
+    '<tbody>' + prodRows + '</tbody></table></div></div>';
   div.innerHTML =
     '<div class="result-card">' +
     '<div class="result-top"><span class="result-rad">' + p.radicado + '</span><span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></div>' +
@@ -3187,10 +3840,13 @@ function renderConsulta(p) {
     '<div class="progress-labels"><span>Recibido</span><span>En revisión</span><span>Cerrado</span></div></div>' +
     '<div class="detail-grid">' +
     dd('Cliente', p.cliente) + dd('Tipo de solicitud', p.tipoSol) +
+    (p.vendedor ? dd('Vendedor', p.vendedor) : '') +
+    (p.linea ? dd('Línea de producto', p.linea) : '') +
     dd('Fecha de recepción', p.fechaRec) + dd('Días en trámite', '<span class="timer ' + timerCls(d) + '">' + d + ' días</span>') +
     dd('Prioridad', p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') +
     dd('Expectativa del cliente', p.expectativa) +
     '</div>' +
+    productosHtml +
     '<div style="border-top:1px solid var(--outline-soft);padding-top:12px">' +
     '<div class="detail-label" style="margin-bottom:7px">Historial de estados</div>' +
     '<div class="timeline">' + hist + '</div></div>' +
@@ -3237,14 +3893,15 @@ async function cargarSeg() {
     toast("PQR cargado exitosamente", "success", 3000);
     var inv = p.investigacion || {};
     var prodRows = p.productos && p.productos.length
-      ? p.productos.map(function(x) {
-          return '<tr><td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.producto||'—') + '</td>' +
-                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.ref||'—') + '</td>' +
+       ? p.productos.map(function(x) {
+           return '<tr><td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.producto||'—') + '</td>' +
+                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + pluProducto(x) + '</td>' +
+                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.ref||'—') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.lote||'—') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.cant||'—') + ' ' + (x.unidad||'') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.tipoDoc||'—') + ' ' + (x.numDoc||'') + '</td></tr>';
         }).join('')
-      : '<tr><td colspan="5" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
+       : '<tr><td colspan="6" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
     var mkSel = function(id, opts, val) {
       return '<select id="' + id + '">' + opts.map(function(o) {
         return '<option' + (val === o ? ' selected' : '') + '>' + o + '</option>';
@@ -3262,8 +3919,9 @@ async function cargarSeg() {
       '<p style="font-size:13px;color:var(--on-surface);line-height:1.6;background:var(--surface-dim);padding:9px 13px;border-radius:7px;margin-bottom:14px">' + (p.desc||'—') + '</p>' +
       '<div class="detail-label" style="margin-bottom:6px">Productos involucrados</div>' +
       '<table style="width:100%;border-collapse:collapse;font-size:13px;background:var(--surface-container-lowest);border:1px solid var(--outline-soft);border-radius:var(--radius-md);overflow:hidden">' +
-      '<thead><tr style="background:var(--navy)"><th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Producto</th>' +
-      '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Ref.</th>' +
+       '<thead><tr style="background:var(--navy)"><th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Producto</th>' +
+       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">PLU</th>' +
+       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Ref.</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Lote/OP</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Cantidad</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Documento</th></tr></thead>' +
@@ -3353,13 +4011,14 @@ function expSeg(rad) {
   var inv = p.investigacion || {};
   var respTxt = (document.getElementById('si-txt') ? document.getElementById('si-txt').value : '') || inv.respTxt || '';
   var prods = p.productos && p.productos.length
-    ? p.productos.map(function(x) {
-        return '<tr><td style="border:1px solid #ccc;padding:6px 10px">' + (x.producto||'—') + '</td>' +
+     ? p.productos.map(function(x) {
+         return '<tr><td style="border:1px solid #ccc;padding:6px 10px">' + (x.producto||'—') + '</td>' +
+               '<td style="border:1px solid #ccc;padding:6px 10px">' + pluProducto(x) + '</td>' +
                '<td style="border:1px solid #ccc;padding:6px 10px">' + (x.ref||'—') + '</td>' +
                '<td style="border:1px solid #ccc;padding:6px 10px">' + (x.lote||'—') + '</td>' +
                '<td style="border:1px solid #ccc;padding:6px 10px">' + (x.cant||'—') + ' ' + (x.unidad||'') + '</td></tr>';
       }).join('')
-    : '<tr><td colspan="4" style="border:1px solid #ccc;padding:6px 10px;text-align:center">Sin productos</td></tr>';
+     : '<tr><td colspan="5" style="border:1px solid #ccc;padding:6px 10px;text-align:center">Sin productos</td></tr>';
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Respuesta PQR ' + rad + '</title>' +
     '<style>' +
     'body{font-family:"Inter","Segoe UI",sans-serif;font-size:13px;color:#222;padding:40px;max-width:800px;margin:0 auto}' +

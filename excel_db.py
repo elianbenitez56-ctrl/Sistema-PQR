@@ -10,6 +10,40 @@ print(">>> USANDO excel_db.py <<<")
 
 ARCHIVO = "BaseDatos_PQR.xlsx"
 
+HERRAMIENTAS_ANALISIS = (
+    "5 ¿Por qué?",
+    "Diagrama Ishikawa",
+    "Análisis Pareto",
+    "Inspección visual",
+    "Ensayos de laboratorio",
+    "Comparación muestra patrón",
+    "Checklist de inspección"
+)
+
+
+def normalizar_herramientas(valor):
+    """Convierte el texto legacy o el JSON nuevo en una lista de herramientas."""
+
+    if isinstance(valor, list):
+        valores = valor
+    else:
+        texto = str(valor or "").strip()
+        if not texto:
+            return []
+        try:
+            valores = json.loads(texto) if texto.startswith("[") else [texto]
+        except (TypeError, ValueError):
+            valores = [texto]
+
+    return [str(item).strip() for item in valores if str(item or "").strip()]
+
+
+def serializar_herramientas(herramientas):
+    valores = normalizar_herramientas(herramientas)
+    if len(valores) <= 1:
+        return valores[0] if valores else ""
+    return json.dumps(valores, ensure_ascii=False)
+
 
 # ==========================================================
 # CREAR ARCHIVO Y HOJAS
@@ -87,7 +121,12 @@ def crear_excel():
         "FechaCierre",
         "Cierre",
         "Respuesta",
-        "Departamentos"
+        "Departamentos",
+        "CalidadEstado",
+        "ComercialEstado",
+        "NotificacionComercialEnviada",
+        "RespuestaCalidad",
+        "RespuestaComercial"
     ])
 
     # ---------------- Adjuntos ----------------
@@ -213,8 +252,30 @@ def actualizar_estructura_excel():
             "FechaCierre",
             "Cierre",
             "Respuesta",
-            "Departamentos"
+            "Departamentos",
+            "CalidadEstado",
+            "ComercialEstado",
+            "NotificacionComercialEnviada",
+            "RespuestaCalidad",
+            "RespuestaComercial"
         ])
+    else:
+        ws = wb["Investigaciones"]
+        if ws.max_column < 13:
+            ws.cell(1, 13).value = "CalidadEstado"
+        if ws.max_column < 14:
+            ws.cell(1, 14).value = "ComercialEstado"
+        if ws.max_column < 15:
+            ws.cell(1, 15).value = "NotificacionComercialEnviada"
+        if ws.max_column < 16:
+            ws.cell(1, 16).value = "RespuestaCalidad"
+        if ws.max_column < 17:
+            ws.cell(1, 17).value = "RespuestaComercial"
+
+        # The legacy response belonged to the original commercial field.
+        for fila in range(2, ws.max_row + 1):
+            if not ws.cell(fila, 17).value and ws.cell(fila, 11).value:
+                ws.cell(fila, 17).value = ws.cell(fila, 11).value
 
     if "Adjuntos" not in hojas:
         ws = wb.create_sheet("Adjuntos")
@@ -415,22 +476,45 @@ def consultar_pqr(valor_busqueda):
 
         if valor_busqueda in (radicado, cliente, nit):
 
-            investigacion = {}
+            investigacion = {
+                "resp": "",
+                "cargo": "",
+                "herr": "5 ¿Por qué?",
+                "herramientas": ["5 ¿Por qué?"],
+                "causa": "Materias primas",
+                "acc": "Reposición",
+                "notif": "Sí",
+                "fResp": "",
+                "fCierre": "",
+                "cierre": "No",
+                "respuesta_calidad": "",
+                "respuesta_comercial": "",
+                "deptos": "",
+                "calidad_estado": "pendiente",
+                "comercial_estado": "pendiente",
+                "notificacion_comercial_enviada": False
+            }
 
             for inv in ws_inv.iter_rows(min_row=2, values_only=True):
                 if str(inv[0]).strip().upper() == radicado:
+                    herramientas = normalizar_herramientas(inv[3])
                     investigacion = {
                         "resp": inv[1] or "",
                         "cargo": inv[2] or "",
-                        "herr": inv[3] or "",
+                        "herr": herramientas[0] if herramientas else "",
+                        "herramientas": herramientas,
                         "causa": inv[4] or "",
                         "acc": inv[5] or "",
                         "notif": inv[6] or "",
                         "fResp": inv[7] or "",
                         "fCierre": inv[8] or "",
                         "cierre": inv[9] or "",
-                        "respTxt": inv[10] or "",
-                        "deptos": inv[11] or "" if len(inv) > 11 else ""
+                        "respuesta_calidad": inv[15] or "" if len(inv) > 15 else "",
+                        "respuesta_comercial": (inv[16] if len(inv) > 16 and inv[16] else (inv[10] or "")),
+                        "deptos": inv[11] or "" if len(inv) > 11 else "",
+                        "calidad_estado": str(inv[12] or "pendiente").strip().lower() if len(inv) > 12 else "pendiente",
+                        "comercial_estado": str(inv[13] or "pendiente").strip().lower() if len(inv) > 13 else "pendiente",
+                        "notificacion_comercial_enviada": str(inv[14] or "").strip().lower() in ("1", "true", "sí", "si", "enviada") if len(inv) > 14 else False
                     }
                     break
 
@@ -578,91 +662,132 @@ def actualizar_estado_pqr(radicado, estado):
 # GUARDAR / ACTUALIZAR INVESTIGACIÓN
 # ==========================================================
 
-def guardar_investigacion(datos):
+def guardar_investigacion(
+    datos,
+    calidad_estado=None,
+    comercial_estado=None,
+    notificacion_comercial_enviada=None
+):
 
     actualizar_estructura_excel()
 
     wb = load_workbook(ARCHIVO)
-
     ws = wb["Investigaciones"]
-
     fila_existente = None
 
-    # Buscar si ya existe el radicado
-
     for fila in range(2, ws.max_row + 1):
-
         if str(ws.cell(fila, 1).value).strip() == str(datos["radicado"]).strip():
-
             fila_existente = fila
             break
 
-    # Si existe, actualiza
+    def _bool(valor):
+        return str(valor or "").strip().lower() in ("1", "true", "sí", "si", "enviada")
+
+    estado_calidad_anterior = (
+        ws.cell(fila_existente, 13).value
+        if fila_existente and ws.max_column >= 13
+        else "pendiente"
+    )
+    estado_comercial_anterior = (
+        ws.cell(fila_existente, 14).value
+        if fila_existente and ws.max_column >= 14
+        else "pendiente"
+    )
+    aviso_anterior = (
+        ws.cell(fila_existente, 15).value
+        if fila_existente and ws.max_column >= 15
+        else False
+    )
+    respuesta_legacy = (
+        ws.cell(fila_existente, 11).value
+        if fila_existente and ws.max_column >= 11
+        else ""
+    )
+
+    estado_calidad = str(
+        calidad_estado if calidad_estado is not None else estado_calidad_anterior or "pendiente"
+    ).strip().lower()
+    estado_comercial = str(
+        comercial_estado if comercial_estado is not None else estado_comercial_anterior or "pendiente"
+    ).strip().lower()
+    aviso_enviado = (
+        _bool(notificacion_comercial_enviada)
+        if notificacion_comercial_enviada is not None
+        else _bool(aviso_anterior)
+    )
+    herramientas = normalizar_herramientas(
+        datos.get("herramientas", datos.get("herr", ""))
+    )
+
+    valores = [
+        datos.get("radicado", ""),
+        datos.get("resp", ""),
+        datos.get("cargo", ""),
+        serializar_herramientas(herramientas),
+        datos.get("causa", ""),
+        datos.get("acc", ""),
+        datos.get("notif", ""),
+        datos.get("fResp", ""),
+        datos.get("fCierre", ""),
+        datos.get("cierre", ""),
+        respuesta_legacy,
+        datos.get("deptos", "")
+    ]
+    respuesta_calidad = datos.get("respuesta_calidad", "")
+    respuesta_comercial = datos.get("respuesta_comercial", "")
 
     if fila_existente:
-
-        ws.cell(fila_existente,1).value = datos.get("radicado","")
-        ws.cell(fila_existente,2).value = datos.get("resp","")
-        ws.cell(fila_existente,3).value = datos.get("cargo","")
-        ws.cell(fila_existente,4).value = datos.get("herr","")
-        ws.cell(fila_existente,5).value = datos.get("causa","")
-        ws.cell(fila_existente,6).value = datos.get("acc","")
-        ws.cell(fila_existente,7).value = datos.get("notif","")
-        ws.cell(fila_existente,8).value = datos.get("fResp","")
-        ws.cell(fila_existente,9).value = datos.get("fCierre","")
-        ws.cell(fila_existente,10).value = datos.get("cierre","")
-        ws.cell(fila_existente,11).value = datos.get("respTxt","")
-        ws.cell(fila_existente,12).value = datos.get("deptos","")
-
+        for columna, valor in enumerate(valores, start=1):
+            ws.cell(fila_existente, columna).value = valor
+        ws.cell(fila_existente, 13).value = estado_calidad
+        ws.cell(fila_existente, 14).value = estado_comercial
+        ws.cell(fila_existente, 15).value = 1 if aviso_enviado else 0
+        ws.cell(fila_existente, 16).value = respuesta_calidad
+        ws.cell(fila_existente, 17).value = respuesta_comercial
     else:
-
-        ws.append([
-
-            datos.get("radicado",""),
-            datos.get("resp",""),
-            datos.get("cargo",""),
-            datos.get("herr",""),
-            datos.get("causa",""),
-            datos.get("acc",""),
-            datos.get("notif",""),
-            datos.get("fResp",""),
-            datos.get("fCierre",""),
-            datos.get("cierre",""),
-            datos.get("respTxt",""),
-            datos.get("deptos","")
-
+        ws.append(valores + [
+            estado_calidad,
+            estado_comercial,
+            1 if aviso_enviado else 0,
+            respuesta_calidad,
+            respuesta_comercial
         ])
 
     wb.save(ARCHIVO)
     wb.close()
 
-    # ==============================
-    # Estado automático
-    # ==============================
-
-    estado = "En investigación"
-
-    if datos.get("cierre") == "Sí":
-
-        estado = "Cerrado"
-
-    actualizar_estado_pqr(
-
-        datos["radicado"],
-        estado
-
-    )
-
+    estado = "Cerrado" if datos.get("cierre") == "Sí" else "En investigación"
+    actualizar_estado_pqr(datos["radicado"], estado)
     guardar_historial(
-
         datos["radicado"],
         estado,
         "Sistema",
         "Seguimiento actualizado"
-
     )
 
-    return True
+    return {
+        "calidad_estado": estado_calidad,
+        "comercial_estado": estado_comercial,
+        "notificacion_comercial_enviada": aviso_enviado
+    }
+
+
+def marcar_notificacion_comercial_enviada(radicado):
+    """Marca el aviso comercial como enviado sin alterar los demás datos."""
+
+    actualizar_estructura_excel()
+    wb = load_workbook(ARCHIVO)
+    ws = wb["Investigaciones"]
+
+    for fila in range(2, ws.max_row + 1):
+        if str(ws.cell(fila, 1).value).strip() == str(radicado).strip():
+            ws.cell(fila, 15).value = 1
+            wb.save(ARCHIVO)
+            wb.close()
+            return True
+
+    wb.close()
+    return False
 
 # ==========================================================
 # INICIALIZAR ESTRUCTURA

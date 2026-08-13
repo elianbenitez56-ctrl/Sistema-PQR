@@ -22,6 +22,8 @@ import traceback
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
+from html import escape
+from urllib.parse import quote
 
 NOMBRE_SISTEMA = "INAPEL · Industria Nacional Papelera S.A.S."
 
@@ -150,6 +152,138 @@ def enviar_confirmacion_pqr(radicado, correo_cliente, datos):
         print(f"[correo] ERROR al enviar confirmación para {radicado}: {e}")
         traceback.print_exc(file=sys.stderr)
         return False, f"Error SMTP: {e}"
+
+
+# ==========================================================
+# NOTIFICACIÓN COMERCIAL
+# ==========================================================
+
+def enviar_notificacion_comercial(
+    radicado,
+    datos,
+    destinatarios,
+    campos_pendientes,
+    url_base=None
+):
+    """Notifica a Comercial usando la misma configuración SMTP del sistema."""
+
+    try:
+        if not smtp_configurado():
+            faltan = ", ".join(variables_smtp_faltantes())
+            mensaje = f"SMTP no configurado (faltan las variables: {faltan})."
+            print(f"[correo] Notificación comercial NO enviada: {mensaje}")
+            return False, mensaje
+
+        correos = []
+        vistos = set()
+        for correo in destinatarios or []:
+            correo = str(correo or "").strip()
+            if _correo_valido(correo) and correo.lower() not in vistos:
+                correos.append(correo)
+                vistos.add(correo.lower())
+
+        if not correos:
+            return False, "No hay destinatarios comerciales activos con correo válido."
+
+        base = (_var("PQR_URL_BASE", "") or str(url_base or "")).strip().rstrip("/")
+        enlace = ""
+        if base:
+            separador = "&" if "?" in base else "?"
+            enlace = f"{base}{separador}seguimiento={quote(str(radicado))}"
+
+        asunto = f"PQR {radicado} pendiente de gestión comercial"
+        html = _plantilla_notificacion_comercial(
+            radicado,
+            datos,
+            campos_pendientes,
+            enlace
+        )
+
+        mensaje = MIMEMultipart("alternative")
+        mensaje["Subject"] = asunto
+        mensaje["From"] = _var("SMTP_FROM", _var("SMTP_USER", "")).strip()
+        mensaje["To"] = ", ".join(correos)
+        mensaje.attach(MIMEText(html, "html", "utf-8"))
+
+        host = _var("SMTP_HOST", "").strip()
+        puerto = int(_var("SMTP_PORT", "587"))
+        usuario = _var("SMTP_USER", "")
+        contrasena = _var("SMTP_PASSWORD", "")
+        usar_tls = _var("SMTP_USE_TLS", "true").strip().lower() in ("1", "true", "yes", "sí")
+        usar_ssl = _var("SMTP_USE_SSL", "").strip().lower() in ("1", "true", "yes", "sí")
+
+        if usar_ssl:
+            servidor = smtplib.SMTP_SSL(host, puerto, timeout=20)
+        else:
+            servidor = smtplib.SMTP(host, puerto, timeout=20)
+            servidor.ehlo()
+            if usar_tls:
+                servidor.starttls()
+                servidor.ehlo()
+
+        try:
+            servidor.login(usuario, contrasena)
+            servidor.sendmail(mensaje["From"], correos, mensaje.as_string())
+        finally:
+            try:
+                servidor.quit()
+            except Exception:
+                pass
+
+        print(f"[correo] Notificación comercial enviada para {radicado} -> {len(correos)} destinatarios")
+        return True, "Notificación comercial enviada correctamente."
+
+    except Exception as e:
+        print(f"[correo] ERROR en notificación comercial para {radicado}: {e}")
+        traceback.print_exc(file=sys.stderr)
+        return False, f"Error SMTP: {e}"
+
+
+def _plantilla_notificacion_comercial(radicado, datos, campos_pendientes, enlace):
+    cliente = escape(str(datos.get("cliente", "") or "").strip() or "No informado")
+    tipo = escape(str(datos.get("tipoSol", "") or "").strip() or "PQR")
+    fecha = escape(str(datos.get("fechaRec", "") or "").strip() or "No informada")
+    radicado_html = escape(str(radicado))
+    pendientes_html = "".join(
+        f"<li style=\"margin-bottom:5px\">{escape(str(campo))}</li>"
+        for campo in campos_pendientes or []
+    )
+    enlace_html = (
+        f'<p style="margin:20px 0"><a href="{escape(enlace, quote=True)}" '
+        'style="background:#00325e;color:#ffffff;text-decoration:none;padding:10px 18px;'
+        'border-radius:6px;display:inline-block;font-weight:bold">Abrir seguimiento del PQR</a></p>'
+        if enlace else
+        '<p style="margin:20px 0;color:#555555">Ingrese al aplicativo y busque el radicado '
+        f"<strong>{radicado_html}</strong> en la sección Seguimiento.</p>"
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4f8;padding:24px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border:1px solid #dde5ee;border-radius:10px;overflow:hidden">
+        <tr><td style="background:#00325e;padding:24px 30px;color:#ffffff;font-size:22px;font-weight:bold">INAPEL</td></tr>
+        <tr><td style="padding:28px 30px;color:#555555;font-size:14px;line-height:1.6">
+          <h2 style="margin:0 0 16px;color:#00325e;font-size:19px">Gestión comercial pendiente</h2>
+          <p>Calidad terminó la investigación del PQR y Comercial debe continuar con la gestión.</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;margin:18px 0">
+            <tr><td style="padding:7px 0;color:#888888">Radicado</td><td style="padding:7px 0;text-align:right;font-weight:bold;color:#00325e">{radicado_html}</td></tr>
+            <tr><td style="padding:7px 0;color:#888888">Cliente</td><td style="padding:7px 0;text-align:right">{cliente}</td></tr>
+            <tr><td style="padding:7px 0;color:#888888">Tipo de solicitud</td><td style="padding:7px 0;text-align:right">{tipo}</td></tr>
+            <tr><td style="padding:7px 0;color:#888888">Fecha del PQR</td><td style="padding:7px 0;text-align:right">{fecha}</td></tr>
+          </table>
+          <p>Complete los siguientes campos de la sección Gestión comercial:</p>
+          <ul>{pendientes_html}</ul>
+          {enlace_html}
+          <p style="font-size:11px;color:#8a97a5">Correo generado automáticamente por el Sistema de Gestión PQR.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
 
 
 # ==========================================================

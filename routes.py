@@ -16,10 +16,13 @@ from excel_db import (
     listar_pqrs,
     eliminar_pqr,
     correo_confirmacion_enviado,
-    marcar_correo_confirmacion
+    marcar_correo_confirmacion,
+    marcar_notificacion_comercial_enviada,
+    HERRAMIENTAS_ANALISIS,
+    normalizar_herramientas
 )
 
-from email_service import enviar_confirmacion_pqr
+from email_service import enviar_confirmacion_pqr, enviar_notificacion_comercial
 
 from users_db import (
     autenticar_usuario,
@@ -45,12 +48,66 @@ ADMIN = "ADMIN"
 VENDEDOR = "VENDEDOR"
 LIDER_CALIDAD = "LIDER_CALIDAD"
 LIDER_COMERCIAL = "LIDER_COMERCIAL"
+COORDINADORA_COMERCIAL = "COORDINADORA COMERCIAL"
+DIRECTORA_COMERCIAL = "DIRECTORA COMERCIAL"
+COMERCIAL = "COMERCIAL"
+DIRECTOR_PRODUCCION = "DIRECTOR DE PRODUCCION"
+
+ROLES_VALIDOS = (
+    ADMIN,
+    VENDEDOR,
+    LIDER_CALIDAD,
+    LIDER_COMERCIAL,
+    COORDINADORA_COMERCIAL,
+    DIRECTORA_COMERCIAL,
+    COMERCIAL,
+    DIRECTOR_PRODUCCION
+)
 
 # Roles que pueden ver todas las PQR
-ROLES_VER_TODO = (ADMIN, LIDER_CALIDAD, LIDER_COMERCIAL)
+ROLES_VER_TODO = (
+    ADMIN,
+    LIDER_CALIDAD,
+    LIDER_COMERCIAL,
+    COORDINADORA_COMERCIAL,
+    DIRECTORA_COMERCIAL,
+    COMERCIAL,
+    DIRECTOR_PRODUCCION
+)
 
 # Roles que gestionan investigación y estados
 ROLES_INVESTIGACION = (ADMIN, LIDER_CALIDAD)
+
+# Roles que pueden diligenciar la sección de seguimiento comercial.
+ROLES_COMERCIAL = (
+    LIDER_COMERCIAL,
+    COORDINADORA_COMERCIAL,
+    DIRECTORA_COMERCIAL,
+    COMERCIAL
+)
+
+ROLES_SEGUIMIENTO = (ADMIN, LIDER_CALIDAD) + ROLES_COMERCIAL
+
+CAMPOS_CALIDAD = (
+    ("resp", "Responsable de investigación"),
+    ("cargo", "Cargo"),
+    ("causa", "Asignación de causa"),
+    ("herramientas", "Herramienta utilizada"),
+    ("deptos", "Departamentos involucrados")
+)
+
+CAMPOS_COMERCIALES = (
+    ("acc", "Acciones tomadas"),
+    ("notif", "Notificación al cliente"),
+    ("fResp", "Fecha de respuesta"),
+    ("cierre", "Cierre del PQR"),
+    ("fCierre", "Fecha de cierre"),
+    ("respuesta_comercial", "Respuesta detallada al cliente")
+)
+
+CAMPOS_CALIDAD_EDITABLES = CAMPOS_CALIDAD + (
+    ("respuesta_calidad", "Respuesta detallada de Calidad"),
+)
 
 
 def _usuario_para_sesion(usuario):
@@ -84,7 +141,9 @@ def rol_requerido(*roles):
                     "ok": False,
                     "mensaje": "Debe iniciar sesión para continuar."
                 }), 401
-            if roles and session.get("rol") not in roles:
+            rol_actual = session.get("rol")
+            # ADMIN es el superadministrador: conserva acceso a cualquier ruta protegida.
+            if roles and rol_actual != ADMIN and rol_actual not in roles:
                 return jsonify({
                     "ok": False,
                     "mensaje": "No tiene permisos para realizar esta acción."
@@ -181,6 +240,69 @@ def _validar_telefono(telefono):
     return re.match(TELEFONO_REGEX, telefono) is not None
 
 
+def _campos_faltantes(datos, campos):
+    faltantes = []
+    for clave, etiqueta in campos:
+        valor = datos.get(clave, "")
+        if clave == "herramientas":
+            if not isinstance(valor, list) or not valor:
+                faltantes.append(etiqueta)
+        elif not str(valor or "").strip():
+            faltantes.append(etiqueta)
+    return faltantes
+
+
+def _preparar_herramientas(datos):
+    if "herramientas" not in datos and "herr" not in datos:
+        return [], None
+
+    valor = datos.get("herramientas", datos.get("herr", []))
+    herramientas = normalizar_herramientas(valor)
+
+    if len(herramientas) != len(set(herramientas)):
+        return None, "No puede seleccionar la misma herramienta más de una vez."
+
+    invalidas = [h for h in herramientas if h not in HERRAMIENTAS_ANALISIS]
+    if invalidas:
+        return None, "La herramienta seleccionada no es válida."
+
+    datos["herramientas"] = herramientas
+    return herramientas, None
+
+
+def _campos_modificados(datos, actual, campos):
+    return [
+        etiqueta
+        for clave, etiqueta in campos
+        if clave in datos
+        and str(datos.get(clave, "") or "").strip()
+        != str(actual.get(clave, "") or "").strip()
+    ]
+
+
+def _correos_comerciales():
+    """Obtiene destinatarios activos desde la hoja Usuarios."""
+
+    destinatarios = []
+    vistos = set()
+
+    for usuario in listar_usuarios():
+        rol = str(usuario.get("rol", "") or "").strip().upper()
+        correo = str(usuario.get("correo", "") or "").strip()
+        clave = correo.lower()
+
+        if (
+            rol in ROLES_COMERCIAL
+            and usuario.get("activo", True)
+            and correo
+            and clave not in vistos
+        ):
+            destinatarios.append(correo)
+            vistos.add(clave)
+
+    return destinatarios
+
+
 # ==========================================================
 # ADMINISTRACIÓN DE USUARIOS
 # ADMIN: gestión completa. LIDER_CALIDAD: solo credenciales.
@@ -219,10 +341,10 @@ def api_usuarios_crear():
             "mensaje": "Nombre, usuario y contraseña son obligatorios."
         }), 400
 
-    if rol not in (ADMIN, VENDEDOR, LIDER_CALIDAD, LIDER_COMERCIAL):
+    if rol not in ROLES_VALIDOS:
         return jsonify({
             "ok": False,
-            "mensaje": "Rol inválido. Use VENDEDOR, LIDER_CALIDAD o LIDER_COMERCIAL."
+            "mensaje": "Rol inválido. Use VENDEDOR, LIDER_CALIDAD, LIDER_COMERCIAL, COORDINADORA COMERCIAL, DIRECTORA COMERCIAL, COMERCIAL o DIRECTOR DE PRODUCCION."
         }), 400
 
     if rol == VENDEDOR and linea not in ("INAPEL", "TOROFIL", ""):
@@ -319,10 +441,10 @@ def api_usuarios_actualizar(uid):
         campos["contrasena"] = str(datos["contrasena"])
     if "rol" in datos:
         rol = str(datos["rol"]).strip().upper()
-        if rol not in (ADMIN, VENDEDOR, LIDER_CALIDAD, LIDER_COMERCIAL):
+        if rol not in ROLES_VALIDOS:
             return jsonify({
                 "ok": False,
-                "mensaje": "Rol inválido. Use VENDEDOR, LIDER_CALIDAD o LIDER_COMERCIAL."
+                "mensaje": "Rol inválido. Use VENDEDOR, LIDER_CALIDAD, LIDER_COMERCIAL, COORDINADORA COMERCIAL, DIRECTORA COMERCIAL, COMERCIAL o DIRECTOR DE PRODUCCION."
             }), 400
         campos["rol"] = rol
     if "linea_producto" in datos:
@@ -687,17 +809,191 @@ def api_consultar(valor):
 # GUARDAR SEGUIMIENTO
 # ==========================================================
 
-@routes.route("/api/seguimiento", methods=["POST"])
-@rol_requerido(*ROLES_INVESTIGACION)
-def api_seguimiento():
+def _guardar_seguimiento(datos, seccion=None):
 
-    datos = request.get_json()
+    datos = dict(datos or {})
+    radicado = str(datos.get("radicado", "") or "").strip()
 
-    guardar_investigacion(datos)
+    if not radicado:
+        return jsonify({
+            "ok": False,
+            "mensaje": "Debe indicar el radicado del PQR."
+        }), 400
+
+    _, error_herramientas = _preparar_herramientas(datos)
+    if error_herramientas:
+        return jsonify({
+            "ok": False,
+            "mensaje": error_herramientas
+        }), 400
+
+    pqr = consultar_pqr(radicado)
+    if not pqr:
+        return jsonify({
+            "ok": False,
+            "mensaje": "El PQR no existe."
+        }), 404
+
+    investigacion = pqr.get("investigacion", {}) or {}
+    rol_actual = session.get("rol")
+    calidad_estado_anterior = str(
+        investigacion.get("calidad_estado", "pendiente") or "pendiente"
+    ).strip().lower()
+    comercial_estado_anterior = str(
+        investigacion.get("comercial_estado", "pendiente") or "pendiente"
+    ).strip().lower()
+    aviso_enviado = bool(investigacion.get("notificacion_comercial_enviada", False))
+
+    if seccion == "calidad":
+        bloque_no_autorizado = CAMPOS_COMERCIALES
+        bloque_nombre = "Gestión comercial"
+    elif seccion == "comercial":
+        bloque_no_autorizado = CAMPOS_CALIDAD_EDITABLES
+        bloque_nombre = "Calidad"
+    elif rol_actual == LIDER_CALIDAD:
+        bloque_no_autorizado = CAMPOS_COMERCIALES
+        bloque_nombre = "Gestión comercial"
+    elif rol_actual in ROLES_COMERCIAL:
+        bloque_no_autorizado = CAMPOS_CALIDAD_EDITABLES
+        bloque_nombre = "Calidad"
+    else:
+        bloque_no_autorizado = ()
+        bloque_nombre = ""
+
+    campos_no_autorizados = _campos_modificados(
+        datos,
+        investigacion,
+        bloque_no_autorizado
+    )
+    if campos_no_autorizados:
+        return jsonify({
+            "ok": False,
+            "mensaje": f"No tiene permisos para modificar la sección {bloque_nombre}.",
+            "campos": campos_no_autorizados
+        }), 403
+
+    datos_guardar = dict(datos)
+    for clave, _ in CAMPOS_CALIDAD_EDITABLES + CAMPOS_COMERCIALES:
+        if clave not in datos_guardar:
+            datos_guardar[clave] = investigacion.get(clave, "")
+
+    if rol_actual == LIDER_CALIDAD:
+        for clave, _ in CAMPOS_COMERCIALES:
+            datos_guardar[clave] = investigacion.get(clave, "")
+    elif rol_actual in ROLES_COMERCIAL:
+        for clave, _ in CAMPOS_CALIDAD_EDITABLES:
+            datos_guardar[clave] = investigacion.get(clave, "")
+
+    faltantes_calidad = _campos_faltantes(datos, CAMPOS_CALIDAD)
+    faltantes_comercial = _campos_faltantes(datos, CAMPOS_COMERCIALES)
+
+    if seccion == "calidad":
+        if faltantes_calidad:
+            return jsonify({
+                "ok": False,
+                "mensaje": "Complete todos los campos de Calidad.",
+                "faltantes": faltantes_calidad
+            }), 400
+        calidad_estado_nuevo = "completada"
+        comercial_estado_nuevo = comercial_estado_anterior
+    elif seccion == "comercial":
+        if calidad_estado_anterior != "completada":
+            return jsonify({
+                "ok": False,
+                "mensaje": "Calidad debe completar su sección antes de la gestión comercial."
+            }), 400
+        if faltantes_comercial:
+            return jsonify({
+                "ok": False,
+                "mensaje": "Complete todos los campos de Gestión comercial.",
+                "faltantes": faltantes_comercial
+            }), 400
+        calidad_estado_nuevo = calidad_estado_anterior
+        comercial_estado_nuevo = "completada"
+    elif rol_actual in ROLES_COMERCIAL:
+        if calidad_estado_anterior != "completada":
+            return jsonify({
+                "ok": False,
+                "mensaje": "Calidad debe completar su sección antes de la gestión comercial."
+            }), 400
+        if faltantes_comercial:
+            return jsonify({
+                "ok": False,
+                "mensaje": "Complete todos los campos de Gestión comercial.",
+                "faltantes": faltantes_comercial
+            }), 400
+        calidad_estado_nuevo = "completada"
+        comercial_estado_nuevo = "completada"
+    else:
+        if faltantes_calidad:
+            return jsonify({
+                "ok": False,
+                "mensaje": "Complete todos los campos de Calidad.",
+                "faltantes": faltantes_calidad
+            }), 400
+        calidad_estado_nuevo = "completada"
+        if rol_actual == ADMIN:
+            comercial_estado_nuevo = (
+                "completada" if not faltantes_comercial else "pendiente"
+            )
+        else:
+            comercial_estado_nuevo = comercial_estado_anterior
+
+    transicion_calidad = (
+        calidad_estado_anterior != "completada"
+        and calidad_estado_nuevo == "completada"
+        and not aviso_enviado
+    )
+
+    resultado_guardado = guardar_investigacion(
+        datos_guardar,
+        calidad_estado=calidad_estado_nuevo,
+        comercial_estado=comercial_estado_nuevo,
+        notificacion_comercial_enviada=aviso_enviado
+    )
+
+    notificacion_enviada = aviso_enviado
+    notificacion_mensaje = ""
+
+    if transicion_calidad:
+        destinatarios = _correos_comerciales()
+        notificacion_enviada, notificacion_mensaje = enviar_notificacion_comercial(
+            radicado,
+            pqr,
+            destinatarios,
+            [etiqueta for _, etiqueta in CAMPOS_COMERCIALES],
+            request.host_url
+        )
+
+        if notificacion_enviada:
+            marcar_notificacion_comercial_enviada(radicado)
+
+    resultado_guardado["notificacion_comercial_enviada"] = notificacion_enviada
 
     return jsonify({
-        "ok": True
+        "ok": True,
+        **resultado_guardado,
+        "notificacion_mensaje": notificacion_mensaje
     })
+
+
+@routes.route("/api/seguimiento/calidad", methods=["POST"])
+@rol_requerido(ADMIN, LIDER_CALIDAD)
+def api_seguimiento_calidad():
+    return _guardar_seguimiento(request.get_json() or {}, "calidad")
+
+
+@routes.route("/api/seguimiento/comercial", methods=["POST"])
+@rol_requerido(ADMIN, *ROLES_COMERCIAL)
+def api_seguimiento_comercial():
+    return _guardar_seguimiento(request.get_json() or {}, "comercial")
+
+
+# Compatibilidad con clientes anteriores que todavía usan el endpoint general.
+@routes.route("/api/seguimiento", methods=["POST"])
+@rol_requerido(*ROLES_SEGUIMIENTO)
+def api_seguimiento():
+    return _guardar_seguimiento(request.get_json() or {})
 
 
 # ==========================================================

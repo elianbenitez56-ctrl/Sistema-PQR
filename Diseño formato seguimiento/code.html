@@ -1,0 +1,348 @@
+<!DOCTYPE html><html class="light" lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>INAPEL - Informe de Gestión de PQR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#001e40",
+                        "background": "#f7fafc",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "secondary-fixed": "#d5e3ff",
+                        "on-secondary-fixed-variant": "#004689",
+                        "on-secondary-fixed": "#001b3c",
+                        "error-container": "#ffdad6",
+                        "surface": "#f7fafc",
+                        "on-primary-fixed": "#001b3c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#003d79",
+                        "surface-container-low": "#f1f4f6",
+                        "surface-container-high": "#e5e9eb",
+                        "tertiary-fixed-dim": "#c0c7cc",
+                        "on-surface-variant": "#43474f",
+                        "surface-variant": "#e0e3e5",
+                        "on-surface": "#181c1e",
+                        "outline-variant": "#c3c6d1",
+                        "surface-dim": "#d7dadc",
+                        "inverse-primary": "#a7c8ff",
+                        "outline": "#737780",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e0e3e5",
+                        "secondary-fixed-dim": "#a8c8ff",
+                        "surface-bright": "#f7fafc",
+                        "tertiary": "#181f23",
+                        "inverse-surface": "#2d3133",
+                        "secondary-container": "#72aafe",
+                        "on-tertiary-fixed": "#161d20",
+                        "tertiary-container": "#2d3438",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#41484c",
+                        "primary-fixed": "#d5e3ff",
+                        "on-background": "#181c1e",
+                        "on-tertiary-container": "#959ca1",
+                        "secondary": "#175ead",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#dce3e8",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#003366",
+                        "surface-container": "#ebeef0",
+                        "inverse-on-surface": "#eef1f3",
+                        "on-primary-container": "#799dd6",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#3a5f94",
+                        "neutral": "#f4f7f9"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "table-cell-padding": "10px 16px",
+                        "section-gap": "24px",
+                        "input-padding": "8px 12px",
+                        "page-margin": "48px",
+                        "column-gutter": "16px"
+                    },
+                    fontFamily: {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "data-mono": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "section-title": ["Inter"]
+                    },
+                    fontSize: {
+                        "label-caps": ["10px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "data-mono": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "headline-xl": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "section-title": ["14px", { "lineHeight": "20px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        @media print {
+            body { background-color: white !important; }
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+            .a4-container { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low min-h-screen py-8 font-body-lg text-on-surface">
+<!-- Top Navigation (Shell Component) -->
+<header class="bg-surface dark:bg-surface-container-lowest text-primary dark:text-primary-fixed docked full-width top-0 border-b border-outline-variant flat no shadows no-print mb-8">
+
+</header>
+<!-- A4 Document Container -->
+<main class="a4-container bg-surface-container-lowest max-w-[210mm] mx-auto shadow-lg px-page-margin py-12 relative overflow-hidden">
+<!-- Section: Document Header -->
+<div class="flex justify-between items-start border-b-2 border-primary pb-4 mb-section-gap">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 flex items-center justify-center overflow-hidden"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABB8xPsdHght3X3dAb6ZwJPf98B0KghxEel8SOau5qhJ3sQVzGnekCWrOFbxjsva6h9Yln4WYK24y3lMobcyW3O9uSvM-kbEFilqr8M9nVqt38nuwjNnnnvEe4bQoKAOitBnAdeTddZMWAWiWdq9ERHfwldcZ-mc1DNPE0WiWGEM--5b--D454dRIlO09iisCH3tQS4L_pmlfU0riaQ0oEyeebjzrt5jufktjDQsCSXpCN3IkxNN2Nb67zzKQ79FVYgg" alt="Logo INAPEL" class="h-full w-full object-contain"></div>
+<div>
+<h1 class="font-headline-xl text-headline-xl text-primary m-0">INAPEL</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant m-0">Industria Nacional Papelera S.A.S.<br>Sistema de Gestión de PQR</p>
+</div>
+</div>
+<div class="text-right">
+<h2 class="font-headline-md text-headline-md text-primary m-0 mb-2 uppercase tracking-wide">Informe de Gestión de PQR</h2>
+<div class="inline-block bg-neutral border border-outline-variant px-3 py-1 rounded font-data-mono text-data-mono text-primary font-bold mb-1">
+                    Radicado: PQR-2026-0002
+                </div>
+<p class="font-label-caps text-label-caps text-on-surface-variant m-0">Fecha: 13/08/2026</p>
+</div>
+</div>
+<!-- Section: Status Card -->
+<div class="flex gap-4 mb-section-gap bg-neutral p-4 border border-outline-variant rounded-DEFAULT">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-green-600 block"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Estado:</span>
+<span class="font-data-mono text-data-mono text-on-surface font-semibold">Cerrado</span>
+</div>
+<div class="border-l border-outline-variant h-5 mx-2"></div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-blue-400 block"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Prioridad:</span>
+<span class="font-data-mono text-data-mono text-on-surface font-semibold">Baja</span>
+</div>
+</div>
+<!-- Section 01: Información General -->
+<div class="mb-section-gap">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1 h-5 bg-primary"></div>
+<h3 class="font-section-title text-section-title text-primary uppercase">01 Información general</h3>
+</div>
+<div class="grid grid-cols-2 border border-outline-variant border-b-0">
+<!-- Row 1 -->
+<div class="border-b border-r border-outline-variant bg-neutral p-input-padding">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1">RADICADO</span>
+<span class="block font-data-mono text-data-mono text-on-surface">PQR-2026-0002</span>
+</div>
+<div class="border-b border-outline-variant bg-surface-container-lowest p-input-padding">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1">CLIENTE</span>
+<span class="block font-data-mono text-data-mono text-on-surface">qq</span>
+</div>
+<!-- Row 2 -->
+<div class="border-b border-r border-outline-variant bg-neutral p-input-padding">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1">TIPO DE SOLICITUD</span>
+<span class="block font-data-mono text-data-mono text-on-surface">Queja</span>
+</div>
+<div class="border-b border-outline-variant bg-surface-container-lowest p-input-padding">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1">FECHA</span>
+<span class="block font-data-mono text-data-mono text-on-surface">2026-08-12</span>
+</div>
+<!-- Row 3 -->
+<div class="border-b border-r border-outline-variant bg-neutral p-input-padding">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1">ESTADO</span>
+<span class="block font-data-mono text-data-mono text-on-surface">Cerrado</span>
+</div>
+<div class="border-b border-outline-variant bg-surface-container-lowest p-input-padding">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1">PRIORIDAD</span>
+<span class="block font-data-mono text-data-mono text-on-surface">Baja</span>
+</div>
+</div>
+</div>
+<!-- Section 02: Descripción del Caso -->
+<div class="mb-section-gap">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1 h-5 bg-primary"></div>
+<h3 class="font-section-title text-section-title text-primary uppercase">02 Descripción del caso</h3>
+</div>
+<div class="bg-neutral border border-outline-variant border-l-4 border-l-primary p-4 min-h-[80px]">
+<p class="font-body-sm text-body-sm text-on-surface m-0">qqq</p>
+</div>
+</div>
+<!-- Section 03: Productos Involucrados -->
+<div class="mb-section-gap">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1 h-5 bg-primary"></div>
+<h3 class="font-section-title text-section-title text-primary uppercase">03 Productos Involucrados</h3>
+</div>
+<div class="border border-outline-variant rounded overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-primary-container text-on-primary font-label-caps text-label-caps uppercase">
+<th class="p-table-cell-padding">Producto</th>
+<th class="p-table-cell-padding">Referencia</th>
+<th class="p-table-cell-padding">Lote/OP</th>
+<th class="p-table-cell-padding">Cantidad</th>
+<th class="p-table-cell-padding">Unidad</th>
+<th class="p-table-cell-padding">Documento</th>
+</tr>
+</thead>
+<tbody class="font-data-mono text-data-mono text-on-surface">
+<tr class="border-t border-outline-variant bg-surface-container-lowest">
+<td class="p-table-cell-padding border-r border-outline-variant">q</td>
+<td class="p-table-cell-padding border-r border-outline-variant">q</td>
+<td class="p-table-cell-padding border-r border-outline-variant">q</td>
+<td class="p-table-cell-padding border-r border-outline-variant">-</td>
+<td class="p-table-cell-padding border-r border-outline-variant">Kilogramos</td>
+<td class="p-table-cell-padding">Remisión q</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Section 04: Investigación y Análisis -->
+<div class="mb-section-gap">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1 h-5 bg-primary"></div>
+<h3 class="font-section-title text-section-title text-primary uppercase">04 Investigación y análisis</h3>
+</div>
+<div class="grid grid-cols-2 gap-column-gutter mb-4">
+<div class="border border-outline-variant rounded p-input-padding bg-surface-container-lowest">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase">Responsable de Investigación</span>
+<span class="block font-data-mono text-data-mono text-on-surface">-</span>
+</div>
+<div class="border border-outline-variant rounded p-input-padding bg-surface-container-lowest">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase">Cargo</span>
+<span class="block font-data-mono text-data-mono text-on-surface">-</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-column-gutter mb-4">
+<div class="border border-outline-variant rounded p-input-padding bg-surface-container-lowest">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase">Causa Asignada</span>
+<span class="block font-data-mono text-data-mono text-on-surface">-</span>
+</div>
+<div class="border border-outline-variant rounded p-input-padding bg-surface-container-lowest">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase">Departamentos Involucrados</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="w-2 h-2 rounded-full bg-orange-500 block"></span>
+<span class="block font-data-mono text-data-mono text-on-surface">-</span>
+</div>
+</div>
+</div>
+<div class="border border-outline-variant rounded p-input-padding bg-surface-container-lowest">
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-2 uppercase">Herramientas Utilizadas</span>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1">INSPECCIÓN</span>
+<ul class="list-disc pl-4 font-data-mono text-data-mono text-on-surface m-0">
+<li class="">Checklist de inspección</li>
+<li class="">Inspección visual</li>
+</ul>
+</div>
+<div>
+<span class="block font-label-caps text-label-caps text-on-surface-variant mb-1">ANÁLISIS</span>
+<ul class="list-disc pl-4 font-data-mono text-data-mono text-on-surface m-0">
+<li class="">Diagrama de Ishikawa</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 05: Resultado de la Investigación -->
+<div class="mb-section-gap">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1 h-5 bg-primary"></div>
+<h3 class="font-section-title text-section-title text-primary uppercase">05 Resultado de la Investigación</h3>
+</div>
+<div class="border border-outline-variant rounded p-4 bg-surface-container-lowest">
+<span class="block font-label-caps text-label-caps text-primary font-bold mb-2 uppercase tracking-wide">RESPUESTA DETALLADA DE CALIDAD</span>
+<div class="bg-neutral border border-outline-variant border-l-4 border-l-outline-variant p-3 min-h-[60px] italic text-on-surface-variant font-body-sm text-body-sm">
+                    No registrado
+                </div>
+</div>
+</div>
+<!-- Section 06: Gestión Comercial -->
+<div class="mb-section-gap">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1 h-5 bg-primary"></div>
+<h3 class="font-section-title text-section-title text-primary uppercase">06 Gestión comercial</h3>
+</div>
+<div class="grid grid-cols-2 border border-outline-variant border-b-0">
+<div class="border-b border-r border-outline-variant bg-surface-container-lowest p-input-padding flex items-center">
+<span class="w-1/2 block font-label-caps text-label-caps text-on-surface-variant uppercase">ACCIONES TOMADAS</span>
+<span class="w-1/2 block font-data-mono text-data-mono text-on-surface border-l border-outline-variant pl-2">-</span>
+</div>
+<div class="border-b border-outline-variant bg-surface-container-lowest p-input-padding flex items-center">
+<span class="w-1/2 block font-label-caps text-label-caps text-on-surface-variant uppercase">NOTIFICACIÓN AL CLIENTE</span>
+<span class="w-1/2 block font-data-mono text-data-mono text-on-surface border-l border-outline-variant pl-2">-</span>
+</div>
+<div class="border-b border-r border-outline-variant bg-surface-container-lowest p-input-padding flex items-center">
+<span class="w-1/2 block font-label-caps text-label-caps text-on-surface-variant uppercase">FECHA DE RESPUESTA</span>
+<span class="w-1/2 block font-data-mono text-data-mono text-on-surface border-l border-outline-variant pl-2">-</span>
+</div>
+<div class="border-b border-outline-variant bg-surface-container-lowest p-input-padding flex items-center">
+<span class="w-1/2 block font-label-caps text-label-caps text-on-surface-variant uppercase">FECHA DE CIERRE</span>
+<span class="w-1/2 block font-data-mono text-data-mono text-on-surface border-l border-outline-variant pl-2">-</span>
+</div>
+<div class="border-b border-r border-outline-variant bg-surface-container-lowest p-input-padding flex items-center col-span-2">
+<span class="w-1/4 block font-label-caps text-label-caps text-on-surface-variant uppercase">ESTADO DE CIERRE</span>
+<span class="w-3/4 block font-data-mono text-data-mono text-on-surface border-l border-outline-variant pl-2">-</span>
+</div>
+</div>
+</div>
+<!-- Section 07: Respuesta al Cliente -->
+<div class="mb-section-gap">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1 h-5 bg-primary"></div>
+<h3 class="font-section-title text-section-title text-primary uppercase">07 Respuesta al cliente</h3>
+</div>
+<div class="border border-outline-variant rounded p-4 bg-neutral">
+<span class="block font-label-caps text-label-caps text-primary font-bold mb-2 uppercase tracking-wide">Respuesta final de Comercial</span>
+<div class="bg-surface-container-lowest border border-outline-variant border-l-4 border-l-primary p-3 min-h-[60px] font-body-sm text-body-sm text-on-surface">
+                    q
+                </div>
+</div>
+</div>
+</main>
+<!-- Footer Navigation (Shell Component) -->
+<footer class="bg-surface-container-low dark:bg-surface-dim text-on-surface dark:text-on-surface-variant font-body-sm text-body-sm docked full-width bottom-0 border-t border-outline-variant flat no shadows no-print mt-12">
+<div class="flex justify-between items-center w-full px-page-margin py-6 max-w-[210mm] mx-auto border-t border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps font-semibold text-primary">INAPEL SGC</span>
+<span class="text-outline">|</span>
+<span class="">© INAPEL - Sistema de Gestión de Calidad | F-GC-PQR-01</span>
+</div>
+<nav class="flex gap-4">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Privacidad</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Control Documental</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Soporte Técnico</a>
+</nav>
+</div>
+</footer>
+<!-- Print-only Footer -->
+<div class="hidden print:block fixed bottom-0 left-0 w-full text-center py-4 font-label-caps text-label-caps text-on-surface-variant border-t border-outline-variant mt-8">
+        INAPEL | Sistema de Gestión de PQR | Documento generado automáticamente | Página 1 de 1 | F-GC-PQR-01 v.01
+    </div>
+
+
+</body></html>

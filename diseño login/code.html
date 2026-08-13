@@ -1,0 +1,268 @@
+<!DOCTYPE html><html class="light" lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>INAPEL PQR - Acceso Seguro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-container-high": "#dce9ff",
+                        "on-primary-fixed-variant": "#2d447f",
+                        "secondary-fixed-dim": "#5cd4ff",
+                        "on-secondary-fixed-variant": "#004d62",
+                        "outline": "#757681",
+                        "inverse-surface": "#213145",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "tertiary": "#1e0a00",
+                        "on-surface-variant": "#444650",
+                        "outline-variant": "#c5c6d1",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "background": "#f8f9ff",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "on-surface": "#0b1c30",
+                        "primary-fixed": "#dae2ff",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#00566d",
+                        "tertiary-container": "#3e1b00",
+                        "primary-container": "#00205b",
+                        "surface": "#f8f9ff",
+                        "on-primary-container": "#738aca",
+                        "surface-dim": "#cbdbf5",
+                        "on-tertiary-container": "#da6e01",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#baeaff",
+                        "tertiary-fixed": "#ffdcc6",
+                        "on-tertiary-fixed": "#311300",
+                        "surface-container-low": "#eff4ff",
+                        "primary": "#000d2f",
+                        "inverse-primary": "#b2c5ff",
+                        "secondary": "#006782",
+                        "on-primary-fixed": "#001849",
+                        "surface-tint": "#455c99",
+                        "surface-container": "#e5eeff",
+                        "on-secondary-fixed": "#001f29",
+                        "on-background": "#0b1c30",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-container": "#42d0fe",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "stack-sm": "0.5rem",
+                        "stack-lg": "2rem",
+                        "margin-mobile": "1rem",
+                        "stack-md": "1rem",
+                        "margin-desktop": "2.5rem",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-xl": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .dark .glass-morphism {
+            background: rgba(11, 28, 48, 0.7);
+        }
+
+        .ambient-shadow {
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .entrance-animation {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md transition-colors duration-300">
+<div class="flex flex-col md:flex-row min-h-screen w-full">
+<!-- Left Side: Hero Brand Area (40%) -->
+<section class="relative w-full md:w-[40%] min-h-[40vh] md:min-h-screen overflow-hidden hidden md:flex flex-col justify-end p-margin-desktop">
+<div class="absolute inset-0 z-0">
+<img alt="Logistics facility background" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCD2_dYLV_KBskXfobI-cCKaxyRpHXpjcsGSCV75m5SYrLJFjgmTkH-rKtJ5GV-UV34EOExFA2t6E7WqFwXP4WviK4HrOUtjFb6snudDKifo848Il5gcLAgAioqYwrElXykds4bKgRz0Wh7OZLrmLWQxdMz3br0yWW2SEit_X8OqSy5DtHbMOtkwewtGMi6KRVeO6rcOr-19ViMkFhdwSc-ko7RSDH4CJbdvoZtnTzxZvAdxD85LSXD">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent"></div>
+</div>
+<div class="relative z-10 entrance-animation">
+<h1 class="font-headline-xl text-headline-xl text-white mb-stack-md leading-tight">
+                    Gestiona las PQR de forma rápida, segura e inteligente.
+                </h1>
+<p class="font-body-lg text-body-lg text-white/80 border-l-4 border-secondary-container pl-stack-md">
+                    Sistema Inteligente de Gestión PQR | Industria Nacional Papelera S.A.S.
+                </p>
+</div>
+<!-- Abstract Shapes for Premium Feel -->
+<div class="absolute top-[-10%] right-[-10%] w-64 h-64 bg-secondary-container/20 rounded-full blur-3xl"></div>
+<div class="absolute bottom-[20%] left-[-5%] w-48 h-48 bg-tertiary-fixed-dim/10 rounded-full blur-2xl"></div>
+</section>
+<!-- Right Side: Interaction Area (60%) -->
+<main class="relative w-full md:w-[60%] flex flex-col justify-between bg-surface-bright dark:bg-on-background p-margin-mobile md:p-margin-desktop">
+<!-- Top Actions -->
+<div class="flex justify-end w-full">
+<button class="p-3 rounded-full hover:bg-surface-container transition-colors text-on-surface-variant dark:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+</div>
+<!-- Login Container -->
+<div class="max-w-4xl mx-auto w-full flex flex-col items-center justify-center flex-grow py-stack-lg">
+<!-- Header -->
+<header class="text-center mb-12 entrance-animation stagger-1">
+<img alt="INAPEL Logo" class="h-48 w-auto mx-auto mb-8 drop-shadow-sm mix-blend-multiply dark:mix-blend-normal object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPlzkU748Y4pS5he7o__ecRB5DkcrxlmmFenEaqbGYto6YSIPALxFTnN-Hpjd1I-TeH1O_X4QcnKlHq_QgWxtNQHZb0LOcIQj0E4MJ1izko3BVolasMdXoSUU7TVAh0nfOYC73reIoJLU1r4C1CBt4oLGcyZCM_fOvBjGjkS_5NdTVMXa4PifQzrMXQ9tKPrg7m27P747OuWd35vvS34rDWbLp9PFmxh9dIWbpj9XyyE7xhdG5aCUsMTy88Z5fx4PDaxTEUHUc0RBiMw">
+
+<p class="font-label-md text-label-md text-on-surface-variant dark:text-outline-variant tracking-wider uppercase">
+                        Sistema Inteligente de Gestión de PQR
+                    </p>
+</header>
+<!-- Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg w-full">
+<!-- User Access Card -->
+<div class="group entrance-animation stagger-2 p-8 bg-white dark:bg-inverse-surface rounded-[20px] ambient-shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-outline-variant/30 flex flex-col h-full">
+<div class="w-14 h-14 rounded-2xl bg-secondary-container/10 flex items-center justify-center mb-6 text-secondary transition-colors group-hover:bg-secondary-container group-hover:text-white">
+<span class="material-symbols-outlined text-[32px] icon-fill">person</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface dark:text-inverse-on-surface mb-3">Acceso de Usuario</h3>
+<p class="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant mb-8 flex-grow">
+                            Registrar, consultar y realizar seguimiento a las solicitudes PQR de manera ágil.
+                        </p>
+<button class="w-full py-4 px-6 bg-secondary text-white font-label-md text-label-md rounded-[20px] hover:bg-secondary/90 hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 btn-ripple">
+                            Entrar como usuario
+                            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+<!-- Admin Access Card -->
+<div class="group entrance-animation stagger-3 p-8 bg-white dark:bg-inverse-surface rounded-[20px] ambient-shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-outline-variant/30 flex flex-col h-full">
+<div class="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center mb-6 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+<span class="material-symbols-outlined text-[32px] icon-fill">admin_panel_settings</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface dark:text-inverse-on-surface mb-3">Acceso de Administrador</h3>
+<p class="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant mb-6">
+                            Acceso exclusivo para personal autorizado y gestión de herramientas del sistema.
+                        </p>
+<div class="space-y-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant">lock</span>
+<input class="w-full pl-12 pr-12 py-4 bg-surface-container-lowest dark:bg-on-background border border-outline-variant rounded-[20px] focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-body-md" id="admin-pass" placeholder="Contraseña de administrador" type="password">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline-variant hover:text-primary transition-colors" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" id="pass-toggle-icon">visibility</span>
+</button>
+</div>
+<button class="w-full py-4 px-6 bg-primary text-white font-label-md text-label-md rounded-[20px] hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 btn-ripple">
+                                Ingresar como administrador
+                                <span class="material-symbols-outlined text-[20px]">login</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer (Shared Component) -->
+<footer class="flex flex-col md:flex-row justify-center items-center gap-stack-md w-full py-stack-lg px-margin-desktop">
+<span class="font-label-sm text-label-sm text-on-surface-variant dark:text-outline-variant text-center opacity-80">
+                    Industria Nacional Papelera S.A.S. • Sistema de Gestión de PQR • FGC-PQR-01 v1
+                </span>
+<div class="flex gap-4">
+<a class="font-label-sm text-label-sm text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim underline transition-all" href="#">Privacidad</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim underline transition-all" href="#">Soporte</a>
+</div>
+</footer>
+</main>
+</div>
+<script>
+        function togglePassword() {
+            const input = document.getElementById('admin-pass');
+            const icon = document.getElementById('pass-toggle-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+
+        // Ripple Effect Implementation
+        document.querySelectorAll('.btn-ripple').forEach(button => {
+            button.addEventListener('click', function(e) {
+                let x = e.clientX - e.target.offsetLeft;
+                let y = e.clientY - e.target.offsetTop;
+                let ripples = document.createElement('span');
+                ripples.style.left = x + 'px';
+                ripples.style.top = y + 'px';
+                ripples.classList.add('absolute', 'bg-white/30', 'rounded-full', 'animate-[ping_0.5s_ease-out]', 'pointer-events-none');
+                this.appendChild(ripples);
+                setTimeout(() => { ripples.remove() }, 500);
+            });
+        });
+    </script>
+
+
+</body></html>

@@ -1799,8 +1799,10 @@ a:focus-visible{
             <div class="table-wrap">
               <table class="table-pqr">
                 <thead><tr>
+                  <th style="min-width:105px">Línea</th>
                   <th style="min-width:85px">PLU</th>
                   <th style="min-width:155px">Producto involucrado</th>
+                  <th style="min-width:180px">Detalle / presentación</th>
                   <th style="min-width:85px">Referencia</th>
                   <th style="min-width:95px">Lote / OP</th>
                   <th style="min-width:105px">Fecha empaque</th>
@@ -1812,15 +1814,26 @@ a:focus-visible{
                 </tr></thead>
                 <tbody id="prod-tbody">
                   <tr>
-                    <td><input type="text" class="plu-input" inputmode="numeric" placeholder="PLU"></td>
-                    <td><input type="text" placeholder="Nombre del producto"></td>
-                    <td><input type="text" placeholder="Ref."></td>
-                    <td><input type="text" placeholder="Lote/OP"></td>
-                    <td><input type="date"></td>
-                    <td><input type="number" min="0" placeholder="0"></td>
-                    <td><select><option>Kilogramos</option><option>Gramos</option><option>Unidades</option><option>Pliegos</option><option>Display</option><option>Cajas</option><option>Paquetes</option><option>Metros</option></select></td>
-                    <td><select><option>Remisión</option><option>Orden de compra</option><option>Factura de venta</option></select></td>
-                    <td><input type="text" placeholder="N°"></td>
+                    <td><select class="prod-linea" onchange="catalogoLineaCambio(this)">
+                      <option value="">Seleccionar...</option>
+                      <option value="INAPEL">INAPEL</option>
+                      <option value="MARFIL">MARFIL</option>
+                      <option value="TOROFIL">TOROFIL</option>
+                    </select></td>
+                    <td><input type="text" class="plu-input catalog-plu" placeholder="PLU" readonly disabled></td>
+                    <td>
+                      <input type="text" class="catalog-field catalog-producto" placeholder="Catálogo" readonly disabled>
+                      <select class="catalog-choice" style="display:none;margin-top:4px" onchange="seleccionarCatalogo(this)"></select>
+                      <small class="catalog-message" style="display:block;min-height:15px;color:var(--error);font-size:10px"></small>
+                    </td>
+                    <td><input type="text" class="catalog-field catalog-detalle" placeholder="Catálogo" readonly disabled></td>
+                    <td><input type="text" class="prod-ref" placeholder="Ref." autocomplete="off" oninput="catalogoReferenciaCambio(this)"></td>
+                    <td><input type="text" class="prod-lote" placeholder="Lote/OP"></td>
+                    <td><input type="date" class="prod-fecha"></td>
+                    <td><input type="number" class="prod-cantidad" min="0" placeholder="0"></td>
+                    <td><input type="text" class="catalog-field catalog-unidad" placeholder="Catálogo" readonly disabled></td>
+                    <td><select class="prod-tipo-doc"><option>Remisión</option><option>Orden de compra</option><option>Factura de venta</option></select></td>
+                    <td><input type="text" class="prod-num-doc" placeholder="N°"></td>
                     <td><button class="btn-del" onclick="rmRow(this)" title="Eliminar">✕</button></td>
                   </tr>
                 </tbody>
@@ -2969,11 +2982,140 @@ function addRow() {
   var tbody = document.getElementById('prod-tbody');
   var row = tbody.rows[0].cloneNode(true);
   row.querySelectorAll('input').forEach(function(i) { i.value = ''; });
+  row.querySelectorAll('select').forEach(function(s) {
+    if (s.classList.contains('prod-linea')) s.value = '';
+    else if (s.classList.contains('catalog-choice')) {
+      s.innerHTML = '';
+      s.style.display = 'none';
+    } else {
+      s.selectedIndex = 0;
+    }
+  });
+  row.querySelectorAll('.catalog-message').forEach(function(m) { m.textContent = ''; });
+  row._catalogoProducto = null;
+  row._catalogoOpciones = [];
   tbody.appendChild(row);
 }
 function rmRow(btn) {
   var tbody = document.getElementById('prod-tbody');
   if (tbody.rows.length > 1) btn.closest('tr').remove();
+}
+function catalogoFila(elemento) {
+  return elemento && elemento.closest ? elemento.closest('#prod-tbody tr') : null;
+}
+function catalogoMensaje(row, texto) {
+  var mensaje = row && row.querySelector('.catalog-message');
+  if (mensaje) mensaje.textContent = texto || '';
+}
+function limpiarCatalogoFila(row) {
+  if (!row) return;
+  row._catalogoSolicitud = (row._catalogoSolicitud || 0) + 1;
+  row._catalogoProducto = null;
+  row._catalogoOpciones = [];
+  var choice = row.querySelector('.catalog-choice');
+  if (choice) {
+    choice.innerHTML = '';
+    choice.style.display = 'none';
+    choice.value = '';
+  }
+  row.querySelectorAll('.catalog-field').forEach(function(campo) { campo.value = ''; });
+  catalogoMensaje(row, '');
+}
+function aplicarCatalogoFila(row, producto) {
+  if (!row || !producto) return;
+  row._catalogoProducto = producto;
+  var valores = {
+    '.catalog-plu': producto.plu || '',
+    '.catalog-producto': producto.producto || '',
+    '.catalog-detalle': producto.detalle_presentacion || '',
+    '.catalog-unidad': producto.unidad || ''
+  };
+  Object.keys(valores).forEach(function(selector) {
+    var campo = row.querySelector(selector);
+    if (campo) campo.value = valores[selector];
+  });
+  var choice = row.querySelector('.catalog-choice');
+  if (choice) {
+    choice.innerHTML = '';
+    choice.style.display = 'none';
+  }
+  catalogoMensaje(row, '');
+}
+function mostrarOpcionesCatalogo(row, productos) {
+  var choice = row.querySelector('.catalog-choice');
+  if (!choice) return;
+  row._catalogoOpciones = productos || [];
+  choice.innerHTML = '';
+  var inicial = document.createElement('option');
+  inicial.value = '';
+  inicial.textContent = 'Seleccione una coincidencia...';
+  choice.appendChild(inicial);
+  row._catalogoOpciones.forEach(function(producto, indice) {
+    var opcion = document.createElement('option');
+    opcion.value = String(indice);
+    opcion.textContent = [producto.producto, producto.detalle_presentacion, producto.plu]
+      .filter(function(valor) { return String(valor || '').trim(); })
+      .join(' · ') || producto.referencia;
+    choice.appendChild(opcion);
+  });
+  choice.value = '';
+  choice.style.display = 'block';
+  catalogoMensaje(row, 'Seleccione una coincidencia.');
+}
+function seleccionarCatalogo(select) {
+  var row = catalogoFila(select);
+  var indice = select.value === '' ? -1 : Number(select.value);
+  if (!row || indice < 0 || !row._catalogoOpciones[indice]) {
+    limpiarCatalogoFila(row);
+    return;
+  }
+  aplicarCatalogoFila(row, row._catalogoOpciones[indice]);
+}
+function consultarCatalogoFila(row) {
+  if (!row) return;
+  var lineaCampo = row.querySelector('.prod-linea');
+  var referenciaCampo = row.querySelector('.prod-ref');
+  var linea = lineaCampo ? lineaCampo.value : '';
+  var referencia = referenciaCampo ? referenciaCampo.value.trim() : '';
+  if (!linea || !referencia) return;
+
+  var solicitud = (row._catalogoSolicitud || 0) + 1;
+  row._catalogoSolicitud = solicitud;
+  fetch('/api/catalogo/productos?linea=' + encodeURIComponent(linea) + '&referencia=' + encodeURIComponent(referencia), { cache: 'no-store' })
+    .then(function(respuesta) { return respuesta.json(); })
+    .then(function(data) {
+      if (row._catalogoSolicitud !== solicitud) return;
+      limpiarCatalogoFila(row);
+      if (!data.ok) {
+        catalogoMensaje(row, data.mensaje || 'No fue posible consultar el catálogo.');
+      } else if (!data.productos || !data.productos.length) {
+        catalogoMensaje(row, 'Referencia no encontrada en el catálogo.');
+      } else if (data.productos.length === 1) {
+        aplicarCatalogoFila(row, data.productos[0]);
+      } else {
+        mostrarOpcionesCatalogo(row, data.productos);
+      }
+    })
+    .catch(function(error) {
+      if (row._catalogoSolicitud !== solicitud) return;
+      console.error('Error consultando catálogo:', error);
+      limpiarCatalogoFila(row);
+      catalogoMensaje(row, 'No fue posible consultar el catálogo.');
+    });
+}
+function programarConsultaCatalogo(row) {
+  if (!row) return;
+  clearTimeout(row._catalogoTimer);
+  limpiarCatalogoFila(row);
+  var referencia = row.querySelector('.prod-ref');
+  if (!referencia || referencia.value.trim().length < 2 || !row.querySelector('.prod-linea').value) return;
+  row._catalogoTimer = setTimeout(function() { consultarCatalogoFila(row); }, 350);
+}
+function catalogoReferenciaCambio(input) {
+  programarConsultaCatalogo(catalogoFila(input));
+}
+function catalogoLineaCambio(select) {
+  programarConsultaCatalogo(catalogoFila(select));
 }
 function showFiles() {
   var files = document.getElementById('f-files').files;
@@ -2987,13 +3129,46 @@ function showFiles() {
 }
 function getProds() {
   return Array.from(document.querySelectorAll('#prod-tbody tr')).map(function(r) {
-    var inp = r.querySelectorAll('input, select');
-    return {
-      plu: inp[0].value.trim(), producto: inp[1].value, ref: inp[2].value, lote: inp[3].value,
-      fechaEmp: inp[4].value, cant: inp[5].value, unidad: inp[6].value,
-      tipoDoc: inp[7].value, numDoc: inp[8].value
+    var valor = function(selector) {
+      var campo = r.querySelector(selector);
+      return campo ? String(campo.value || '').trim() : '';
     };
-  }).filter(function(p) { return p.producto.trim(); });
+    var referencia = valor('.prod-ref');
+    return {
+      linea: valor('.prod-linea'),
+      referencia: referencia,
+      ref: referencia,
+      detalle_presentacion: valor('.catalog-detalle'),
+      producto: valor('.catalog-producto'),
+      plu: valor('.catalog-plu'),
+      unidad: valor('.catalog-unidad'),
+      lote: valor('.prod-lote'),
+      fechaEmp: valor('.prod-fecha'),
+      cant: valor('.prod-cantidad'),
+      tipoDoc: valor('.prod-tipo-doc'),
+      numDoc: valor('.prod-num-doc')
+    };
+  }).filter(function(p) { return p.referencia || p.producto || p.lote || p.cant || p.numDoc; });
+}
+function validarProductosCatalogo() {
+  var valido = true;
+  document.querySelectorAll('#prod-tbody tr').forEach(function(row) {
+    var referencia = row.querySelector('.prod-ref');
+    var linea = row.querySelector('.prod-linea');
+    var tieneDatos = ['.prod-ref', '.prod-lote', '.prod-fecha', '.prod-cantidad', '.prod-num-doc']
+      .some(function(selector) {
+        var campo = row.querySelector(selector);
+        return campo && String(campo.value || '').trim();
+      });
+    if (!tieneDatos) return;
+    if (!linea || !linea.value || !referencia || !referencia.value.trim() || !row._catalogoProducto) {
+      valido = false;
+    }
+  });
+  if (!valido) {
+    msg('msg-form', 'Complete la línea y seleccione una referencia válida del catálogo para cada producto.', 'error');
+  }
+  return valido;
 }
 function pluProducto(producto) {
   var valor = producto && producto.plu !== undefined && producto.plu !== null
@@ -3038,6 +3213,7 @@ function guardar() {
     msg('msg-form', 'Complete los campos obligatorios marcados con *.', 'error');
     return;
   }
+  if (!validarProductosCatalogo()) return;
   var now = new Date();
   var pqr = {
     fechaRec: document.getElementById('f-fecha').value,
@@ -3137,6 +3313,19 @@ function limpiar() {
   var tbody = document.getElementById('prod-tbody');
   while (tbody.rows.length > 1) tbody.deleteRow(1);
   tbody.rows[0].querySelectorAll('input').forEach(function(i) { i.value = ''; });
+  tbody.rows[0].querySelectorAll('select').forEach(function(s) {
+    if (s.classList.contains('prod-linea')) s.value = '';
+    else if (s.classList.contains('catalog-choice')) {
+      s.innerHTML = '';
+      s.style.display = 'none';
+    } else {
+      s.selectedIndex = 0;
+    }
+  });
+  tbody.rows[0]._catalogoProducto = null;
+  tbody.rows[0]._catalogoOpciones = [];
+  tbody.rows[0]._catalogoSolicitud = 0;
+  catalogoMensaje(tbody.rows[0], '');
   document.getElementById('rad-num').textContent = 'PQR · 2026 · XXXX';
   document.getElementById('msg-form').innerHTML = '';
   document.querySelectorAll('small[data-step-err]').forEach(function(el) { el.remove(); });
@@ -3724,10 +3913,12 @@ function mDetalle(rad) {
   var states = ['Recibido','Radicado','En revisión','En investigación','Acción en proceso','Respuesta enviada','Cerrado'];
   var idx = Math.max(states.indexOf(p.estado), 0);
   var pct = Math.round((idx + 1) / states.length * 100);
-  var prods = p.productos && p.productos.length
-    ? p.productos.map(function(x) {
-         return '<div style="font-size:12px;padding:5px 9px;background:var(--surface-dim);border-radius:6px;margin-bottom:3px">' +
-               '<strong>' + (x.producto||'—') + '</strong> · PLU: ' + pluProducto(x) + ' · Ref: ' + (x.ref||'—') + ' · Lote: ' + (x.lote||'—') + ' · ' + (x.cant||'—') + ' ' + (x.unidad||'') + '</div>';
+   var prods = p.productos && p.productos.length
+     ? p.productos.map(function(x) {
+          var referencia = x.referencia || x.ref || '—';
+          var nombreProducto = x.producto || x.detalle_presentacion || '—';
+          return '<div style="font-size:12px;padding:5px 9px;background:var(--surface-dim);border-radius:6px;margin-bottom:3px">' +
+               '<strong>' + nombreProducto + '</strong> · Línea: ' + (x.linea||'—') + ' · Detalle: ' + (x.detalle_presentacion||'—') + ' · PLU: ' + pluProducto(x) + ' · Ref: ' + referencia + ' · Lote: ' + (x.lote||'—') + ' · ' + (x.cant||'—') + ' ' + (x.unidad||'') + '</div>';
       }).join('')
     : '<p style="font-size:13px;color:var(--on-surface-variant)">Sin productos</p>';
   var hist = (p.historial || [{estado:p.estado, fecha:p.savedAt}]).map(function(h){
@@ -3805,7 +3996,12 @@ function expCSV() {
       p.ciudadRec, p.dptoRec, p.centro, p.medio + (p.otroMedio ? ': '+p.otroMedio : ''),
       p.tipoSol, p.cliente, p.nit, p.contacto, p.tel, p.email,
       '"' + (p.desc||'').replace(/"/g,'""') + '"',
-      p.productos ? p.productos.map(function(x) { return x.producto; }).join('; ') : '',
+       p.productos ? p.productos.map(function(x) {
+         return [x.linea, x.referencia || x.ref, x.detalle_presentacion, x.producto,
+           x.plu, x.unidad, x.lote, x.fechaEmp, x.cant, x.tipoDoc, x.numDoc]
+           .filter(function(valor) { return String(valor || '').trim(); })
+           .join(' | ');
+       }).join('; ') : '',
       p.tipoEvid, p.numEvid, p.expectativa, p.utilizado, p.estado, p.prioridad
     ];
   });
@@ -3883,20 +4079,22 @@ function renderConsulta(p) {
   var prodRows = p.productos && p.productos.length
     ? p.productos.map(function(x) {
         return '<tr>' +
-          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.producto || '—') + '</td>' +
-          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + pluProducto(x) + '</td>' +
-          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.ref || '—') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.linea || '—') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.producto || '—') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.detalle_presentacion || '—') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + pluProducto(x) + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.referencia || x.ref || '—') + '</td>' +
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.lote || '—') + '</td>' +
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.cant || '—') + ' ' + (x.unidad || '') + '</td>' +
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.tipoDoc || '—') + ' ' + (x.numDoc || '') + '</td>' +
           '</tr>';
       }).join('')
-    : '<tr><td colspan="6" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
+     : '<tr><td colspan="8" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
   var productosHtml =
     '<div style="margin-top:18px;border-top:1px solid var(--outline-soft);padding-top:14px">' +
     '<div class="detail-label" style="margin-bottom:6px">Productos involucrados</div>' +
     '<div class="table-wrap"><table class="table-pqr" style="min-width:620px;font-size:12px">' +
-    '<thead><tr><th>Producto</th><th>PLU</th><th>Referencia</th><th>Lote / OP</th><th>Cantidad</th><th>Documento</th></tr></thead>' +
+     '<thead><tr><th>Línea</th><th>Producto</th><th>Detalle / presentación</th><th>PLU</th><th>Referencia</th><th>Lote / OP</th><th>Cantidad</th><th>Documento</th></tr></thead>' +
     '<tbody>' + prodRows + '</tbody></table></div></div>';
   div.innerHTML =
     '<div class="result-card">' +
@@ -4030,16 +4228,18 @@ async function cargarSeg() {
      var herramientas = Array.isArray(inv.herramientas) && inv.herramientas.length
        ? inv.herramientas.slice()
         : (inv.herr ? [inv.herr] : [CATEGORIAS_HERRAMIENTA[1].opciones[0]]);
-    var prodRows = p.productos && p.productos.length
-       ? p.productos.map(function(x) {
-           return '<tr><td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.producto||'—') + '</td>' +
-                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + pluProducto(x) + '</td>' +
-                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.ref||'—') + '</td>' +
+     var prodRows = p.productos && p.productos.length
+        ? p.productos.map(function(x) {
+            return '<tr><td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.linea||'—') + '</td>' +
+                   '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.producto||'—') + '</td>' +
+                   '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.detalle_presentacion||'—') + '</td>' +
+                   '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + pluProducto(x) + '</td>' +
+                   '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.referencia || x.ref || '—') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.lote||'—') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.cant||'—') + ' ' + (x.unidad||'') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.tipoDoc||'—') + ' ' + (x.numDoc||'') + '</td></tr>';
         }).join('')
-       : '<tr><td colspan="6" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
+       : '<tr><td colspan="8" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
      var mkSel = function(id, opts, val) {
        return '<select id="' + id + '">' + opts.map(function(o) {
          return '<option' + (val === o ? ' selected' : '') + '>' + o + '</option>';
@@ -4057,9 +4257,11 @@ async function cargarSeg() {
       '<p style="font-size:13px;color:var(--on-surface);line-height:1.6;background:var(--surface-dim);padding:9px 13px;border-radius:7px;margin-bottom:14px">' + (p.desc||'—') + '</p>' +
       '<div class="detail-label" style="margin-bottom:6px">Productos involucrados</div>' +
       '<table style="width:100%;border-collapse:collapse;font-size:13px;background:var(--surface-container-lowest);border:1px solid var(--outline-soft);border-radius:var(--radius-md);overflow:hidden">' +
-       '<thead><tr style="background:var(--navy)"><th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Producto</th>' +
-       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">PLU</th>' +
-       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Ref.</th>' +
+        '<thead><tr style="background:var(--navy)"><th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Línea</th>' +
+        '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Producto</th>' +
+        '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Detalle / presentación</th>' +
+        '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">PLU</th>' +
+        '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Ref.</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Lote/OP</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Cantidad</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Documento</th></tr></thead>' +
@@ -4252,17 +4454,19 @@ function expSeg(rad) {
       esc(indice === 0 ? 'Herramientas de inspección' : 'Herramientas de análisis') + '</div>' +
       '<ul>' + seleccionadas.map(function(opcion) { return '<li>' + esc(opcion) + '</li>'; }).join('') + '</ul></div>';
   }).join('') || '<div class="empty">No registrado</div>';
-  var prods = p.productos && p.productos.length
-    ? p.productos.map(function(x) {
-        var documento = [x.tipoDoc || '', x.numDoc || ''].join(' ').trim();
-        return '<tr><td>' + valor(x.producto, '-') + '</td>' +
-          '<td>' + valor(x.ref, '-') + '</td>' +
-          '<td>' + valor(x.lote, '-') + '</td>' +
-          '<td>' + valor(x.cant, '-') + '</td>' +
-          '<td>' + valor(x.unidad, '-') + '</td>' +
-          '<td>' + valor(documento, '-') + '</td></tr>';
-      }).join('')
-    : '<tr><td colspan="6" class="empty">No registrado</td></tr>';
+   var prods = p.productos && p.productos.length
+     ? p.productos.map(function(x) {
+         var documento = [x.tipoDoc || '', x.numDoc || ''].join(' ').trim();
+         return '<tr><td>' + valor(x.linea, '-') + '</td>' +
+           '<td>' + valor(x.producto, '-') + '</td>' +
+           '<td>' + valor(x.detalle_presentacion, '-') + '</td>' +
+           '<td>' + valor(x.referencia || x.ref, '-') + '</td>' +
+           '<td>' + valor(x.lote, '-') + '</td>' +
+           '<td>' + valor(x.cant, '-') + '</td>' +
+           '<td>' + valor(x.unidad, '-') + '</td>' +
+           '<td>' + valor(documento, '-') + '</td></tr>';
+       }).join('')
+     : '<tr><td colspan="8" class="empty">No registrado</td></tr>';
   var generado = new Date().toLocaleDateString('es-CO');
   var logo = window.location.origin + '/static/img/logo_inapel.png';
   var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe de Gestión de PQR - ' + esc(rad) + '</title>' +
@@ -4310,7 +4514,7 @@ function expSeg(rad) {
     '<h1 class="document-title">INFORME DE GESTIÓN DE PQR</h1><div class="radicado">' + esc(rad) + '</div>' +
     '<section class="section"><h2 class="section-title">1. Información general</h2><table class="info-table"><tr><td class="label">Radicado</td><td class="value">' + valor(p.radicado, '-') + '</td><td class="label">Cliente</td><td class="value">' + valor(p.cliente, '-') + '</td></tr><tr><td class="label">Tipo de solicitud</td><td class="value">' + valor(p.tipoSol, '-') + '</td><td class="label">Fecha</td><td class="value">' + valor(p.fechaRec, '-') + '</td></tr><tr><td class="label">Estado</td><td class="value">' + valor(p.estado, '-') + '</td><td class="label">Prioridad</td><td class="value">' + valor(p.prioridad, '-') + '</td></tr></table></section>' +
     '<section class="section"><h2 class="section-title">2. Descripción del caso</h2><div class="text-block">' + texto(p.desc, 'No registrado') + '</div></section>' +
-    '<section class="section"><h2 class="section-title">3. Productos involucrados</h2><table class="data-table"><thead><tr><th>Producto</th><th>Referencia</th><th>Lote/OP</th><th>Cantidad</th><th>Unidad</th><th>Documento</th></tr></thead><tbody>' + prods + '</tbody></table></section>' +
+     '<section class="section"><h2 class="section-title">3. Productos involucrados</h2><table class="data-table"><thead><tr><th>Línea</th><th>Producto</th><th>Detalle / presentación</th><th>Referencia</th><th>Lote/OP</th><th>Cantidad</th><th>Unidad</th><th>Documento</th></tr></thead><tbody>' + prods + '</tbody></table></section>' +
     '<section class="section"><h2 class="section-title">4. Investigación y análisis</h2><div class="two-col"><div class="detail"><b>Responsable de investigación</b>' + valor(inv.resp, '-') + '</div><div class="detail"><b>Cargo</b>' + valor(inv.cargo, '-') + '</div><div class="detail"><b>Causa asignada</b>' + valor(inv.causa, '-') + '</div><div class="detail"><b>Departamentos involucrados</b>' + valor(inv.deptos, '-') + '</div></div><div class="detail" style="margin-top:10px"><b>Herramientas utilizadas</b>' + herramientasHtml + '</div></section>' +
     '<section class="section"><h2 class="section-title">5. Resultado de la investigación</h2><div class="detail"><b>Respuesta detallada de Calidad</b><div class="text-block" style="margin-top:7px">' + texto(respuestaCalidad, 'No registrado') + '</div></div></section>' +
     '<section class="section"><h2 class="section-title">6. Gestión comercial</h2><table class="info-table"><tr><td class="label">Acciones tomadas</td><td class="value">' + valor(inv.acc, '-') + '</td><td class="label">Notificación al cliente</td><td class="value">' + valor(inv.notif, '-') + '</td></tr><tr><td class="label">Fecha de respuesta</td><td class="value">' + valor(inv.fResp, '-') + '</td><td class="label">Fecha de cierre</td><td class="value">' + valor(inv.fCierre, '-') + '</td></tr><tr><td class="label">Estado de cierre</td><td class="value" colspan="3">' + valor(inv.cierre, '-') + '</td></tr></table></section>' +

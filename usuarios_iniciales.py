@@ -9,7 +9,7 @@
 #   └── Línea de productos TOROFIL  →  1 vendedor (PENDIENTE)
 #
 # Además:
-#   - 1 Líder de Calidad     (PENDIENTE)
+#   - 1 Líder de Calidad     (CONFIGURADO)
 #   - 2 Líderes de Comercial (PENDIENTE)
 #
 # =============================================================
@@ -166,8 +166,16 @@ USUARIOS_INICIALES = [
     # VENDEDOR — LÍNEA TOROFIL (1) · PENDIENTE
     # { "nombre": "", "documento": "", "usuario": "", "contrasena": "", "rol": "VENDEDOR", "linea_producto": "TOROFIL", "empresa": "INAPEL" },
     # ------------------------------------------------------------------
-    # LÍDER DE CALIDAD (1) · PENDIENTE
-    # { "nombre": "", "documento": "", "usuario": "", "contrasena": "", "rol": "LIDER_CALIDAD", "linea_producto": "", "empresa": "INAPEL" },
+    # LÍDER DE CALIDAD (1) · CONFIGURADO
+    {
+        "nombre": "Pedro Luis Estrada Arias",
+        "documento": "",
+        "usuario": "pedro.estrada",
+        "contrasena": "PQR.Pedro2026!",
+        "rol": "LIDER_CALIDAD",
+        "linea_producto": "INAPEL",
+        "empresa": "INAPEL"
+    },
     # ------------------------------------------------------------------
     # LÍDERES DE COMERCIAL (2) · PENDIENTES
     # { "nombre": "", "documento": "", "usuario": "", "contrasena": "", "rol": "LIDER_COMERCIAL", "linea_producto": "", "empresa": "INAPEL" },

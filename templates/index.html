@@ -4521,8 +4521,9 @@ function expSeg(rad) {
            '<td>' + valor(documento, '-') + '</td></tr>';
        }).join('')
      : '<tr><td colspan="8" class="empty">No registrado</td></tr>';
-  var generado = new Date().toLocaleDateString('es-CO');
-  var logo = window.location.origin + '/static/img/logo_inapel.png';
+   var generado = new Date().toLocaleDateString('es-CO');
+   var logo = window.location.origin + '/static/img/logo_inapel.png';
+   var seguimientoUrl = window.location.origin + '/?seguimiento=' + encodeURIComponent(rad);
   var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe de Gestión de PQR - ' + esc(rad) + '</title>' +
     '<style>' +
     '@page{size:A4;margin:18mm 14mm 20mm}' +
@@ -4542,7 +4543,9 @@ function expSeg(rad) {
     '.info-table,.data-table{width:100%;border-collapse:collapse;table-layout:fixed}' +
     '.info-table td{width:25%;padding:8px 10px;border:1px solid #dce4ed;vertical-align:top;overflow-wrap:anywhere}' +
     '.info-table .label{background:#f3f6fa;color:#63748a;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}' +
-    '.info-table .value{font-weight:600;color:#203449}' +
+     '.info-table .value{font-weight:600;color:#203449}' +
+     '.back-link{display:inline-flex;align-items:center;gap:6px;margin-top:18px;color:#1f5eac;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:.02em}' +
+     '.back-link:hover{text-decoration:underline}' +
     '.text-block{padding:13px 15px;border:1px solid #dce4ed;border-left:4px solid #1f5eac;border-radius:5px;background:#f8fafc;white-space:normal;overflow-wrap:anywhere;word-break:break-word}' +
     '.data-table{font-size:10px;word-break:break-word}' +
     '.data-table th{padding:8px 7px;background:#00325e;color:#fff;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.04em}' +
@@ -4560,12 +4563,13 @@ function expSeg(rad) {
     '.document-footer{position:fixed;left:14mm;right:14mm;bottom:7mm;display:flex;justify-content:space-between;border-top:1px solid #dce4ed;padding-top:5px;color:#738397;font-size:9px;background:#fff}' +
     '.page-number:after{content:"Página " counter(page) " de " counter(pages)}' +
     '.avoid-break{break-inside:avoid;page-break-inside:avoid}' +
-    '@media print{html,body{background:#fff}.report{max-width:none;margin:0;padding:0 0 15mm;box-shadow:none}.document-footer{position:fixed;background:#fff}.section{break-inside:auto}.section-title,.avoid-break{break-inside:avoid;page-break-inside:avoid}.data-table tr{break-inside:avoid;page-break-inside:avoid}}' +
+     '@media print{html,body{background:#fff}.report{max-width:none;margin:0;padding:0 0 15mm;box-shadow:none}.back-link{color:#1f5eac;text-decoration:underline}.document-footer{position:fixed;background:#fff}.section{break-inside:auto}.section-title,.avoid-break{break-inside:avoid;page-break-inside:avoid}.data-table tr{break-inside:avoid;page-break-inside:avoid}}' +
     '@media screen and (max-width:700px){.report{margin:0;padding:20px 18px 55px}.report-header{align-items:flex-start}.header-meta{font-size:9px}.two-col{grid-template-columns:1fr}.info-table{font-size:10px}.info-table td{width:50%;display:table-cell}.document-footer{left:18px;right:18px}}' +
     '</style></head><body>' +
     '<main class="report">' +
-    '<header class="report-header"><img class="logo" src="' + esc(logo, true) + '" alt="INAPEL"><div class="brand">INAPEL<span>Sistema de Gestión de PQR</span></div><div class="header-meta">Fecha de generación<br><b>' + esc(generado) + '</b></div></header>' +
-    '<h1 class="document-title">INFORME DE GESTIÓN DE PQR</h1><div class="radicado">' + esc(rad) + '</div>' +
+     '<header class="report-header"><img class="logo" src="' + esc(logo, true) + '" alt="INAPEL"><div class="brand">INAPEL<span>Sistema de Gestión de PQR</span></div><div class="header-meta">Fecha de generación<br><b>' + esc(generado) + '</b></div></header>' +
+     '<a class="back-link" href="' + esc(seguimientoUrl) + '">← VOLVER AL SEGUIMIENTO</a>' +
+     '<h1 class="document-title">INFORME DE GESTIÓN DE PQR</h1><div class="radicado">' + esc(rad) + '</div>' +
     '<section class="section"><h2 class="section-title">1. Información general</h2><table class="info-table"><tr><td class="label">Radicado</td><td class="value">' + valor(p.radicado, '-') + '</td><td class="label">Cliente</td><td class="value">' + valor(p.cliente, '-') + '</td></tr><tr><td class="label">Tipo de solicitud</td><td class="value">' + valor(p.tipoSol, '-') + '</td><td class="label">Fecha</td><td class="value">' + valor(p.fechaRec, '-') + '</td></tr><tr><td class="label">Estado</td><td class="value">' + valor(p.estado, '-') + '</td><td class="label">Prioridad</td><td class="value">' + valor(p.prioridad, '-') + '</td></tr></table></section>' +
     '<section class="section"><h2 class="section-title">2. Descripción del caso</h2><div class="text-block">' + texto(p.desc, 'No registrado') + '</div></section>' +
      '<section class="section"><h2 class="section-title">3. Productos involucrados</h2><table class="data-table"><thead><tr><th>Línea</th><th>Producto</th><th>Detalle / presentación</th><th>Referencia</th><th>Lote/OP</th><th>Cantidad</th><th>Unidad</th><th>Documento</th></tr></thead><tbody>' + prods + '</tbody></table></section>' +

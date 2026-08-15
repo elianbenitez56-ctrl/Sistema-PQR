@@ -3,7 +3,13 @@ from datetime import datetime
 from openpyxl import load_workbook
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from excel_db import ARCHIVO, crear_excel
+from excel_db import (
+    ARCHIVO,
+    cargar_workbook_seguro,
+    crear_excel,
+    guardar_workbook_atomico,
+    proteger_escritura
+)
 
 print(">>> USANDO users_db.py <<<")
 
@@ -51,27 +57,35 @@ COLUMNAS = [
 ]
 
 
+@proteger_escritura
 def _asegurar_hoja():
 
     if not os.path.exists(ARCHIVO):
         crear_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
+    cambios = False
 
     if "Usuarios" not in wb.sheetnames:
         ws = wb.create_sheet("Usuarios")
         ws.append(COLUMNAS)
+        cambios = True
     else:
         ws = wb["Usuarios"]
         if ws.max_column < 10:
             ws.cell(1, 10).value = "Documento"
+            cambios = True
         if ws.max_column < 11:
             ws.cell(1, 11).value = "Correo"
+            cambios = True
         if ws.max_column < 12:
             ws.cell(1, 12).value = "Telefono"
+            cambios = True
 
-    wb.save(ARCHIVO)
-    wb.close()
+    if cambios:
+        guardar_workbook_atomico(wb)
+    else:
+        wb.close()
 
 
 def _fila_a_usuario(fila):
@@ -99,7 +113,7 @@ def _existe_usuario(usuario):
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     existe = False
@@ -117,7 +131,7 @@ def _existe_documento(documento, excepto_uid=None):
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     existe = False
@@ -137,7 +151,7 @@ def _existe_correo(correo, excepto_uid=None):
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     existe = False
@@ -169,7 +183,7 @@ def _siguiente_id():
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     max_id = 0
@@ -188,6 +202,7 @@ def _siguiente_id():
 # CREAR USUARIO
 # ==========================================================
 
+@proteger_escritura
 def crear_usuario(
     nombre,
     usuario,
@@ -215,7 +230,7 @@ def crear_usuario(
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     nuevo_id = _siguiente_id()
@@ -235,8 +250,7 @@ def crear_usuario(
         _normalizar_telefono(telefono)
     ])
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
     return {"ok": True, "id": nuevo_id, "mensaje": "Usuario creado correctamente."}
 
@@ -249,7 +263,7 @@ def autenticar_usuario(usuario, contrasena):
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     for fila in ws.iter_rows(min_row=2, values_only=True):
@@ -288,7 +302,7 @@ def listar_usuarios():
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     lista = []
@@ -306,7 +320,7 @@ def obtener_usuario_por_id(uid):
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     for fila in ws.iter_rows(min_row=2, values_only=True):
@@ -322,7 +336,7 @@ def obtener_usuario_por_documento(documento):
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     for fila in ws.iter_rows(min_row=2, values_only=True):
@@ -343,7 +357,7 @@ def usuario_disponible(usuario, excepto_uid=None):
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     for fila in ws.iter_rows(min_row=2, values_only=True):
@@ -364,11 +378,12 @@ def usuario_disponible(usuario, excepto_uid=None):
 # ACTUALIZAR
 # ==========================================================
 
+@proteger_escritura
 def actualizar_usuario(uid, **campos):
 
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     encontrado = False
@@ -407,8 +422,7 @@ def actualizar_usuario(uid, **campos):
         wb.close()
         return {"ok": False, "mensaje": "Usuario no encontrado."}
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
     return {"ok": True, "mensaje": "Usuario actualizado correctamente."}
 
@@ -417,6 +431,7 @@ def desactivar_usuario(uid):
     return actualizar_usuario(uid, activo=False)
 
 
+@proteger_escritura
 def eliminar_usuario(uid):
     """
     Elimina físicamente el registro del usuario de la hoja Usuarios.
@@ -424,7 +439,7 @@ def eliminar_usuario(uid):
     """
     _asegurar_hoja()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Usuarios"]
 
     numero_fila = None
@@ -440,8 +455,7 @@ def eliminar_usuario(uid):
 
     ws.delete_rows(numero_fila, 1)
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
     return {"ok": True, "mensaje": "Usuario eliminado correctamente."}
 

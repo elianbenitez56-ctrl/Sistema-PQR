@@ -1,14 +1,152 @@
 import os
 import json
 import shutil
+import hashlib
+import tempfile
+import threading
+import zipfile
+from contextlib import contextmanager
 from datetime import datetime
 from collections import Counter
+from functools import wraps
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
 
 print(">>> USANDO excel_db.py <<<")
 
 ARCHIVO = "BaseDatos_PQR.xlsx"
+
+_DB_MUTEX = threading.RLock()
+_DB_LOCK_STATE = threading.local()
+_DB_LOCK_PATH = os.path.join(
+    tempfile.gettempdir(),
+    "inapel_pqr_" + hashlib.sha256(os.path.abspath(ARCHIVO).encode("utf-8")).hexdigest()[:16] + ".lock"
+)
+
+
+def _bloquear_archivo(handle):
+    if os.name == "nt":
+        import msvcrt
+
+        handle.seek(0, os.SEEK_END)
+        if handle.tell() == 0:
+            handle.write(b"0")
+            handle.flush()
+        handle.seek(0)
+        msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+    else:
+        import fcntl
+
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+
+
+def _desbloquear_archivo(handle):
+    if os.name == "nt":
+        import msvcrt
+
+        handle.seek(0)
+        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def bloqueo_base_datos():
+    """Bloquea las escrituras en el proceso y entre procesos del mismo host."""
+
+    with _DB_MUTEX:
+        profundidad = getattr(_DB_LOCK_STATE, "profundidad", 0)
+        handle = None
+
+        if profundidad == 0:
+            try:
+                handle = open(_DB_LOCK_PATH, "a+b")
+                _bloquear_archivo(handle)
+                _DB_LOCK_STATE.handle = handle
+            except Exception:
+                if handle:
+                    handle.close()
+                raise
+
+        _DB_LOCK_STATE.profundidad = profundidad + 1
+
+        try:
+            yield
+        finally:
+            _DB_LOCK_STATE.profundidad = profundidad
+            if profundidad == 0:
+                handle = getattr(_DB_LOCK_STATE, "handle", None)
+                try:
+                    if handle:
+                        _desbloquear_archivo(handle)
+                finally:
+                    if handle:
+                        handle.close()
+                    if hasattr(_DB_LOCK_STATE, "handle"):
+                        del _DB_LOCK_STATE.handle
+
+
+def proteger_escritura(func):
+    """Ejecuta una operación de escritura bajo el bloqueo compartido."""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with bloqueo_base_datos():
+            return func(*args, **kwargs)
+
+    return wrapper
+
+
+def cargar_workbook_seguro(ruta=None, **opciones):
+    """Abre un XLSX existente y deja que BadZipFile detenga la operación."""
+
+    ruta = ruta or ARCHIVO
+    if not os.path.exists(ruta):
+        raise FileNotFoundError(f"No existe la base de datos: {ruta}")
+
+    try:
+        return load_workbook(ruta, **opciones)
+    except zipfile.BadZipFile:
+        print(f"[excel] Base de datos XLSX corrupta, no se sobrescribirá: {ruta}")
+        raise
+
+
+def guardar_workbook_atomico(wb, ruta=None):
+    """Guarda, valida y reemplaza un XLSX sin escribir sobre el original."""
+
+    ruta = ruta or ARCHIVO
+    with bloqueo_base_datos():
+        temporal = None
+        directorio = os.path.dirname(os.path.abspath(ruta)) or "."
+
+        try:
+            descriptor, temporal = tempfile.mkstemp(
+                prefix=f".{os.path.basename(ruta)}.",
+                suffix=".xlsx",
+                dir=directorio
+            )
+            os.close(descriptor)
+
+            wb.save(temporal)
+            wb.close()
+
+            validacion = cargar_workbook_seguro(temporal, read_only=True, data_only=False)
+            validacion.close()
+
+            os.replace(temporal, ruta)
+            temporal = None
+        finally:
+            try:
+                wb.close()
+            except Exception:
+                pass
+            if temporal and os.path.exists(temporal):
+                try:
+                    os.remove(temporal)
+                except OSError:
+                    pass
 
 HERRAMIENTAS_ANALISIS = (
     "5 ¿Por qué?",
@@ -49,6 +187,7 @@ def serializar_herramientas(herramientas):
 # CREAR ARCHIVO Y HOJAS
 # ==========================================================
 
+@proteger_escritura
 def crear_excel():
 
     if os.path.exists(ARCHIVO):
@@ -144,26 +283,28 @@ def crear_excel():
         "Observacion"
     ])
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
 
 # ==========================================================
 # VERIFICAR ESTRUCTURA
 # ==========================================================
 
+@proteger_escritura
 def actualizar_estructura_excel():
 
     if not os.path.exists(ARCHIVO):
         crear_excel()
         return
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
+    cambios = False
 
     hojas = wb.sheetnames
 
     if "PQR" not in hojas:
         ws = wb.create_sheet("PQR")
+        cambios = True
         ws.append([
             "Radicado",
             "Fecha",
@@ -198,37 +339,53 @@ def actualizar_estructura_excel():
         ws = wb["PQR"]
         if ws.max_column < 14:
             ws.cell(1, 14).value = "ProductosJSON"
+            cambios = True
         if ws.max_column < 15:
             ws.cell(1, 15).value = "Empresa"
+            cambios = True
         if ws.max_column < 16:
             ws.cell(1, 16).value = "Vendedor"
+            cambios = True
         if ws.max_column < 17:
             ws.cell(1, 17).value = "Linea"
+            cambios = True
         if ws.max_column < 18:
             ws.cell(1, 18).value = "UsuarioID"
+            cambios = True
         if ws.max_column < 19:
             ws.cell(1, 19).value = "CorreoConfirmacionEnviado"
+            cambios = True
         if ws.max_column < 20:
             ws.cell(1, 20).value = "DocumentoReceptor"
+            cambios = True
         if ws.max_column < 21:
             ws.cell(1, 21).value = "CorreoReceptor"
+            cambios = True
         if ws.max_column < 22:
             ws.cell(1, 22).value = "TelefonoReceptor"
+            cambios = True
         if ws.max_column < 23:
             ws.cell(1, 23).value = "CargoReceptor"
+            cambios = True
         if ws.max_column < 24:
             ws.cell(1, 24).value = "AreaReceptor"
+            cambios = True
         if ws.max_column < 25:
             ws.cell(1, 25).value = "CiudadRecepcion"
+            cambios = True
         if ws.max_column < 26:
             ws.cell(1, 26).value = "DepartamentoRecepcion"
+            cambios = True
         if ws.max_column < 27:
             ws.cell(1, 27).value = "MedioRecepcion"
+            cambios = True
         if ws.max_column < 28:
             ws.cell(1, 28).value = "OtroMedioRecepcion"
+            cambios = True
 
     if "Historial" not in hojas:
         ws = wb.create_sheet("Historial")
+        cambios = True
         ws.append([
             "Radicado",
             "Estado",
@@ -240,6 +397,7 @@ def actualizar_estructura_excel():
 
     if "Investigaciones" not in hojas:
         ws = wb.create_sheet("Investigaciones")
+        cambios = True
         ws.append([
             "Radicado",
             "Responsable",
@@ -263,22 +421,29 @@ def actualizar_estructura_excel():
         ws = wb["Investigaciones"]
         if ws.max_column < 13:
             ws.cell(1, 13).value = "CalidadEstado"
+            cambios = True
         if ws.max_column < 14:
             ws.cell(1, 14).value = "ComercialEstado"
+            cambios = True
         if ws.max_column < 15:
             ws.cell(1, 15).value = "NotificacionComercialEnviada"
+            cambios = True
         if ws.max_column < 16:
             ws.cell(1, 16).value = "RespuestaCalidad"
+            cambios = True
         if ws.max_column < 17:
             ws.cell(1, 17).value = "RespuestaComercial"
+            cambios = True
 
         # The legacy response belonged to the original commercial field.
         for fila in range(2, ws.max_row + 1):
             if not ws.cell(fila, 17).value and ws.cell(fila, 11).value:
                 ws.cell(fila, 17).value = ws.cell(fila, 11).value
+                cambios = True
 
     if "Adjuntos" not in hojas:
         ws = wb.create_sheet("Adjuntos")
+        cambios = True
         ws.append([
             "Radicado",
             "Tipo",
@@ -289,8 +454,10 @@ def actualizar_estructura_excel():
             "Usuario",
             "Observacion"
         ])
-    wb.save(ARCHIVO)
-    wb.close()
+    if cambios:
+        guardar_workbook_atomico(wb)
+    else:
+        wb.close()
 
 
 # ==========================================================
@@ -301,7 +468,7 @@ def generar_radicado():
 
     actualizar_estructura_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["PQR"]
 
@@ -331,6 +498,7 @@ def generar_radicado():
 # HISTORIAL
 # ==========================================================
 
+@proteger_escritura
 def guardar_historial(
     radicado,
     estado,
@@ -338,7 +506,7 @@ def guardar_historial(
     observacion=""
 ):
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["Historial"]
 
@@ -353,19 +521,19 @@ def guardar_historial(
         observacion
     ])
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
 
 # ==========================================================
 # GUARDAR PQR
 # ==========================================================
 
+@proteger_escritura
 def guardar_pqr(datos):
 
     actualizar_estructura_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["PQR"]
 
@@ -404,8 +572,7 @@ def guardar_pqr(datos):
 
     ])
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
     guardar_historial(
 
@@ -426,7 +593,7 @@ def guardar_pqr(datos):
 def correo_confirmacion_enviado(radicado):
     """Devuelve True si el correo de confirmación ya fue enviado para el radicado."""
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["PQR"]
 
     for fila in ws.iter_rows(min_row=2):
@@ -439,10 +606,11 @@ def correo_confirmacion_enviado(radicado):
     return False
 
 
+@proteger_escritura
 def marcar_correo_confirmacion(radicado, enviado):
     """Actualiza la columna CorreoConfirmacionEnviado (SI/NO) del radicado."""
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["PQR"]
 
     for fila in ws.iter_rows(min_row=2):
@@ -450,8 +618,7 @@ def marcar_correo_confirmacion(radicado, enviado):
             fila[18].value = "SI" if enviado else "NO"
             break
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
 # ==========================================================
 # CONSULTAR PQR
@@ -460,7 +627,7 @@ def marcar_correo_confirmacion(radicado, enviado):
 def consultar_pqr(valor_busqueda):
 
     actualizar_estructura_excel()
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["PQR"]
     ws_inv = wb["Investigaciones"]
@@ -578,7 +745,7 @@ def consultar_pqr(valor_busqueda):
 def listar_pqrs():
 
     actualizar_estructura_excel()
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["PQR"]
 
@@ -637,11 +804,12 @@ def listar_pqrs():
 # ACTUALIZAR ESTADO DEL PQR
 # ==========================================================
 
+@proteger_escritura
 def actualizar_estado_pqr(radicado, estado):
 
     actualizar_estructura_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["PQR"]
 
@@ -652,8 +820,7 @@ def actualizar_estado_pqr(radicado, estado):
             fila[9].value = estado
             break
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
     return True
 
@@ -662,6 +829,7 @@ def actualizar_estado_pqr(radicado, estado):
 # GUARDAR / ACTUALIZAR INVESTIGACIÓN
 # ==========================================================
 
+@proteger_escritura
 def guardar_investigacion(
     datos,
     calidad_estado=None,
@@ -671,7 +839,7 @@ def guardar_investigacion(
 
     actualizar_estructura_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Investigaciones"]
     fila_existente = None
 
@@ -753,8 +921,7 @@ def guardar_investigacion(
             respuesta_comercial
         ])
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
     estado = "Cerrado" if datos.get("cierre") == "Sí" else "En investigación"
     actualizar_estado_pqr(datos["radicado"], estado)
@@ -772,18 +939,18 @@ def guardar_investigacion(
     }
 
 
+@proteger_escritura
 def marcar_notificacion_comercial_enviada(radicado):
     """Marca el aviso comercial como enviado sin alterar los demás datos."""
 
     actualizar_estructura_excel()
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
     ws = wb["Investigaciones"]
 
     for fila in range(2, ws.max_row + 1):
         if str(ws.cell(fila, 1).value).strip() == str(radicado).strip():
             ws.cell(fila, 15).value = 1
-            wb.save(ARCHIVO)
-            wb.close()
+            guardar_workbook_atomico(wb)
             return True
 
     wb.close()
@@ -793,6 +960,7 @@ def marcar_notificacion_comercial_enviada(radicado):
 # INICIALIZAR ESTRUCTURA
 # ==========================================================
 
+@proteger_escritura
 def inicializar_excel():
     """
     Crea el archivo y las hojas necesarias si no existen.
@@ -800,7 +968,8 @@ def inicializar_excel():
     """
     actualizar_estructura_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
+    cambios = False
 
     hojas_requeridas = {
         "PQR": [
@@ -836,16 +1005,19 @@ def inicializar_excel():
         if hoja not in wb.sheetnames:
             ws = wb.create_sheet(hoja)
             ws.append(encabezados)
+            cambios = True
 
-    wb.save(ARCHIVO)
-    wb.close()
+    if cambios:
+        guardar_workbook_atomico(wb)
+    else:
+        wb.close()
 
 
 def obtener_dashboard():
 
     actualizar_estructura_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["PQR"]
 
@@ -879,6 +1051,7 @@ def obtener_dashboard():
 # GUARDAR ADJUNTO
 # ==========================================================
 
+@proteger_escritura
 def guardar_adjunto(
     radicado,
     tipo,
@@ -890,7 +1063,7 @@ def guardar_adjunto(
 
     actualizar_estructura_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["Adjuntos"]
 
@@ -925,8 +1098,7 @@ def guardar_adjunto(
     # Observacion
     ws.cell(fila, 8).value = observacion
 
-    wb.save(ARCHIVO)
-    wb.close()
+    guardar_workbook_atomico(wb)
 
     return True
 
@@ -934,11 +1106,12 @@ def guardar_adjunto(
 # ELIMINAR PQR
 # ==========================================================
 
+@proteger_escritura
 def eliminar_pqr(radicado):
 
     actualizar_estructura_excel()
 
-    wb = load_workbook(ARCHIVO)
+    wb = cargar_workbook_seguro()
 
     ws = wb["PQR"]
 
@@ -976,8 +1149,7 @@ def eliminar_pqr(radicado):
 
     try:
 
-        wb.save(ARCHIVO)
-        wb.close()
+        guardar_workbook_atomico(wb)
 
     except Exception:
 

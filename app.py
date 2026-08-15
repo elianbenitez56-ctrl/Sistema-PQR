@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from excel_db import crear_excel, actualizar_estructura_excel
 from users_db import sembrar_usuarios
+from catalogo_productos import CATALOGO_PATH, cargar_catalogo
 from routes import routes
 import os
 from datetime import timedelta
@@ -35,6 +36,13 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 crear_excel()
 actualizar_estructura_excel()
 sembrar_usuarios()
+
+try:
+    cargar_catalogo()
+    print(f">>> CATÁLOGO DE PRODUCTOS CARGADO: {CATALOGO_PATH} <<<")
+except Exception as error:
+    # El resto del sistema puede iniciar aunque el catálogo requiera atención.
+    print(f">>> CATÁLOGO DE PRODUCTOS NO DISPONIBLE: {error} <<<")
 
 # =====================================================
 # RUTAS

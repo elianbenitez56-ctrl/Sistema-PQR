@@ -23,6 +23,11 @@ from excel_db import (
 )
 
 from email_service import enviar_confirmacion_pqr, enviar_notificacion_comercial
+from catalogo_productos import (
+    LINEAS_PRODUCTO,
+    buscar_productos,
+    recargar_catalogo
+)
 
 from users_db import (
     autenticar_usuario,
@@ -238,6 +243,59 @@ def _validar_correo(correo):
 
 def _validar_telefono(telefono):
     return re.match(TELEFONO_REGEX, telefono) is not None
+
+
+def _preparar_productos_catalogo(productos):
+    """Valida y reemplaza los campos de catálogo por sus valores maestros."""
+
+    preparados = []
+
+    for producto in productos:
+        if not isinstance(producto, dict):
+            preparados.append(producto)
+            continue
+
+        linea = str(producto.get("linea", "") or "").strip().upper()
+        referencia = str(
+            producto.get("referencia") or producto.get("ref") or ""
+        ).strip()
+
+        # Conserva productos de clientes antiguos que no usaban catálogo.
+        if not linea and not referencia:
+            preparados.append(producto)
+            continue
+        if not linea:
+            preparados.append(producto)
+            continue
+
+        if linea not in LINEAS_PRODUCTO:
+            return None, "La línea de producto no es válida."
+        if not referencia:
+            return None, "Debe indicar una referencia del catálogo."
+
+        coincidencias = buscar_productos(linea, referencia)
+        if not coincidencias:
+            return None, "Referencia no encontrada en el catálogo."
+
+        def coincide(catalogo):
+            for campo in ("detalle_presentacion", "producto", "plu", "unidad"):
+                enviado = str(producto.get(campo, "") or "").strip()
+                maestro = str(catalogo.get(campo, "") or "").strip()
+                if enviado != maestro:
+                    return False
+            return True
+
+        seleccionado = next((item for item in coincidencias if coincide(item)), None)
+        if not seleccionado:
+            return None, "Seleccione una coincidencia válida del catálogo."
+
+        producto_normalizado = dict(producto)
+        producto_normalizado.update(seleccionado)
+        # ref se conserva para que las consultas y exportaciones existentes sigan funcionando.
+        producto_normalizado["ref"] = seleccionado["referencia"]
+        preparados.append(producto_normalizado)
+
+    return preparados, None
 
 
 def _campos_faltantes(datos, campos):
@@ -626,6 +684,74 @@ def api_usuarios_credenciales(uid):
 
 
 # ==========================================================
+# CATÁLOGO DE PRODUCTOS
+# ==========================================================
+
+@routes.route("/api/catalogo/productos", methods=["GET"])
+@sesion_requerida
+def api_catalogo_productos():
+
+    linea = str(request.args.get("linea", "") or "").strip().upper()
+    referencia = str(request.args.get("referencia", "") or "").strip()
+
+    if linea not in LINEAS_PRODUCTO:
+        return jsonify({
+            "ok": False,
+            "mensaje": "La línea de producto no es válida."
+        }), 400
+
+    if not referencia:
+        return jsonify({
+            "ok": False,
+            "mensaje": "Debe indicar una referencia."
+        }), 400
+
+    try:
+        productos = buscar_productos(linea, referencia)
+    except FileNotFoundError as error:
+        return jsonify({
+            "ok": False,
+            "mensaje": f"No fue posible consultar el catálogo maestro: {error}"
+        }), 503
+    except ValueError as error:
+        return jsonify({
+            "ok": False,
+            "mensaje": str(error)
+        }), 400
+
+    respuesta = {
+        "ok": True,
+        "linea": linea,
+        "referencia": referencia,
+        "total": len(productos),
+        "productos": productos
+    }
+    if not productos:
+        respuesta["mensaje"] = "Referencia no encontrada en el catálogo."
+
+    return jsonify(respuesta)
+
+
+@routes.route("/api/catalogo/recargar", methods=["POST"])
+@rol_requerido(ADMIN)
+def api_catalogo_recargar():
+
+    try:
+        productos = recargar_catalogo()
+    except Exception as error:
+        return jsonify({
+            "ok": False,
+            "mensaje": f"No fue posible recargar el catálogo: {error}"
+        }), 503
+
+    return jsonify({
+        "ok": True,
+        "total": len(productos),
+        "mensaje": "Catálogo recargado correctamente."
+    })
+
+
+# ==========================================================
 # GUARDAR PQR
 # ==========================================================
 
@@ -659,6 +785,27 @@ def api_guardar_pqr():
             }), 400
         # Se conserva como texto para no perder ceros iniciales.
         producto["plu"] = plu
+
+    try:
+        productos, error_catalogo = _preparar_productos_catalogo(productos)
+    except FileNotFoundError as error:
+        return jsonify({
+            "ok": False,
+            "mensaje": f"No fue posible consultar el catálogo maestro: {error}"
+        }), 503
+    except ValueError as error:
+        return jsonify({
+            "ok": False,
+            "mensaje": str(error)
+        }), 400
+
+    if error_catalogo:
+        return jsonify({
+            "ok": False,
+            "mensaje": error_catalogo
+        }), 400
+
+    datos["productos"] = productos
 
     usuario_actual = obtener_usuario_por_id(session["usuario_id"])
 

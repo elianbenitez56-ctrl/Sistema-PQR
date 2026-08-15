@@ -27,3 +27,5 @@ services:
         sync: false
       - key: PQR_URL_BASE
         value: https://sistema-pqr.onrender.com
+      - key: CATALOGO_PRODUCTOS_PATH
+        value: datos/LISTADO PRODUCTOS.xlsx

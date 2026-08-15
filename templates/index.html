@@ -684,10 +684,9 @@ body{
 .table-wrap::-webkit-scrollbar-track{background:var(--surface);border-radius:var(--radius-full)}
 .table-wrap::-webkit-scrollbar-thumb{background:var(--outline);border-radius:var(--radius-full)}
 .table-wrap::-webkit-scrollbar-thumb:hover{background:var(--blue)}
-.table-pqr{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;min-width:1300px}
+.table-pqr{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;min-width:1240px}
 .table-pqr .col-pqr-linea{width:92px}
 .table-pqr .col-pqr-referencia{width:100px}
-.table-pqr .col-pqr-plu{width:65px}
 .table-pqr .col-pqr-producto{width:205px}
 .table-pqr .col-pqr-detalle{width:205px}
 .table-pqr .col-pqr-lote{width:105px}
@@ -727,6 +726,10 @@ body{
   min-height:38px; margin-top:6px !important; padding:7px 26px 7px 8px;
   border:1px solid var(--blue-light); background:var(--info-bg);
   color:var(--navy); font-size:11px; font-weight:600;
+}
+.table-pqr td .fixed-doc-type{
+  background:var(--surface-dim); border-color:var(--outline-soft);
+  color:var(--on-surface-variant); cursor:not-allowed; font-weight:600;
 }
 .table-pqr td .catalog-message{
   line-height:1.25; overflow-wrap:anywhere;
@@ -1241,7 +1244,7 @@ body{
   .hero-left h1{font-size:20px}
   .hero-left p{font-size:12px}
   .db-table{min-width:650px}
-  .table-pqr{min-width:1300px}
+  .table-pqr{min-width:1240px}
   .topbar-date .material-symbols-outlined{display:none}
   .topbar-date span:not(.material-symbols-outlined){font-size:11px}
 }
@@ -1286,7 +1289,7 @@ body{
   .toolbar{flex-direction:column;align-items:flex-start;gap:12px}
   .dash-card .dash-value{font-size:28px}
   .result-card .detail-grid{grid-template-columns:minmax(0,1fr)}
-  .table-pqr{font-size:11.5px;min-width:1300px}
+  .table-pqr{font-size:11.5px;min-width:1240px}
   .chart-box{height:240px}
   .chart-box canvas{height:240px !important;max-height:240px !important}
   .hamburger{display:none}
@@ -1345,7 +1348,7 @@ body{
   .toolbar{flex-direction:column;align-items:flex-start;gap:10px}
   .dash-card .dash-value{font-size:26px}
   .result-card .detail-grid{grid-template-columns:minmax(0,1fr)}
-  .table-pqr{font-size:11px;min-width:1300px}
+  .table-pqr{font-size:11px;min-width:1240px}
   .db-table{font-size:12px;min-width:550px}
   .modal-box{margin:10px}
   .modal-header{padding:14px 18px 10px}
@@ -1419,7 +1422,7 @@ body{
   .stat-card .stat-value{font-size:22px}
   .card-header h3{font-size:13px}
   .db-table{min-width:480px;font-size:11px}
-  .table-pqr{min-width:1300px;font-size:10.5px}
+  .table-pqr{min-width:1240px;font-size:10.5px}
   .modal-box{margin:4px}
 }
 /* Móvil muy pequeño (320-360) */
@@ -1433,7 +1436,7 @@ body{
   .dash-card .dash-value{font-size:20px}
   .stat-card .stat-value{font-size:20px}
   .db-table{min-width:440px;font-size:10px}
-  .table-pqr{min-width:1300px;font-size:10px}
+  .table-pqr{min-width:1240px;font-size:10px}
 }
 
 /* ─── SAFE AREAS (iPhone/iPad) ─── */
@@ -1839,7 +1842,6 @@ a:focus-visible{
                 <colgroup>
                   <col class="col-pqr-linea">
                   <col class="col-pqr-referencia">
-                  <col class="col-pqr-plu">
                   <col class="col-pqr-producto">
                   <col class="col-pqr-detalle">
                   <col class="col-pqr-lote">
@@ -1852,8 +1854,7 @@ a:focus-visible{
                 </colgroup>
                 <thead><tr>
                   <th style="min-width:105px">Línea</th>
-                  <th style="min-width:85px">Referencia</th>
-                  <th style="min-width:65px">PLU</th>
+                  <th style="min-width:100px">REFERENCIA SIESA</th>
                   <th style="min-width:205px">Producto involucrado</th>
                   <th style="min-width:205px">Detalle / presentación</th>
                   <th style="min-width:95px">Lote / OP</th>
@@ -1872,8 +1873,7 @@ a:focus-visible{
                       <option value="MARFIL">MARFIL</option>
                       <option value="TOROFIL">TOROFIL</option>
                     </select></td>
-                    <td><input type="text" class="prod-ref" placeholder="Ref." autocomplete="off" oninput="catalogoReferenciaCambio(this)"></td>
-                    <td><input type="text" class="plu-input catalog-plu" placeholder="PLU" readonly disabled></td>
+                    <td><input type="text" class="prod-ref" placeholder="REFERENCIA SIESA" autocomplete="off" oninput="catalogoReferenciaCambio(this)"></td>
                     <td>
                       <textarea class="catalog-field catalog-producto" rows="2" placeholder="Catálogo" readonly disabled></textarea>
                       <select class="catalog-choice" style="display:none;margin-top:4px" onchange="seleccionarCatalogo(this)"></select>
@@ -1884,7 +1884,7 @@ a:focus-visible{
                     <td><input type="date" class="prod-fecha"></td>
                     <td><input type="number" class="prod-cantidad" min="0" placeholder="0"></td>
                     <td><input type="text" class="catalog-field catalog-unidad" placeholder="Catálogo" readonly disabled></td>
-                    <td><select class="prod-tipo-doc"><option>Remisión</option><option>Orden de compra</option><option>Factura de venta</option></select></td>
+                    <td><input type="text" class="prod-tipo-doc fixed-doc-type" value="Factura de venta" readonly aria-readonly="true"></td>
                     <td><input type="text" class="prod-num-doc" placeholder="N°"></td>
                     <td><button class="btn-del" onclick="rmRow(this)" title="Eliminar">✕</button></td>
                   </tr>
@@ -2540,15 +2540,6 @@ function validarPaso(n) {
       quitarErrorCampo(campo);
     }
   });
-  if (n === 3) {
-    paso.querySelectorAll('.plu-input').forEach(function(campo) {
-      var valor = (campo.value || '').trim();
-      if (valor && !/^\d+$/.test(valor)) {
-        marcarCampo(campo, 'El PLU solo puede contener números.');
-        ok = false;
-      }
-    });
-  }
   ocultarAlertaPasos();
   return ok;
 }
@@ -3044,6 +3035,9 @@ function addRow() {
     }
   });
   row.querySelectorAll('.catalog-message').forEach(function(m) { m.textContent = ''; });
+  limpiarCatalogoFila(row);
+  var tipoDocumento = row.querySelector('.prod-tipo-doc');
+  if (tipoDocumento) tipoDocumento.value = 'Factura de venta';
   row._catalogoProducto = null;
   row._catalogoOpciones = [];
   tbody.appendChild(row);
@@ -3071,13 +3065,18 @@ function limpiarCatalogoFila(row) {
     choice.value = '';
   }
   row.querySelectorAll('.catalog-field').forEach(function(campo) { campo.value = ''; });
+  var unidad = row.querySelector('.catalog-unidad');
+  if (unidad) {
+    unidad.disabled = true;
+    unidad.readOnly = true;
+    unidad.placeholder = 'Catálogo';
+  }
   catalogoMensaje(row, '');
 }
 function aplicarCatalogoFila(row, producto) {
   if (!row || !producto) return;
   row._catalogoProducto = producto;
   var valores = {
-    '.catalog-plu': producto.plu || '',
     '.catalog-producto': producto.producto || '',
     '.catalog-detalle': producto.detalle_presentacion || '',
     '.catalog-unidad': producto.unidad || ''
@@ -3086,6 +3085,13 @@ function aplicarCatalogoFila(row, producto) {
     var campo = row.querySelector(selector);
     if (campo) campo.value = valores[selector];
   });
+  var unidad = row.querySelector('.catalog-unidad');
+  var unidadCatalogo = String(producto.unidad || '').trim();
+  if (unidad) {
+    unidad.disabled = Boolean(unidadCatalogo);
+    unidad.readOnly = Boolean(unidadCatalogo);
+    unidad.placeholder = unidadCatalogo ? 'Catálogo' : 'Diligenciar unidad';
+  }
   var choice = row.querySelector('.catalog-choice');
   if (choice) {
     choice.innerHTML = '';
@@ -3105,9 +3111,9 @@ function mostrarOpcionesCatalogo(row, productos) {
   row._catalogoOpciones.forEach(function(producto, indice) {
     var opcion = document.createElement('option');
     opcion.value = String(indice);
-    opcion.textContent = [producto.producto, producto.detalle_presentacion, producto.plu]
+    opcion.textContent = [producto.producto, producto.detalle_presentacion]
       .filter(function(valor) { return String(valor || '').trim(); })
-      .join(' · ') || producto.referencia;
+      .join(' · ') || producto.referencia_siesa;
     choice.appendChild(opcion);
   });
   choice.value = '';
@@ -3133,7 +3139,7 @@ function consultarCatalogoFila(row) {
 
   var solicitud = (row._catalogoSolicitud || 0) + 1;
   row._catalogoSolicitud = solicitud;
-  fetch('/api/catalogo/productos?linea=' + encodeURIComponent(linea) + '&referencia=' + encodeURIComponent(referencia), { cache: 'no-store' })
+  fetch('/api/catalogo/productos?linea=' + encodeURIComponent(linea) + '&referencia_siesa=' + encodeURIComponent(referencia), { cache: 'no-store' })
     .then(function(respuesta) { return respuesta.json(); })
     .then(function(data) {
       if (row._catalogoSolicitud !== solicitud) return;
@@ -3188,19 +3194,17 @@ function getProds() {
     var referencia = valor('.prod-ref');
     return {
       linea: valor('.prod-linea'),
-      referencia: referencia,
-      ref: referencia,
+      referencia_siesa: referencia,
       detalle_presentacion: valor('.catalog-detalle'),
       producto: valor('.catalog-producto'),
-      plu: valor('.catalog-plu'),
       unidad: valor('.catalog-unidad'),
       lote: valor('.prod-lote'),
       fechaEmp: valor('.prod-fecha'),
       cant: valor('.prod-cantidad'),
-      tipoDoc: valor('.prod-tipo-doc'),
+      tipoDoc: 'Factura de venta',
       numDoc: valor('.prod-num-doc')
     };
-  }).filter(function(p) { return p.referencia || p.producto || p.lote || p.cant || p.numDoc; });
+  }).filter(function(p) { return p.referencia_siesa || p.producto || p.lote || p.cant || p.numDoc; });
 }
 function validarProductosCatalogo() {
   var valido = true;
@@ -3222,13 +3226,6 @@ function validarProductosCatalogo() {
   }
   return valido;
 }
-function pluProducto(producto) {
-  var valor = producto && producto.plu !== undefined && producto.plu !== null
-    ? String(producto.plu).trim()
-    : '';
-  return valor || '—';
-}
-
 // ── GUARDAR PQR ────────────────────────────────────────────────────────
 function msjRegistro(rad, data) {
   var base = '&#10003; PQR registrada correctamente.<br><br><strong>Radicado:</strong> ' + rad;
@@ -3374,9 +3371,17 @@ function limpiar() {
       s.selectedIndex = 0;
     }
   });
+  var tipoDocumento = tbody.rows[0].querySelector('.prod-tipo-doc');
+  if (tipoDocumento) tipoDocumento.value = 'Factura de venta';
   tbody.rows[0]._catalogoProducto = null;
   tbody.rows[0]._catalogoOpciones = [];
   tbody.rows[0]._catalogoSolicitud = 0;
+  var unidadCatalogo = tbody.rows[0].querySelector('.catalog-unidad');
+  if (unidadCatalogo) {
+    unidadCatalogo.disabled = true;
+    unidadCatalogo.readOnly = true;
+    unidadCatalogo.placeholder = 'Catálogo';
+  }
   catalogoMensaje(tbody.rows[0], '');
   document.getElementById('rad-num').textContent = 'PQR · 2026 · XXXX';
   document.getElementById('msg-form').innerHTML = '';
@@ -3967,10 +3972,10 @@ function mDetalle(rad) {
   var pct = Math.round((idx + 1) / states.length * 100);
    var prods = p.productos && p.productos.length
      ? p.productos.map(function(x) {
-          var referencia = x.referencia || x.ref || '—';
+          var referencia = x.referencia_siesa || x.referencia || x.ref || '—';
           var nombreProducto = x.producto || x.detalle_presentacion || '—';
           return '<div style="font-size:12px;padding:5px 9px;background:var(--surface-dim);border-radius:6px;margin-bottom:3px">' +
-               '<strong>' + nombreProducto + '</strong> · Línea: ' + (x.linea||'—') + ' · Detalle: ' + (x.detalle_presentacion||'—') + ' · PLU: ' + pluProducto(x) + ' · Ref: ' + referencia + ' · Lote: ' + (x.lote||'—') + ' · ' + (x.cant||'—') + ' ' + (x.unidad||'') + '</div>';
+               '<strong>' + nombreProducto + '</strong> · Línea: ' + (x.linea||'—') + ' · Detalle: ' + (x.detalle_presentacion||'—') + ' · REFERENCIA SIESA: ' + referencia + ' · Lote: ' + (x.lote||'—') + ' · ' + (x.cant||'—') + ' ' + (x.unidad||'') + '</div>';
       }).join('')
     : '<p style="font-size:13px;color:var(--on-surface-variant)">Sin productos</p>';
   var hist = (p.historial || [{estado:p.estado, fecha:p.savedAt}]).map(function(h){
@@ -4049,8 +4054,8 @@ function expCSV() {
       p.tipoSol, p.cliente, p.nit, p.contacto, p.tel, p.email,
       '"' + (p.desc||'').replace(/"/g,'""') + '"',
        p.productos ? p.productos.map(function(x) {
-         return [x.linea, x.referencia || x.ref, x.detalle_presentacion, x.producto,
-           x.plu, x.unidad, x.lote, x.fechaEmp, x.cant, x.tipoDoc, x.numDoc]
+         return [x.linea, x.referencia_siesa || x.referencia || x.ref, x.detalle_presentacion, x.producto,
+            x.unidad, x.lote, x.fechaEmp, x.cant, x.tipoDoc, x.numDoc]
            .filter(function(valor) { return String(valor || '').trim(); })
            .join(' | ');
        }).join('; ') : '',
@@ -4132,21 +4137,20 @@ function renderConsulta(p) {
     ? p.productos.map(function(x) {
         return '<tr>' +
            '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.linea || '—') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.referencia_siesa || x.referencia || x.ref || '—') + '</td>' +
            '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.producto || '—') + '</td>' +
            '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.detalle_presentacion || '—') + '</td>' +
-           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + pluProducto(x) + '</td>' +
-           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.referencia || x.ref || '—') + '</td>' +
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.lote || '—') + '</td>' +
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.cant || '—') + ' ' + (x.unidad || '') + '</td>' +
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.tipoDoc || '—') + ' ' + (x.numDoc || '') + '</td>' +
           '</tr>';
       }).join('')
-     : '<tr><td colspan="8" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
+      : '<tr><td colspan="7" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
   var productosHtml =
     '<div style="margin-top:18px;border-top:1px solid var(--outline-soft);padding-top:14px">' +
     '<div class="detail-label" style="margin-bottom:6px">Productos involucrados</div>' +
     '<div class="table-wrap"><table class="table-pqr" style="min-width:620px;font-size:12px">' +
-     '<thead><tr><th>Línea</th><th>Producto</th><th>Detalle / presentación</th><th>PLU</th><th>Referencia</th><th>Lote / OP</th><th>Cantidad</th><th>Documento</th></tr></thead>' +
+      '<thead><tr><th>Línea</th><th>REFERENCIA SIESA</th><th>Producto</th><th>Detalle / presentación</th><th>Lote / OP</th><th>Cantidad</th><th>Documento</th></tr></thead>' +
     '<tbody>' + prodRows + '</tbody></table></div></div>';
   div.innerHTML =
     '<div class="result-card">' +
@@ -4283,15 +4287,14 @@ async function cargarSeg() {
      var prodRows = p.productos && p.productos.length
         ? p.productos.map(function(x) {
             return '<tr><td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.linea||'—') + '</td>' +
-                   '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.producto||'—') + '</td>' +
-                   '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.detalle_presentacion||'—') + '</td>' +
-                   '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + pluProducto(x) + '</td>' +
-                   '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.referencia || x.ref || '—') + '</td>' +
+                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.referencia_siesa || x.referencia || x.ref || '—') + '</td>' +
+                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.producto||'—') + '</td>' +
+                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.detalle_presentacion||'—') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.lote||'—') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.cant||'—') + ' ' + (x.unidad||'') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.tipoDoc||'—') + ' ' + (x.numDoc||'') + '</td></tr>';
         }).join('')
-       : '<tr><td colspan="8" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
+       : '<tr><td colspan="7" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
      var mkSel = function(id, opts, val) {
        return '<select id="' + id + '">' + opts.map(function(o) {
          return '<option' + (val === o ? ' selected' : '') + '>' + o + '</option>';
@@ -4309,11 +4312,10 @@ async function cargarSeg() {
       '<p style="font-size:13px;color:var(--on-surface);line-height:1.6;background:var(--surface-dim);padding:9px 13px;border-radius:7px;margin-bottom:14px">' + (p.desc||'—') + '</p>' +
       '<div class="detail-label" style="margin-bottom:6px">Productos involucrados</div>' +
       '<table style="width:100%;border-collapse:collapse;font-size:13px;background:var(--surface-container-lowest);border:1px solid var(--outline-soft);border-radius:var(--radius-md);overflow:hidden">' +
-        '<thead><tr style="background:var(--navy)"><th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Línea</th>' +
-        '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Producto</th>' +
-        '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Detalle / presentación</th>' +
-        '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">PLU</th>' +
-        '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Ref.</th>' +
+         '<thead><tr style="background:var(--navy)"><th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Línea</th>' +
+         '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">REFERENCIA SIESA</th>' +
+         '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Producto</th>' +
+         '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Detalle / presentación</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Lote/OP</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Cantidad</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Documento</th></tr></thead>' +
@@ -4512,7 +4514,7 @@ function expSeg(rad) {
          return '<tr><td>' + valor(x.linea, '-') + '</td>' +
            '<td>' + valor(x.producto, '-') + '</td>' +
            '<td>' + valor(x.detalle_presentacion, '-') + '</td>' +
-           '<td>' + valor(x.referencia || x.ref, '-') + '</td>' +
+            '<td>' + valor(x.referencia_siesa || x.referencia || x.ref, '-') + '</td>' +
            '<td>' + valor(x.lote, '-') + '</td>' +
            '<td>' + valor(x.cant, '-') + '</td>' +
            '<td>' + valor(x.unidad, '-') + '</td>' +

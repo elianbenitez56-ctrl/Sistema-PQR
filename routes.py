@@ -255,13 +255,14 @@ def _preparar_productos_catalogo(productos):
             preparados.append(producto)
             continue
 
+        producto = dict(producto)
+        producto["tipoDoc"] = "Factura de venta"
+
         linea = str(producto.get("linea", "") or "").strip().upper()
-        referencia = str(
-            producto.get("referencia") or producto.get("ref") or ""
-        ).strip()
+        referencia_siesa = str(producto.get("referencia_siesa", "") or "").strip()
 
         # Conserva productos de clientes antiguos que no usaban catálogo.
-        if not linea and not referencia:
+        if not linea and not referencia_siesa:
             preparados.append(producto)
             continue
         if not linea:
@@ -270,18 +271,23 @@ def _preparar_productos_catalogo(productos):
 
         if linea not in LINEAS_PRODUCTO:
             return None, "La línea de producto no es válida."
-        if not referencia:
-            return None, "Debe indicar una referencia del catálogo."
+        if not referencia_siesa:
+            return None, "Debe indicar una REFERENCIA SIESA del catálogo."
 
-        coincidencias = buscar_productos(linea, referencia)
+        coincidencias = buscar_productos(linea, referencia_siesa)
         if not coincidencias:
             return None, "Referencia no encontrada en el catálogo."
 
         def coincide(catalogo):
-            for campo in ("detalle_presentacion", "producto", "plu", "unidad"):
+            for campo in ("detalle_presentacion", "producto"):
                 enviado = str(producto.get(campo, "") or "").strip()
                 maestro = str(catalogo.get(campo, "") or "").strip()
                 if enviado != maestro:
+                    return False
+            unidad_catalogo = str(catalogo.get("unidad", "") or "").strip()
+            if unidad_catalogo:
+                unidad_enviada = str(producto.get("unidad", "") or "").strip()
+                if unidad_enviada != unidad_catalogo:
                     return False
             return True
 
@@ -289,10 +295,16 @@ def _preparar_productos_catalogo(productos):
         if not seleccionado:
             return None, "Seleccione una coincidencia válida del catálogo."
 
-        producto_normalizado = dict(producto)
-        producto_normalizado.update(seleccionado)
-        # ref se conserva para que las consultas y exportaciones existentes sigan funcionando.
-        producto_normalizado["ref"] = seleccionado["referencia"]
+        producto_normalizado = {
+            "linea": seleccionado["linea"],
+            "referencia_siesa": seleccionado["referencia_siesa"],
+            "detalle_presentacion": seleccionado["detalle_presentacion"],
+            "producto": seleccionado["producto"],
+            "unidad": seleccionado["unidad"] or str(producto.get("unidad", "") or "").strip()
+        }
+        for campo in ("lote", "fechaEmp", "cant", "numDoc"):
+            producto_normalizado[campo] = producto.get(campo, "")
+        producto_normalizado["tipoDoc"] = "Factura de venta"
         preparados.append(producto_normalizado)
 
     return preparados, None
@@ -692,7 +704,7 @@ def api_usuarios_credenciales(uid):
 def api_catalogo_productos():
 
     linea = str(request.args.get("linea", "") or "").strip().upper()
-    referencia = str(request.args.get("referencia", "") or "").strip()
+    referencia_siesa = str(request.args.get("referencia_siesa", "") or "").strip()
 
     if linea not in LINEAS_PRODUCTO:
         return jsonify({
@@ -700,14 +712,14 @@ def api_catalogo_productos():
             "mensaje": "La línea de producto no es válida."
         }), 400
 
-    if not referencia:
+    if not referencia_siesa:
         return jsonify({
             "ok": False,
-            "mensaje": "Debe indicar una referencia."
+            "mensaje": "Debe indicar una REFERENCIA SIESA."
         }), 400
 
     try:
-        productos = buscar_productos(linea, referencia)
+        productos = buscar_productos(linea, referencia_siesa)
     except FileNotFoundError as error:
         return jsonify({
             "ok": False,
@@ -722,7 +734,7 @@ def api_catalogo_productos():
     respuesta = {
         "ok": True,
         "linea": linea,
-        "referencia": referencia,
+        "referencia_siesa": referencia_siesa,
         "total": len(productos),
         "productos": productos
     }
@@ -773,18 +785,6 @@ def api_guardar_pqr():
             "ok": False,
             "mensaje": "La información de productos no es válida."
         }), 400
-
-    for producto in productos:
-        if not isinstance(producto, dict):
-            continue
-        plu = str(producto.get("plu", "") or "").strip()
-        if plu and not plu.isdigit():
-            return jsonify({
-                "ok": False,
-                "mensaje": "El PLU solo puede contener números."
-            }), 400
-        # Se conserva como texto para no perder ceros iniciales.
-        producto["plu"] = plu
 
     try:
         productos, error_catalogo = _preparar_productos_catalogo(productos)

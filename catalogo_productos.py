@@ -20,24 +20,21 @@ LINEAS_PRODUCTO = ("INAPEL", "MARFIL", "TOROFIL")
 
 _MAPA_COLUMNAS = {
     "MARFIL": {
-        "referencia": "REFERENCIA SIESA",
+        "referencia_siesa": "REFERENCIA SIESA",
         "detalle_presentacion": "EXTENSION MARFIL",
         "producto": "DESCRIPCION INTERNA",
-        "plu": "PLU MARFIL",
         "unidad": "UNIDAD DE INVENTARIO"
     },
     "INAPEL": {
-        "referencia": "REF",
+        "referencia_siesa": "REFERENCIA SIESA",
         "detalle_presentacion": "DETALLE EXT 1",
         "producto": "DESCRIPCION INTERNA",
-        "plu": "P L U",
         "unidad": "UNIDAD DE MEDIDA"
     },
     "TOROFIL": {
-        "referencia": "REFERENCIA",
+        "referencia_siesa": "REFERENCIA SIESA",
         "detalle_presentacion": "PRESENTACION",
-        "producto": "",
-        "plu": "",
+        "producto": "PRESENTACION",
         "unidad": ""
     }
 }
@@ -102,16 +99,15 @@ def _leer_catalogo():
             }
 
             for fila in hoja.iter_rows(min_row=2, values_only=True):
-                referencia = _valor_columna(fila, columnas, linea, "referencia")
-                if not referencia:
+                referencia_siesa = _valor_columna(fila, columnas, linea, "referencia_siesa")
+                if not referencia_siesa:
                     continue
 
                 productos.append({
                     "linea": linea,
-                    "referencia": referencia,
+                    "referencia_siesa": referencia_siesa,
                     "detalle_presentacion": _valor_columna(fila, columnas, linea, "detalle_presentacion"),
                     "producto": _valor_columna(fila, columnas, linea, "producto"),
-                    "plu": _valor_columna(fila, columnas, linea, "plu"),
                     "unidad": _valor_columna(fila, columnas, linea, "unidad")
                 })
     finally:
@@ -141,12 +137,12 @@ def cargar_catalogo(forzar=False):
         return list(_CACHE_PRODUCTOS)
 
 
-def buscar_productos(linea, referencia):
+def buscar_productos(linea, referencia_siesa):
     linea_normalizada = normalizar_linea(linea)
     if linea_normalizada not in LINEAS_PRODUCTO:
         raise ValueError("La línea de producto no es válida.")
 
-    referencia_normalizada = normalizar_referencia(referencia)
+    referencia_normalizada = normalizar_referencia(referencia_siesa)
     if not referencia_normalizada:
         return []
 
@@ -154,7 +150,7 @@ def buscar_productos(linea, referencia):
         dict(producto)
         for producto in cargar_catalogo()
         if producto["linea"] == linea_normalizada
-        and normalizar_referencia(producto["referencia"]) == referencia_normalizada
+        and normalizar_referencia(producto["referencia_siesa"]) == referencia_normalizada
     ]
 
 

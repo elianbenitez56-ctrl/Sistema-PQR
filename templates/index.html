@@ -675,24 +675,61 @@ body{
 .herramienta-option span{min-width:0;line-height:1.35;overflow-wrap:anywhere}
 
 /* ─── PRODUCT TABLE ─── */
-.table-wrap{overflow-x:auto;border-radius:var(--radius-md);border:1px solid var(--outline-soft);-webkit-overflow-scrolling:touch}
-.table-pqr{width:100%;border-collapse:collapse;font-size:12.5px;min-width:740px}
+.table-wrap{
+  overflow-x:auto; max-width:100%; border-radius:var(--radius-md);
+  border:1px solid var(--outline-soft); -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin; scrollbar-color:var(--outline) var(--surface);
+}
+.table-wrap::-webkit-scrollbar{height:8px}
+.table-wrap::-webkit-scrollbar-track{background:var(--surface);border-radius:var(--radius-full)}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--outline);border-radius:var(--radius-full)}
+.table-wrap::-webkit-scrollbar-thumb:hover{background:var(--blue)}
+.table-pqr{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;min-width:1300px}
+.table-pqr .col-pqr-linea{width:92px}
+.table-pqr .col-pqr-referencia{width:100px}
+.table-pqr .col-pqr-plu{width:65px}
+.table-pqr .col-pqr-producto{width:205px}
+.table-pqr .col-pqr-detalle{width:205px}
+.table-pqr .col-pqr-lote{width:105px}
+.table-pqr .col-pqr-fecha{width:120px}
+.table-pqr .col-pqr-cantidad{width:65px}
+.table-pqr .col-pqr-unidad{width:90px}
+.table-pqr .col-pqr-tipo-doc{width:125px}
+.table-pqr .col-pqr-num-doc{width:90px}
+.table-pqr .col-pqr-acciones{width:40px}
 .table-pqr thead th{
-  background:var(--navy); color:#fff; padding:10px 12px;
-  text-align:left; font-size:10px; font-weight:600;
-  letter-spacing:0.06em; text-transform:uppercase;
+  background:var(--navy); color:#fff; padding:11px 9px;
+  text-align:left; vertical-align:middle; font-size:10px; font-weight:700;
+  letter-spacing:0.05em; line-height:1.25; text-transform:uppercase;
 }
 .table-pqr tbody tr:nth-child(even) td{background:var(--surface)}
 .table-pqr tbody tr:hover td{background:var(--surface-container)}
-.table-pqr td{padding:4px 4px;border-bottom:1px solid var(--outline-soft)}
-.table-pqr td input,.table-pqr td select{
-  border:none; background:transparent; width:100%;
-  font-size:12.5px; color:var(--on-surface); padding:7px 8px;
+.table-pqr td{padding:8px 6px;border-bottom:1px solid var(--outline-soft);vertical-align:top}
+.table-pqr td input,.table-pqr td select,.table-pqr td textarea{
+  border:1px solid transparent; background:transparent; width:100%;
+  min-height:42px; font-size:12px; color:var(--on-surface); padding:9px 8px;
   font-family:var(--font); outline:none; border-radius:var(--radius-sm);
+  line-height:1.3;
 }
-.table-pqr td input:focus,.table-pqr td select:focus{
-  background:var(--surface-container-low);
-  box-shadow:0 0 0 2px var(--blue-light);
+.table-pqr td textarea{
+  min-height:58px; height:58px; resize:none; overflow:hidden;
+  white-space:pre-wrap; overflow-wrap:anywhere;
+}
+.table-pqr td input:focus,.table-pqr td select:focus,.table-pqr td textarea:focus{
+  background:var(--surface-container-low); border-color:var(--blue);
+  box-shadow:0 0 0 2px rgba(120,172,255,.45);
+}
+.table-pqr td input:disabled,.table-pqr td textarea:disabled{
+  opacity:1; background:var(--surface-dim); color:var(--on-surface-variant);
+  border-color:var(--outline-soft); cursor:not-allowed;
+}
+.table-pqr td .catalog-choice{
+  min-height:38px; margin-top:6px !important; padding:7px 26px 7px 8px;
+  border:1px solid var(--blue-light); background:var(--info-bg);
+  color:var(--navy); font-size:11px; font-weight:600;
+}
+.table-pqr td .catalog-message{
+  line-height:1.25; overflow-wrap:anywhere;
 }
 .table-pqr td:last-child{width:36px;text-align:center}
 
@@ -1204,7 +1241,7 @@ body{
   .hero-left h1{font-size:20px}
   .hero-left p{font-size:12px}
   .db-table{min-width:650px}
-  .table-pqr{min-width:650px}
+  .table-pqr{min-width:1300px}
   .topbar-date .material-symbols-outlined{display:none}
   .topbar-date span:not(.material-symbols-outlined){font-size:11px}
 }
@@ -1249,7 +1286,7 @@ body{
   .toolbar{flex-direction:column;align-items:flex-start;gap:12px}
   .dash-card .dash-value{font-size:28px}
   .result-card .detail-grid{grid-template-columns:minmax(0,1fr)}
-  .table-pqr{font-size:11.5px;min-width:600px}
+  .table-pqr{font-size:11.5px;min-width:1300px}
   .chart-box{height:240px}
   .chart-box canvas{height:240px !important;max-height:240px !important}
   .hamburger{display:none}
@@ -1308,7 +1345,7 @@ body{
   .toolbar{flex-direction:column;align-items:flex-start;gap:10px}
   .dash-card .dash-value{font-size:26px}
   .result-card .detail-grid{grid-template-columns:minmax(0,1fr)}
-  .table-pqr{font-size:11px;min-width:550px}
+  .table-pqr{font-size:11px;min-width:1300px}
   .db-table{font-size:12px;min-width:550px}
   .modal-box{margin:10px}
   .modal-header{padding:14px 18px 10px}
@@ -1360,8 +1397,9 @@ body{
   .modal-box{margin:8px}
   .inv-card{margin-top:16px}
   .inv-header{padding:12px 16px;font-size:14px}
-  .table-pqr td{padding:3px 3px}
-  .table-pqr td input,.table-pqr td select{padding:5px 6px;font-size:11px}
+  .table-pqr td{padding:5px 4px}
+  .table-pqr td input,.table-pqr td select,.table-pqr td textarea{padding:7px 6px;font-size:11px;min-height:40px}
+  .table-pqr td textarea{height:52px}
   .sidebar{width:100%;max-width:300px}
   .topbar-btn[title="Notificaciones"]{display:none}
   .topbar-user{padding:4px 8px 4px 4px}
@@ -1381,7 +1419,7 @@ body{
   .stat-card .stat-value{font-size:22px}
   .card-header h3{font-size:13px}
   .db-table{min-width:480px;font-size:11px}
-  .table-pqr{min-width:480px;font-size:10.5px}
+  .table-pqr{min-width:1300px;font-size:10.5px}
   .modal-box{margin:4px}
 }
 /* Móvil muy pequeño (320-360) */
@@ -1395,7 +1433,7 @@ body{
   .dash-card .dash-value{font-size:20px}
   .stat-card .stat-value{font-size:20px}
   .db-table{min-width:440px;font-size:10px}
-  .table-pqr{min-width:440px;font-size:10px}
+  .table-pqr{min-width:1300px;font-size:10px}
 }
 
 /* ─── SAFE AREAS (iPhone/iPad) ─── */
@@ -1798,12 +1836,26 @@ a:focus-visible{
           <div class="card-body" style="padding-bottom:12px">
             <div class="table-wrap">
               <table class="table-pqr">
+                <colgroup>
+                  <col class="col-pqr-linea">
+                  <col class="col-pqr-referencia">
+                  <col class="col-pqr-plu">
+                  <col class="col-pqr-producto">
+                  <col class="col-pqr-detalle">
+                  <col class="col-pqr-lote">
+                  <col class="col-pqr-fecha">
+                  <col class="col-pqr-cantidad">
+                  <col class="col-pqr-unidad">
+                  <col class="col-pqr-tipo-doc">
+                  <col class="col-pqr-num-doc">
+                  <col class="col-pqr-acciones">
+                </colgroup>
                 <thead><tr>
                   <th style="min-width:105px">Línea</th>
-                  <th style="min-width:85px">PLU</th>
-                  <th style="min-width:155px">Producto involucrado</th>
-                  <th style="min-width:180px">Detalle / presentación</th>
                   <th style="min-width:85px">Referencia</th>
+                  <th style="min-width:65px">PLU</th>
+                  <th style="min-width:205px">Producto involucrado</th>
+                  <th style="min-width:205px">Detalle / presentación</th>
                   <th style="min-width:95px">Lote / OP</th>
                   <th style="min-width:105px">Fecha empaque</th>
                   <th style="min-width:60px">Cant.</th>
@@ -1820,14 +1872,14 @@ a:focus-visible{
                       <option value="MARFIL">MARFIL</option>
                       <option value="TOROFIL">TOROFIL</option>
                     </select></td>
+                    <td><input type="text" class="prod-ref" placeholder="Ref." autocomplete="off" oninput="catalogoReferenciaCambio(this)"></td>
                     <td><input type="text" class="plu-input catalog-plu" placeholder="PLU" readonly disabled></td>
                     <td>
-                      <input type="text" class="catalog-field catalog-producto" placeholder="Catálogo" readonly disabled>
+                      <textarea class="catalog-field catalog-producto" rows="2" placeholder="Catálogo" readonly disabled></textarea>
                       <select class="catalog-choice" style="display:none;margin-top:4px" onchange="seleccionarCatalogo(this)"></select>
                       <small class="catalog-message" style="display:block;min-height:15px;color:var(--error);font-size:10px"></small>
                     </td>
-                    <td><input type="text" class="catalog-field catalog-detalle" placeholder="Catálogo" readonly disabled></td>
-                    <td><input type="text" class="prod-ref" placeholder="Ref." autocomplete="off" oninput="catalogoReferenciaCambio(this)"></td>
+                    <td><textarea class="catalog-field catalog-detalle" rows="2" placeholder="Catálogo" readonly disabled></textarea></td>
                     <td><input type="text" class="prod-lote" placeholder="Lote/OP"></td>
                     <td><input type="date" class="prod-fecha"></td>
                     <td><input type="number" class="prod-cantidad" min="0" placeholder="0"></td>
@@ -2981,7 +3033,7 @@ function timerCls(dias) {
 function addRow() {
   var tbody = document.getElementById('prod-tbody');
   var row = tbody.rows[0].cloneNode(true);
-  row.querySelectorAll('input').forEach(function(i) { i.value = ''; });
+  row.querySelectorAll('input, textarea').forEach(function(i) { i.value = ''; });
   row.querySelectorAll('select').forEach(function(s) {
     if (s.classList.contains('prod-linea')) s.value = '';
     else if (s.classList.contains('catalog-choice')) {
@@ -3312,7 +3364,7 @@ function limpiar() {
   document.getElementById('f-files').value = '';
   var tbody = document.getElementById('prod-tbody');
   while (tbody.rows.length > 1) tbody.deleteRow(1);
-  tbody.rows[0].querySelectorAll('input').forEach(function(i) { i.value = ''; });
+  tbody.rows[0].querySelectorAll('input, textarea').forEach(function(i) { i.value = ''; });
   tbody.rows[0].querySelectorAll('select').forEach(function(s) {
     if (s.classList.contains('prod-linea')) s.value = '';
     else if (s.classList.contains('catalog-choice')) {

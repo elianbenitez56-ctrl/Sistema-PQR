@@ -1,3 +1,5 @@
+import base64
+import binascii
 import os
 import json
 import shutil
@@ -9,12 +11,59 @@ from contextlib import contextmanager
 from datetime import datetime
 from collections import Counter
 from functools import wraps
+from io import BytesIO
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
 
+from google_drive_storage import (
+    GoogleAppsScriptStorage,
+    StorageConfigurationError,
+    StorageVerificationError
+)
+
 print(">>> USANDO excel_db.py <<<")
 
-ARCHIVO = "BaseDatos_PQR.xlsx"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ARCHIVO_REPOSITORIO = os.path.join(BASE_DIR, "BaseDatos_PQR.xlsx")
+
+_ruta_db_configurada = os.getenv("PQR_DB_PATH", "").strip()
+if _ruta_db_configurada and not os.path.isabs(_ruta_db_configurada):
+    _ruta_db_configurada = os.path.join(BASE_DIR, _ruta_db_configurada)
+ARCHIVO = os.path.abspath(_ruta_db_configurada or ARCHIVO_REPOSITORIO)
+
+_ruta_evidencias_configurada = os.getenv("PQR_UPLOAD_DIR", "").strip()
+if _ruta_evidencias_configurada and not os.path.isabs(_ruta_evidencias_configurada):
+    _ruta_evidencias_configurada = os.path.join(BASE_DIR, _ruta_evidencias_configurada)
+EVIDENCIAS_DIR = os.path.abspath(
+    _ruta_evidencias_configurada
+    or os.path.join(BASE_DIR, "Base_Datos", "Evidencias")
+)
+
+_STORAGE_ADAPTER = None
+
+
+def modo_almacenamiento():
+    return os.getenv("PQR_STORAGE", "local").strip().lower() or "local"
+
+
+def obtener_storage():
+    global _STORAGE_ADAPTER
+
+    modo = modo_almacenamiento()
+    if modo == "local":
+        return None
+    if modo != "google_drive":
+        raise StorageConfigurationError(
+            f"PQR_STORAGE no soportado: {modo}. Use local o google_drive."
+        )
+    if _STORAGE_ADAPTER is None:
+        _STORAGE_ADAPTER = GoogleAppsScriptStorage()
+    return _STORAGE_ADAPTER
+
+os.makedirs(os.path.dirname(ARCHIVO), exist_ok=True)
+print(f">>> ALMACENAMIENTO PQR: {modo_almacenamiento()} <<<")
+print(f">>> RUTA BASE DE DATOS PQR: {ARCHIVO} <<<")
+print(f">>> RUTA EVIDENCIAS PQR: {EVIDENCIAS_DIR} <<<")
 
 _DB_MUTEX = threading.RLock()
 _DB_LOCK_STATE = threading.local()
@@ -99,8 +148,41 @@ def proteger_escritura(func):
     return wrapper
 
 
+def _cargar_workbook_google(**opciones):
+    maestro = obtener_storage().get_master()
+    contenido_base64 = maestro.get("base64", "") if isinstance(maestro, dict) else ""
+
+    if not contenido_base64:
+        raise StorageVerificationError(
+            "Google Apps Script no devolvió el contenido del archivo maestro."
+        )
+
+    try:
+        contenido = base64.b64decode(contenido_base64, validate=True)
+    except (binascii.Error, ValueError) as error:
+        raise StorageVerificationError(
+            "El contenido Base64 del archivo maestro no es válido."
+        ) from error
+
+    opciones = dict(opciones)
+    opciones["read_only"] = False
+
+    try:
+        return load_workbook(BytesIO(contenido), **opciones)
+    except zipfile.BadZipFile:
+        print("[excel] El maestro descargado de Google Drive no es un XLSX válido.")
+        raise
+
+
 def cargar_workbook_seguro(ruta=None, **opciones):
     """Abre un XLSX existente y deja que BadZipFile detenga la operación."""
+
+    ruta_original = ruta
+    if modo_almacenamiento() == "google_drive" and (
+        ruta_original is None
+        or os.path.abspath(ruta_original) == ARCHIVO
+    ):
+        return _cargar_workbook_google(**opciones)
 
     ruta = ruta or ARCHIVO
     if not os.path.exists(ruta):
@@ -117,9 +199,13 @@ def guardar_workbook_atomico(wb, ruta=None):
     """Guarda, valida y reemplaza un XLSX sin escribir sobre el original."""
 
     ruta = ruta or ARCHIVO
+    usar_drive = (
+        modo_almacenamiento() == "google_drive"
+        and os.path.abspath(ruta) == ARCHIVO
+    )
     with bloqueo_base_datos():
         temporal = None
-        directorio = os.path.dirname(os.path.abspath(ruta)) or "."
+        directorio = tempfile.gettempdir() if usar_drive else (os.path.dirname(os.path.abspath(ruta)) or ".")
 
         try:
             descriptor, temporal = tempfile.mkstemp(
@@ -135,8 +221,13 @@ def guardar_workbook_atomico(wb, ruta=None):
             validacion = cargar_workbook_seguro(temporal, read_only=True, data_only=False)
             validacion.close()
 
-            os.replace(temporal, ruta)
-            temporal = None
+            if usar_drive:
+                with open(temporal, "rb") as archivo:
+                    contenido_base64 = base64.b64encode(archivo.read()).decode("ascii")
+                obtener_storage().save_master(contenido_base64)
+            else:
+                os.replace(temporal, ruta)
+                temporal = None
         finally:
             try:
                 wb.close()
@@ -190,7 +281,23 @@ def serializar_herramientas(herramientas):
 @proteger_escritura
 def crear_excel():
 
+    if modo_almacenamiento() == "google_drive":
+        obtener_storage().asegurar_maestro()
+        return
+
     if os.path.exists(ARCHIVO):
+        return
+
+    # Conserva el libro base al inicializar un almacenamiento persistente.
+    if ARCHIVO != ARCHIVO_REPOSITORIO and os.path.exists(ARCHIVO_REPOSITORIO):
+        origen = cargar_workbook_seguro(
+            ARCHIVO_REPOSITORIO,
+            read_only=True,
+            data_only=False
+        )
+        origen.close()
+        shutil.copy2(ARCHIVO_REPOSITORIO, ARCHIVO)
+        print(f">>> BASE DE DATOS INICIAL COPIADA A: {ARCHIVO} <<<")
         return
 
     wb = Workbook()
@@ -293,7 +400,7 @@ def crear_excel():
 @proteger_escritura
 def actualizar_estructura_excel():
 
-    if not os.path.exists(ARCHIVO):
+    if modo_almacenamiento() != "google_drive" and not os.path.exists(ARCHIVO):
         crear_excel()
         return
 
@@ -464,6 +571,7 @@ def actualizar_estructura_excel():
 # RADICADO
 # ==========================================================
 
+@proteger_escritura
 def generar_radicado():
 
     actualizar_estructura_excel()
@@ -472,22 +580,24 @@ def generar_radicado():
 
     ws = wb["PQR"]
 
-    fila = ws.max_row
+    max_consecutivo = 0
 
-    if fila <= 1:
-        consecutivo = 1
-
-    else:
-
-        ultimo = ws.cell(row=fila, column=1).value
-
+    for fila in ws.iter_rows(min_row=2, min_col=1, max_col=1, values_only=True):
+        valor = str(fila[0] or "").strip()
+        if not valor:
+            continue
+        if not valor.upper().startswith("PQR-"):
+            print(f"[excel] Radicado ignorado por formato inválido: {valor}")
+            continue
         try:
+            max_consecutivo = max(
+                max_consecutivo,
+                int(valor.rsplit("-", 1)[1])
+            )
+        except (IndexError, ValueError) as error:
+            print(f"[excel] Radicado ignorado por consecutivo inválido ({valor}): {error}")
 
-            consecutivo = int(str(ultimo).split("-")[-1]) + 1
-
-        except:
-
-            consecutivo = fila
+    consecutivo = max_consecutivo + 1
 
     wb.close()
 
@@ -698,7 +808,8 @@ def consultar_pqr(valor_busqueda):
             productos_raw = fila[13] if len(fila) > 13 and fila[13] else "[]"
             try:
                 productos = json.loads(productos_raw)
-            except:
+            except (TypeError, ValueError) as error:
+                print(f"[excel] Productos JSON inválido para {radicado}: {error}")
                 productos = []
 
             wb.close()
@@ -763,7 +874,8 @@ def listar_pqrs():
 
         try:
             productos = json.loads(productos_raw)
-        except:
+        except (TypeError, ValueError) as error:
+            print(f"[excel] Productos JSON inválido para {fila[0]}: {error}")
             productos = []
 
         lista.append({
@@ -1151,11 +1263,11 @@ def eliminar_pqr(radicado):
 
         guardar_workbook_atomico(wb)
 
-    except Exception:
-
+    except Exception as error:
+        print(f"[excel] No fue posible guardar la eliminación de {radicado}: {error}")
         return "save_error"
 
-    carpeta = os.path.join("Base_Datos", "Evidencias", str(radicado))
+    carpeta = os.path.join(EVIDENCIAS_DIR, str(radicado))
 
     if os.path.isdir(carpeta):
         shutil.rmtree(carpeta, ignore_errors=True)

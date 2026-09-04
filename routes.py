@@ -19,9 +19,9 @@ from excel_db import (
     marcar_correo_confirmacion,
     marcar_notificacion_comercial_enviada,
     HERRAMIENTAS_ANALISIS,
-    normalizar_herramientas
+    normalizar_herramientas,
+    bloqueo_base_datos
 )
-
 from email_service import enviar_confirmacion_pqr, enviar_notificacion_comercial
 from catalogo_productos import (
     LINEAS_PRODUCTO,
@@ -833,7 +833,39 @@ def api_guardar_pqr():
     datos["area_receptor"] = usuario_actual.get("linea_producto", "") or ""
 
     # 1) SIEMPRE se guarda la PQR primero. El correo nunca bloquea el registro.
-    guardar_pqr(datos)
+    try:
+        guardar_pqr(datos)
+    except Exception:
+        current_app.logger.exception(
+            "Error al guardar la PQR %s",
+            radicado or "sin-radicado"
+        )
+        return jsonify({
+            "ok": False,
+            "mensaje": "No fue posible guardar la PQR. El registro no fue confirmado."
+        }), 500
+
+    try:
+        pqr_verificada = consultar_pqr(radicado)
+    except Exception:
+        current_app.logger.exception(
+            "Error al verificar la persistencia de la PQR %s",
+            radicado
+        )
+        return jsonify({
+            "ok": False,
+            "mensaje": "La PQR fue procesada, pero no pudo verificarse en la base de datos."
+        }), 500
+
+    if not pqr_verificada or str(pqr_verificada.get("radicado", "")).strip().upper() != str(radicado).strip().upper():
+        current_app.logger.error(
+            "La PQR %s no fue encontrada después de guardarla",
+            radicado
+        )
+        return jsonify({
+            "ok": False,
+            "mensaje": "La PQR no pudo verificarse después de guardarla. No se confirmó el registro."
+        }), 500
 
     email_enviado = False
     email_estado = "no_intentado"

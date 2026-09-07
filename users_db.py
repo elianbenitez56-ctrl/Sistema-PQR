@@ -90,9 +90,17 @@ def _asegurar_hoja():
 
 def _fila_a_usuario(fila):
 
-    activo = True
+    activo = False
     if len(fila) > 7 and fila[7] is not None:
-        activo = str(fila[7]).strip() in ("1", "True", "true", "Sí", "SI", "Activo")
+        val = fila[7]
+        # Normalizar valor para aceptar int 1, float 1.0, bool True, strings "1", "1.0", etc.
+        if isinstance(val, bool):
+            activo = val
+        elif isinstance(val, (int, float)):
+            activo = val == 1
+        else:
+            val_str = str(val).strip().upper().replace(".0", "")
+            activo = val_str in ("1", "TRUE", "ACTIVO", "SÍ", "SI", "ACTIVO")
 
     return {
         "id": fila[0],

@@ -31,7 +31,7 @@ from datetime import datetime
 from html import escape
 from urllib.parse import quote
 
-import requests
+import smtplib
 
 NOMBRE_SISTEMA = "INAPEL · Industria Nacional Papelera S.A.S."
 
@@ -67,20 +67,36 @@ def _var(nombre, defecto=None):
     return os.environ.get(nombre, defecto)
 
 
+def _convertir_a_bool(valor):
+    """Convierte un valor de entorno a boolean de forma segura.
+
+    true / 1 / yes / si / sí → True
+    false / 0 / no → False
+    """
+    if valor is None:
+        return False
+    valor_lower = valor.strip().lower()
+    return valor_lower in ("true", "1", "yes", "sí", "si")
+
+
 def _correo_valido(correo):
     return bool(correo) and re.match(EMAIL_REGEX, correo.strip()) is not None
 
 
-def _api_configurado():
-    """Indica si existen las variables obligatorias para la API de correo."""
-
-    url = _var("EMAIL_API_URL", "").strip()
-    key = _var("EMAIL_API_KEY", "").strip()
-
-    return bool(url and key)
+def smtp_configurado():
+    """Indica si existen las variables obligatorias para SMTP."""
+    requeridos = ["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD"]
+    faltantes = [nombre for nombre in requeridos if not _var(nombre, "")]
+    return len(faltantes) == 0
 
 
-def _api_missing_variables():
+def variables_smtp_faltantes():
+    """Devuelve la lista de variables SMTP obligatorias que están vacías."""
+    requeridos = ["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD"]
+    faltantes = [nombre for nombre in requeridos if not _var(nombre, "")]
+    return faltantes
+
+def variables_api_faltantes():
     """Devuelve la lista de variables API obligatorias que están vacías."""
 
     faltantes = []
@@ -90,58 +106,63 @@ def _api_missing_variables():
     return faltantes
 
 
-def _post_enviar_correo(url, api_key, payload):
-    """Realiza el POST al servicio de correo HTTPS.
-
-    Retorna (True, "") si el envío fue exitoso, o (False, motivo) si falló.
-    Nunca lanza excepciones: cualquier error se captura y devuelve
-    como (False, motivo) para no bloquear la PQR.
+def _enviar_smtp(destinatarios, mensaje):
     """
+    Envía un correo usando SMTP.
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
+    Acepta destinatario individual o lista.
+    Retorna (True, "") si fue exitoso, o (False, motivo) si falló.
+    Nunca lanza excepciones.
 
+    - Utiliza SMTP_USER para autenticación
+    - Utiliza SMTP_PASSWORD para autenticación
+    - Utiliza SMTP_FROM como remitente (o SMTP_USER por defecto)
+    - Usa SMTP_HOST y SMTP_PORT
+    - Interpreta SMTP_USE_TLS y SMTP_USE_SSL correctamente
+    - Timeout de 20 segundos
+    - Cierra la conexión correctamente aunque exista un error
+    """
+    host = _var("SMTP_HOST", "").strip()
     try:
-        response = requests.post(
-            url,
-            headers=headers,
-            json=payload,
-            timeout=20,
-            verify=True
-        )
-        if response.status_code >= 200 and response.status_code < 300:
+        puerto = int(_var("SMTP_PORT", "587"))
+    except (ValueError, TypeError):
+        puerto = 587
+
+    usuario = _var("SMTP_USER", "").strip()
+    password = _var("SMTP_PASSWORD", "").strip()
+    remitente = _var("SMTP_FROM", usuario).strip()
+    usar_tls = _convertir_a_bool(_var("SMTP_USE_TLS", "true"))
+    usar_ssl = _convertir_a_bool(_var("SMTP_USE_SSL", "false"))
+
+    if not host or not usuario or not password:
+        return False, "variables_smtp_faltantes"
+
+    servidor = None
+    try:
+        if usar_ssl:
+            servidor = smtplib.SMTP_SSL(host, puerto, timeout=20)
+        else:
+            servidor = smtplib.SMTP(host, puerto, timeout=20)
+            servidor.ehlo()
+            if usar_tls:
+                servidor.starttls()
+                servidor.ehlo()
+
+        servidor.login(usuario, password)
+
+        if not remitente:
+            remitente = usuario
+
+        servidor.sendmail(remitente, destinatarios, mensaje.as_string())
+        return True, ""
+    except Exception:
+        return False, "Error de envío SMTP"
+    finally:
+        if servidor is not None:
             try:
-                data = response.json()
-                if data.get("ok", False):
-                    return True, ""
+                servidor.quit()
             except Exception:
                 pass
-            # Aunque no venga {"ok": true}, aceptamos 2xx como éxito
-            return True, ""
-
-        # Respuesta no exitosa HTTP
-        try:
-            error_data = response.json()
-            error_msg = error_data.get("error", error_data.get("mensaje", ""))
-        except Exception:
-            error_msg = None
-
-        error_detail = error_msg or f"HTTP {response.status_code}"
-        return False, error_detail
-
-    except requests.exceptions.RequestException as error:
-        # Error de conexión, timeout, etc.
-        return False, f"Error de conexión con servicio de correo: {error}"
-    except Exception as error:
-        return False, f"Error inesperado en envío de correo: {error}"
-
-
-def variables_api_faltantes():
-    """Devuelve la lista de variables API obligatorias que están vacías."""
-
-    return _api_missing_variables()
 
 
 def enviar_confirmacion_pqr(radicado, correo_cliente, datos):
@@ -153,13 +174,13 @@ def enviar_confirmacion_pqr(radicado, correo_cliente, datos):
     y se devuelve como (False, motivo) para no bloquear la PQR.
     """
 
-    if not _api_configurado():
-        faltan = ", ".join(variables_api_faltantes())
+    if not smtp_configurado():
+        faltan = ", ".join(variables_smtp_faltantes())
         print(
-            f"[correo] API no configurada: faltan las variables {faltan}. "
+            f"[correo] SMTP no configurado: faltan las variables {faltan}. "
             "El correo de confirmación NO se envió."
         )
-        return False, f"API no configurada (faltan las variables: {faltan})."
+        return False, f"SMTP no configurado (faltan las variables: {faltan})."
 
     if not _correo_valido(correo_cliente):
         return False, "El correo del cliente no es válido."
@@ -170,31 +191,11 @@ def enviar_confirmacion_pqr(radicado, correo_cliente, datos):
 
     mensaje = MIMEMultipart("alternative")
     mensaje["Subject"] = asunto
-    mensaje["From"] = _var("EMAIL_FROM", _var("EMAIL_API_KEY", "")).strip()
+    mensaje["From"] = _var("SMTP_FROM", _var("SMTP_USER", "")).strip()
     mensaje["To"] = correo_cliente.strip()
     mensaje.attach(MIMEText(html, "html", "utf-8"))
 
-    # Construir payload para la API HTTPS
-    url_base = _var("PQR_URL_BASE", "").strip().rstrip("/")
-
-    payload = {
-        "from": str(mensaje["From"] or ""),
-        "to": str(mensaje["To"] or ""),
-        "subject": str(mensaje["Subject"] or ""),
-        "html": str(mensaje.as_string()),
-        "template": "confirmacion_pqr",
-        "radicado": str(radicado),
-    }
-
-    # Agregar enlace de consulta si hay URL base
-    if url_base:
-        separador = "&" if "?" in url_base else "?"
-        payload["consulta_url"] = f"{url_base}{separador}radicado={radicado}"
-
-    host = _var("EMAIL_API_URL", "").strip()
-    api_key = _var("EMAIL_API_KEY", "").strip()
-
-    ok, motivo = _post_enviar_correo(host, api_key, payload)
+    ok, motivo = _enviar_smtp([correo_cliente.strip()], mensaje)
 
     if ok:
         print(
@@ -219,11 +220,11 @@ def enviar_notificacion_comercial(
     campos_pendientes,
     url_base=None
 ):
-    """Notifica a Comercial usando una API HTTPS en lugar de SMTP."""
+    """Notifica a Comercial usando SMTP."""
 
-    if not _api_configurado():
-        faltan = ", ".join(variables_api_faltantes())
-        mensaje = f"API no configurada (faltan las variables: {faltan})."
+    if not smtp_configurado():
+        faltan = ", ".join(variables_smtp_faltantes())
+        mensaje = f"SMTP no configurado (faltan las variables: {faltan})."
         print(f"[correo] Notificación comercial NO enviada: {mensaje}")
         return False, mensaje
 
@@ -254,28 +255,11 @@ def enviar_notificacion_comercial(
 
     mensaje = MIMEMultipart("alternative")
     mensaje["Subject"] = asunto
-    mensaje["From"] = _var("EMAIL_FROM", _var("EMAIL_API_KEY", "")).strip()
+    mensaje["From"] = _var("SMTP_FROM", _var("SMTP_USER", "")).strip()
     mensaje["To"] = ", ".join(correos)
     mensaje.attach(MIMEText(html, "html", "utf-8"))
 
-    # Construir payload para la API HTTPS
-    payload = {
-        "from": str(mensaje["From"] or ""),
-        "to": str(mensaje["To"] or ""),
-        "subject": str(mensaje["Subject"] or ""),
-        "html": str(mensaje.as_string()),
-        "template": "notificacion_comercial",
-        "radicado": str(radicado),
-    }
-
-    # Agregar enlace de seguimiento si hay URL base
-    if base:
-        payload["seguimiento_url"] = f"{base}?seguimiento={quote(str(radicado))}"
-
-    host = _var("EMAIL_API_URL", "").strip()
-    api_key = _var("EMAIL_API_KEY", "").strip()
-
-    ok, motivo = _post_enviar_correo(host, api_key, payload)
+    ok, motivo = _enviar_smtp(correos, mensaje)
 
     if ok:
         print(

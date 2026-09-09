@@ -282,7 +282,13 @@ def serializar_herramientas(herramientas):
 def crear_excel():
 
     if modo_almacenamiento() == "google_drive":
-        obtener_storage().asegurar_maestro()
+        try:
+            obtener_storage().asegurar_maestro()
+        except StorageUnavailableError as exc:
+            print(
+                "[almacenamiento] Google Apps Script temporalmente no disponible "
+                f"durante el arranque: {exc}"
+            )
         return
 
     if os.path.exists(ARCHIVO):

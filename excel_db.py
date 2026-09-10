@@ -18,6 +18,7 @@ from openpyxl.styles import Font
 from google_drive_storage import (
     GoogleAppsScriptStorage,
     StorageConfigurationError,
+    StorageUnavailableError,
     StorageVerificationError
 )
 

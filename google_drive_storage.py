@@ -173,10 +173,6 @@ class GoogleAppsScriptStorage:
         El token se ENVÍA DENTRO del JSON body, NO en headers.
         Manejo robusto de respuestas HTTP y errores.
         Manejo manual de redirects para preservar el método POST.
-
-        La sesión se crea con allow_redirects=False para evitar que requests
-        siga redirects automáticamente; seguimos cada redirect manualmente
-        manteniendo POST + JSON payload, máximo 5 redirects.
         """
         if not self.base_url:
             raise StorageConfigurationError(
@@ -195,30 +191,29 @@ class GoogleAppsScriptStorage:
 
         session = self._get_session()
         try:
-            # Medir tiempo de la petición a Google Apps Script
-            start_time = time.time()
-            # Primera petición POST con allow_redirects=False
-            # (la sesión ya tiene esta configuración, pero se hace explícito)
+            # Primera petición POST
+            start_time = time.monotonic()
             response = session.post(url, json=payload, timeout=30)
             http_status = response.status_code
             final_url = response.url
-            elapsed = time.time() - start_time
 
             # Capturar información de diagnóstico SIN exponer tokens ni contenido
-            LOGGER.debug("[STORAGE DEBUG] Inicio Apps Script action=%s HTTP_status=%s tiempo=%.2fs", action, http_status, elapsed)
-
-            # Capturar información de diagnóstico sin exponer tokens
+            LOGGER.debug("[STORAGE DEBUG] Apps Script response action=%s status=%s tiempo=%.2fs bytes=%s",
+                        action, http_status, elapsed, len(response.content))
             response_json = None
+            response_error = None
             try:
                 response_json = response.json()
+                response_error = response_json.get("error")
             except Exception:
                 response_json = None
+                response_error = None
 
             # Determinar si es éxito (códigos 2xx)
             is_success = 200 <= http_status < 300
 
             # Manejo manual de redirects (301, 302, 303, 307, 308)
-            # Google Apps Script puede redirigir; seguimos el Location preservando POST y cuerpo JSON
+            # Google Apps Script puede redirigir; seguimos el Location preservando POST
             max_redirects = 5
             redirect_count = 0
 
@@ -229,23 +224,28 @@ class GoogleAppsScriptStorage:
                 if not location:
                     break
 
-                # Seguir redirect con POST, preservando el cuerpo JSON payload
-                # 307/308 preservan el método; 302/303 tradicionales cambian a GET,
-                # pero forzamos POST para compatibilidad con Apps Script doPost
-                response = session.post(location, json=payload, timeout=30)
+                # Seguir redirect con POST (307/308 preservan método, 302/303 pueden cambiarlo)
+                # Para Apps Script, realizamos otro POST al Location
+                if http_status in (301, 302, 303):
+                    # 302/303: Tradicionalmente cambian a GET, pero forzamos POST para Apps Script
+                    response = session.post(location, json=payload, timeout=30)
+                else:
+                    # 307/308: Preservan el método POST
+                    response = session.post(location, json=payload, timeout=30)
 
                 http_status = response.status_code
                 final_url = response.url
 
-                # Intentar parsear respuesta JSON del redirect
+                # Intentar parsear respuesta JSON
                 try:
                     response_json = response.json()
+                    response_error = response_json.get("error") if response_json else None
                 except Exception:
                     response_json = None
+                    response_error = None
 
                 is_success = 200 <= http_status < 300
 
-            # Si después de los redirects no fue éxito, lanzar error
             if not is_success:
                 LOGGER.exception(
                     "Error HTTP %s en Google Apps Script durante: %s",
@@ -256,6 +256,13 @@ class GoogleAppsScriptStorage:
                 )
 
             # Si la respuesta no tiene ok: true, lanzar error con campo error
+            # Registrar metadatos seguros SIN exponer contenido
+            if response_json and response_json.get("ok"):
+                file_name = response_json.get("fileName", "")
+                xlsx_size = response_json.get("size", 0)
+                b64_chars = len(response_json.get("base64", ""))
+                LOGGER.debug("[STORAGE DEBUG] get_master OK file=%s xlsx_bytes=%s base64_chars=%s",
+                            file_name, xlsx_size, b64_chars)
             if response_json and not response_json.get("ok", False):
                 error_msg = response_json.get("error")
                 if error_msg:
@@ -268,24 +275,9 @@ class GoogleAppsScriptStorage:
                     f"Respuesta: {response_json}"
                 )
 
-            # Registrar tamaño y metadatos SIN exponer contenido
-            if response_json and response_json.get("ok"):
-                file_name = response_json.get("fileName", "")
-                xlsx_size = response_json.get("size", 0)
-                b64_chars = len(response_json.get("base64", ""))
-                LOGGER.debug(
-                    "[STORAGE DEBUG] get_master OK file=%s xlsx_bytes=%s base64_chars=%s",
-                    file_name, xlsx_size, b64_chars
-                )
-
             return response_json
 
         except requests.exceptions.RequestException as error:
-            elapsed = time.time() - start_time if 'start_time' in dir() else 30.0
-            LOGGER.debug(
-                "[STORAGE DEBUG] ERROR Apps Script action=%s tipo=ReadTimeout tiempo=%.2fs",
-                action, elapsed
-            )
             LOGGER.exception("Error de conexión en Google Apps Script durante: %s", action)
             raise StorageUnavailableError(
                 f"Error de conexión con Google Apps Script durante: {action}."
@@ -297,11 +289,13 @@ class GoogleAppsScriptStorage:
         except StorageUnavailableError:
             raise
         except Exception as error:
-            elapsed = time.time() - start_time if 'start_time' in dir() else 30.0
-            LOGGER.debug(
-                "[STORAGE DEBUG] ERROR Apps Script action=%s tipo=Exception tiempo=%.2fs",
-                action, elapsed
+            elapsed = (
+                time.monotonic() - start_time
+                if "start_time" in locals()
+                else 0
             )
+            LOGGER.debug("[STORAGE DEBUG] ERROR Apps Script action=%s tipo=%s tiempo=%.2fs",
+                        action, type(error).__name__, elapsed)
             LOGGER.exception("Error inesperado en Google Apps Script durante: %s", action)
             raise StorageUnavailableError(
                 f"Error inesperado en Google Apps Script durante: {action}."
@@ -346,6 +340,13 @@ class GoogleAppsScriptStorage:
                     f"Google Apps Script retornó error HTTP {http_status} GET durante: {action}."
                 )
 
+            # Registrar metadatos seguros SIN exponer contenido
+            if response_json and response_json.get("ok"):
+                file_name = response_json.get("fileName", "")
+                xlsx_size = response_json.get("size", 0)
+                b64_chars = len(response_json.get("base64", ""))
+                LOGGER.debug("[STORAGE DEBUG] get_master OK file=%s xlsx_bytes=%s base64_chars=%s",
+                            file_name, xlsx_size, b64_chars)
             if response_json and not response_json.get("ok", False):
                 error_msg = response_json.get("error")
                 if error_msg:

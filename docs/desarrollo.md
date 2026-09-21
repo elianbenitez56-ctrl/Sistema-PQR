@@ -21,9 +21,10 @@ Los tests usan la **base MySQL real** del compose (no hay mocks de base de datos
 
 | Archivo | Cubre |
 |---|---|
+| `tests/test_dominio.py` | Reglas puras: flujo de estados del seguimiento, campos obligatorios, herramientas (sin base de datos) |
 | `tests/test_smoke.py` | Salud, login inválido, bloqueo por intentos, evidencias con radicado malicioso |
 | `tests/test_pqr.py` | Flujo crear → consultar → cambiar estado → eliminar; seguimiento de Calidad (crear y actualizar) |
-| `tests/test_permisos.py` | 401/403 por rol; el vendedor no ve PQR ajenos; editar, desactivar y eliminar usuarios persiste |
+| `tests/test_permisos.py` | 401/403 por rol; el vendedor no ve PQR ajenos; editar, desactivar y eliminar usuarios persiste; todos los roles se pueden crear; el listado no expone hashes; validaciones de usuario |
 | `tests/test_flujos.py` | Catálogo, PQR con productos (y rechazo de inventados), evidencias (subida, extensión inválida, borrado), cierre comercial, vendedor registra su PQR |
 | `tests/test_radicados.py` | 8 PQR simultáneos reciben radicados únicos |
 
@@ -42,11 +43,14 @@ Convenciones (ver `tests/conftest.py`):
 ## Cómo agregar…
 
 ### Un endpoint
-1. Si necesita datos nuevos, agregue la función SQL en `app/repos/<dominio>.py` (usa `get_db_cursor()`).
-2. Agregue la ruta en el Blueprint correspondiente de `app/rutas/` con su decorador de acceso
-   (`@sesion_requerida` o `@rol_requerido(...)`). **Nunca deje una ruta sin decorador.**
-3. Si es un área nueva: cree `app/rutas/<area>.py` con `bp = Blueprint("<area>", __name__)` y agréguelo a la lista en `app/rutas/__init__.py`.
-4. Escriba un test y documente el endpoint en [api.md](api.md).
+1. Si necesita datos nuevos, agregue la función SQL en `app/repos/<dominio>.py` (usa `get_db_cursor()`; use
+   `commit=True` en toda escritura). Solo SQL: sin reglas de negocio.
+2. Ponga la regla en `app/servicios/<área>.py` como una función que reciba datos simples y lance `ErrorNegocio(mensaje, status)`
+   ante un error esperado. Si la regla es pura (sin BD), va en `app/dominio.py` y se prueba sin base de datos.
+3. Agregue la ruta en el Blueprint correspondiente de `app/rutas/` con su decorador de acceso
+   (`@sesion_requerida` o `@rol_requerido(...)`): leer petición → llamar al servicio → `jsonify`. **Nunca deje una ruta sin decorador.**
+4. Si es un área nueva: cree `app/rutas/<area>.py` con `bp = Blueprint("<area>", __name__)` y agréguelo a la lista en `app/rutas/__init__.py`.
+5. Escriba un test y documente el endpoint en [api.md](api.md).
 
 ### Una columna o tabla
 1. Edite `SCHEMA_SQL` en `app/db.py` (para bases nuevas).

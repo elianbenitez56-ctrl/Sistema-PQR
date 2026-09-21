@@ -20,7 +20,7 @@ pero sin el rol necesario, **403**. Los errores de validación devuelven **400**
 | `POST /api/login` | público (5 fallos/5 min → 429) | Inicia sesión. Cuerpo `{"usuario", "contrasena"}`. Devuelve `{"ok", "usuario": {...}}` |
 | `POST /api/logout` | — | Cierra la sesión |
 | `GET /api/sesion` | sesión | Datos del usuario actual (`401` si no hay sesión) |
-| `GET /api/usuarios` | ADMIN, LIDER_CALIDAD | Lista de usuarios |
+| `GET /api/usuarios` | ADMIN, LIDER_CALIDAD | Lista de usuarios (nunca incluye el hash de la contraseña) |
 | `POST /api/usuarios` | ADMIN, LIDER_CALIDAD | Crea un usuario (`nombre`, `usuario`, `contrasena`, `rol`, `documento`, `linea_producto`, `empresa`, `correo`, `telefono`) |
 | `PUT /api/usuarios/<id>` | ADMIN | Edición completa (incluye rol y activo) |
 | `DELETE /api/usuarios/<id>` | ADMIN | Elimina un usuario (el `admin` principal no se puede eliminar) |
@@ -34,7 +34,7 @@ pero sin el rol necesario, **403**. Los errores de validación devuelven **400**
 | `POST /api/seguimiento/calidad` | ADMIN, LIDER_CALIDAD | Guarda la sección de Calidad |
 | `POST /api/seguimiento/comercial` | ADMIN y roles comerciales | Guarda la sección comercial |
 | `POST /api/seguimiento` | ADMIN, calidad, comerciales | Ruta general anterior (compatibilidad); aplica según el rol |
-| `POST /api/cambiar_estado` | ADMIN, LIDER_CALIDAD | `{"radicado", "estado"}`; registra el cambio en el historial |
+| `POST /api/cambiar_estado` | ADMIN, LIDER_CALIDAD | `{"radicado", "estado"}`; registra el cambio en el historial. `404` si el PQR no existe |
 | `GET /api/dashboard` | ver todo | `{"total", "estados": {...}, "tipos": {...}, "prioridades": {...}}` |
 | `POST /api/evidencias` | sesión (vendedor: solo suyos) | Multipart: `radicado`, `tipo`, `archivos` (uno o varios) |
 | `GET /healthz` | público | `{"ok": true}` si la base responde; `503` si no |

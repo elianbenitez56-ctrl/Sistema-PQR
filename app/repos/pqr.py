@@ -7,17 +7,7 @@ from datetime import datetime
 
 from app.config import Config
 from app.db import get_db_connection, get_db_cursor
-
-HERRAMIENTAS_ANALISIS = (
-    "5 ¿Por qué?",
-    "Diagrama Ishikawa",
-    "Análisis Pareto",
-    "Inspección visual",
-    "Ensayos de laboratorio",
-    "Comparación muestra patrón",
-    "Checklist de inspección"
-)
-
+from app.dominio import normalizar_herramientas, serializar_herramientas
 
 # -------------------------------------------------------------------------
 # PQR
@@ -63,7 +53,46 @@ def _siguiente_radicado(cursor):
     return f"PQR-{datetime.now().year}-{consecutivo:04d}"
 
 
+def _fila_a_pqr(row):
+    try:
+        productos = json.loads(row['productos']) if row['productos'] else []
+    except (TypeError, ValueError):
+        productos = []
+
+    return {
+        "radicado": row['radicado'],
+        "fechaRec": str(row['fecha']),
+        "horaRec": str(row['hora']),
+        "tipoSol": row['tipo'] or "",
+        "cliente": row['cliente'] or "",
+        "nit": row['nit'] or "",
+        "contacto": row['contacto'] or "",
+        "tel": row['telefono'] or "",
+        "email": row['correo'] or "",
+        "estado": row['estado'] or "Recibido",
+        "prioridad": row['prioridad'] or "",
+        "desc": row['descripcion'] or "",
+        "expectativa": row['expectativa'] or "",
+        "productos": productos,
+        "empresa": row['empresa'] or "INAPEL",
+        "vendedor": row['vendedor'] or "",
+        "linea": row['linea'] or "",
+        "usuario_id": row['usuario_id'] or 0,
+        "documento_receptor": row['documento_receptor'] or "",
+        "correo_receptor": row['correo_receptor'] or "",
+        "telefono_receptor": row['telefono_receptor'] or "",
+        "cargo_receptor": row['cargo_receptor'] or "",
+        "area_receptor": row['area_receptor'] or "",
+        "ciudad_recepcion": row['ciudad_recepcion'] or "",
+        "departamento_recepcion": row['departamento_recepcion'] or "",
+        "medio_recepcion": row['medio_recepcion'] or "",
+        "otro_medio_recepcion": row['otro_medio_recepcion'] or "",
+        "savedAt": f"{row['fecha']}T{row['hora']}" if row['hora'] else row['fecha'],
+    }
+
+
 def consultar_pqr(valor_busqueda):
+    """Busca por radicado, cliente o NIT. Devuelve el PQR con su investigación e historial, o None."""
     valor = str(valor_busqueda).strip().upper()
     with get_db_cursor() as cursor:
         cursor.execute(
@@ -73,54 +102,13 @@ def consultar_pqr(valor_busqueda):
             (valor, valor, valor)
         )
         row = cursor.fetchone()
-        if not row:
-            return None
+    if not row:
+        return None
 
-        # Obtener información de investigación
-        inv = obtener_investigacion_radicado(row['radicado'])
-
-        # Obtener historial
-        hist = obtener_historial_radicado(row['radicado'])
-
-        # Formatear productos
-        try:
-            productos = json.loads(row['productos']) if row['productos'] else []
-        except (TypeError, ValueError):
-            productos = []
-
-        result = {
-            "radicado": row['radicado'],
-            "fechaRec": str(row['fecha']),
-            "horaRec": str(row['hora']),
-            "tipoSol": row['tipo'] or "",
-            "cliente": row['cliente'] or "",
-            "nit": row['nit'] or "",
-            "contacto": row['contacto'] or "",
-            "tel": row['telefono'] or "",
-            "email": row['correo'] or "",
-            "estado": row['estado'] or "Recibido",
-            "prioridad": row['prioridad'] or "",
-            "desc": row['descripcion'] or "",
-            "expectativa": row['expectativa'] or "",
-            "productos": productos,
-            "empresa": row['empresa'] or "INAPEL",
-            "vendedor": row['vendedor'] or "",
-            "linea": row['linea'] or "",
-            "usuario_id": row['usuario_id'] or 0,
-            "documento_receptor": row['documento_receptor'] or "",
-            "correo_receptor": row['correo_receptor'] or "",
-            "telefono_receptor": row['telefono_receptor'] or "",
-            "cargo_receptor": row['cargo_receptor'] or "",
-            "area_receptor": row['area_receptor'] or "",
-            "ciudad_recepcion": row['ciudad_recepcion'] or "",
-            "departamento_recepcion": row['departamento_recepcion'] or "",
-            "medio_recepcion": row['medio_recepcion'] or "",
-            "otro_medio_recepcion": row['otro_medio_recepcion'] or "",
-            "investigacion": inv,
-            "historial": hist,
-            "savedAt": f"{row['fecha']}T{row['hora']}"
-        }
-        return result
+    pqr = _fila_a_pqr(row)
+    pqr["investigacion"] = obtener_investigacion_radicado(row['radicado'])
+    pqr["historial"] = obtener_historial_radicado(row['radicado'])
+    return pqr
 
 
 def listar_pqrs():
@@ -130,48 +118,11 @@ def listar_pqrs():
             "FROM pqr p LEFT JOIN usuarios u ON p.usuario_id = u.id"
         )
         rows = cursor.fetchall()
-
-    lista = []
-    for row in rows:
-        try:
-            productos = json.loads(row['productos']) if row['productos'] else []
-        except (TypeError, ValueError):
-            productos = []
-
-        lista.append({
-            "radicado": row['radicado'],
-            "fechaRec": str(row['fecha']),
-            "horaRec": str(row['hora']),
-            "tipoSol": row['tipo'] or "",
-            "cliente": row['cliente'] or "",
-            "nit": row['nit'] or "",
-            "contacto": row['contacto'] or "",
-            "tel": row['telefono'] or "",
-            "email": row['correo'] or "",
-            "estado": row['estado'] or "Recibido",
-            "prioridad": row['prioridad'] or "",
-            "desc": row['descripcion'] or "",
-            "expectativa": row['expectativa'] or "",
-            "productos": productos,
-            "empresa": row['empresa'] or "INAPEL",
-            "vendedor": row['vendedor'] or "",
-            "linea": row['linea'] or "",
-            "usuario_id": row['usuario_id'] or 0,
-            "documento_receptor": row['documento_receptor'] or "",
-            "correo_receptor": row['correo_receptor'] or "",
-            "telefono_receptor": row['telefono_receptor'] or "",
-            "cargo_receptor": row['cargo_receptor'] or "",
-            "area_receptor": row['area_receptor'] or "",
-            "ciudad_recepcion": row['ciudad_recepcion'] or "",
-            "departamento_recepcion": row['departamento_recepcion'] or "",
-            "medio_recepcion": row['medio_recepcion'] or "",
-            "otro_medio_recepcion": row['otro_medio_recepcion'] or "",
-            "savedAt": f"{row['fecha']}T{row['hora']}" if row['hora'] else row['fecha']
-        })
-    return lista
+    return [_fila_a_pqr(row) for row in rows]
 
 
-def guardar_pqr(datos):
+def crear_pqr(datos):
+    """Inserta el PQR (y su primer historial) con un radicado nuevo, que queda en datos["radicado"]."""
     fecha_rec = datos.get("fechaRec")
     hora_rec = datos.get("horaRec")
     if isinstance(fecha_rec, str):
@@ -345,35 +296,12 @@ def guardar_historial(radicado, estado, usuario="Sistema", observacion=""):
         )
 
 
-def guardar_investigacion(datos, calidad_estado=None, comercial_estado=None,
-                        notificacion_comercial_enviada=None):
-    radicado = datos.get("radicado", "")
-    estado_calidad = str(
-        calidad_estado if calidad_estado is not None else "pendiente"
-    ).strip().lower()
-    estado_comercial = str(
-        comercial_estado if comercial_estado is not None else "pendiente"
-    ).strip().lower()
-    aviso_enviado = bool(
-        notificacion_comercial_enviada
-    ) if notificacion_comercial_enviada is not None else False
-
-    herramientas = normalizar_herramientas(
-        datos.get("herramientas", datos.get("herr", ""))
-    )
-    herramientas_str = serializar_herramientas(herramientas)
-
-    with get_db_cursor(commit=True) as cursor:
-        cursor.execute(
-            "SELECT radicado FROM investigaciones WHERE radicado = %s", (radicado,)
-        )
-        existe = cursor.fetchone()
-
+def guardar_investigacion(radicado, datos, calidad_estado, comercial_estado, aviso_enviado):
+    """Inserta o actualiza la investigación del PQR. No decide estados ni escribe historial."""
     valores = [
-        radicado,
         datos.get("resp", ""),
         datos.get("cargo", ""),
-        herramientas_str,
+        serializar_herramientas(datos.get("herramientas", datos.get("herr", ""))),
         datos.get("causa", ""),
         datos.get("acc", ""),
         datos.get("notif", ""),
@@ -381,13 +309,17 @@ def guardar_investigacion(datos, calidad_estado=None, comercial_estado=None,
         datos.get("fCierre") or None,
         datos.get("cierre", ""),
         datos.get("respTxt", ""),
-        datos.get("deptos", "")
+        datos.get("deptos", ""),
+        calidad_estado,
+        comercial_estado,
+        1 if aviso_enviado else 0,
+        datos.get("respuesta_calidad", ""),
+        datos.get("respuesta_comercial", ""),
     ]
-    respuesta_calidad = datos.get("respuesta_calidad", "")
-    respuesta_comercial = datos.get("respuesta_comercial", "")
 
     with get_db_cursor(commit=True) as cursor:
-        if existe:
+        cursor.execute("SELECT radicado FROM investigaciones WHERE radicado = %s", (radicado,))
+        if cursor.fetchone():
             cursor.execute(
                 "UPDATE investigaciones SET responsable = %s, cargo = %s, herramienta = %s, "
                 "causa = %s, accion = %s, notificar = %s, fecha_respuesta = %s, "
@@ -395,39 +327,17 @@ def guardar_investigacion(datos, calidad_estado=None, comercial_estado=None,
                 "departamentos = %s, calidad_estado = %s, comercial_estado = %s, "
                 "notificacion_comercial_enviada = %s, respuesta_calidad = %s, "
                 "respuesta_comercial = %s WHERE radicado = %s",
-                (*valores[1:], estado_calidad, estado_comercial,
-                 1 if aviso_enviado else 0, respuesta_calidad, respuesta_comercial, radicado)
+                (*valores, radicado)
             )
         else:
             cursor.execute(
-                "INSERT INTO investigaciones (radicado, responsable, cargo, herramienta, "
+                "INSERT INTO investigaciones (responsable, cargo, herramienta, "
                 "causa, accion, notificar, fecha_respuesta, fecha_cierre, cierre, "
                 "respuesta, departamentos, calidad_estado, comercial_estado, "
-                "notificacion_comercial_enviada, respuesta_calidad, respuesta_comercial) "
+                "notificacion_comercial_enviada, respuesta_calidad, respuesta_comercial, radicado) "
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (*valores, estado_calidad, estado_comercial,
-                 1 if aviso_enviado else 0, respuesta_calidad, respuesta_comercial)
+                (*valores, radicado)
             )
-
-    # Auto-transition de estado del PQR
-    cierre = datos.get("cierre", "No")
-    nuevo_estado = "Cerrado" if cierre == "Sí" else "En investigación"
-    actualizar_estado_pqr(radicado, nuevo_estado)
-
-    with get_db_cursor(commit=True) as cursor:
-        cursor.execute(
-            "INSERT INTO historial (radicado, estado, usuario, fecha, hora, observacion) "
-            "VALUES (%s, %s, %s, %s, %s, %s)",
-            (radicado, nuevo_estado, "Sistema",
-             datetime.now().strftime("%Y-%m-%d"), datetime.now().strftime("%H:%M:%S"),
-             "Seguimiento actualizado")
-        )
-
-    return {
-        "calidad_estado": estado_calidad,
-        "comercial_estado": estado_comercial,
-        "notificacion_comercial_enviada": aviso_enviado
-    }
 
 
 def marcar_correo_confirmacion(radicado, enviado):
@@ -522,27 +432,6 @@ def obtener_dashboard():
 # -------------------------------------------------------------------------
 # Normalizador de herramientas
 # -------------------------------------------------------------------------
-
-def normalizar_herramientas(valor):
-    if isinstance(valor, list):
-        valores = valor
-    else:
-        texto = str(valor or "").strip()
-        if not texto:
-            return []
-        try:
-            valores = json.loads(texto) if texto.startswith("[") else [texto]
-        except (TypeError, ValueError):
-            valores = [texto]
-    return [str(item).strip() for item in valores if str(item or "").strip()]
-
-
-def serializar_herramientas(herramientas):
-    valores = normalizar_herramientas(herramientas)
-    if len(valores) <= 1:
-        return valores[0] if valores else ""
-    return json.dumps(valores, ensure_ascii=False)
-
 
 # -------------------------------------------------------------------------
 # Eliminar PQR

@@ -21,18 +21,20 @@ docker compose exec web python -m scripts.test_smtp  # SMTP sanity check
 ```
 wsgi.py                 entrypoint (gunicorn wsgi:app / flask --app wsgi)
 app/
-  __init__.py           create_app(): config, ensure schema, seed users, load catalog, register blueprints, /healthz
-  config.py             env -> Config (SECRET_KEY mandatory unless FLASK_DEBUG=1)
-  db.py                 MySQL pool, get_db_cursor, SCHEMA_SQL, asegurar_tablas (waits for MySQL)
+  __init__.py           create_app(): config, schema, seed, catalog, blueprints, ErrorNegocio handler, /healthz
+  config.py db.py       env config; MySQL pool + SCHEMA_SQL + migrations (asegurar_tablas)
+  errores.py            ErrorNegocio(mensaje, status): services raise it, create_app turns it into JSON
   seguridad.py          roles + rol_requerido / sesion_requerida
-  validaciones.py       shared request validators/helpers
-  repos/                data access: usuarios.py (users, auth, seed), pqr.py (PQR, historial, investigaciones, adjuntos, dashboard)
-  rutas/                one Blueprint per area: sesion, usuarios, catalogo, pqr, seguimiento, evidencias
-  servicios/            correo.py (Gmail SMTP), catalogo.py (product list from datos/LISTADO PRODUCTOS.xlsx)
+  dominio.py            pure business rules (seguimiento state machine, herramientas) - no DB/Flask
+  repos/                SQL only (usuarios.py, pqr.py) - no business decisions, commit=True on writes
+  servicios/            use cases (pqr, seguimiento, usuarios) + correo (SMTP) + catalogo (xlsx)
+  rutas/                thin Blueprints: read request -> call servicio -> jsonify
   semillas.py           seed users; SEED_USER_PASSWORD overrides their shared temporary password
   templates/ static/    single-page UI (index.html, inline CSS/JS)
 datos/  docs/  scripts/  tests/
 ```
+
+Dependency rule: `rutas -> servicios -> repos -> db`; services never touch Flask/HTTP.
 
 - MySQL 8 rejects `TEXT DEFAULT ''`; use `DEFAULT ('')`. `generar_radicado()` is read-last-then-write (race under concurrency).
 - Login rate limit is in-memory per worker (`rutas/sesion.py`); evidence upload validated by `RADICADO_RE` + extension whitelist (`rutas/evidencias.py`).

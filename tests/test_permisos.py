@@ -64,3 +64,33 @@ def test_admin_edita_y_elimina_usuario_de_forma_persistente(admin):
     with get_db_cursor() as c:
         c.execute("SELECT id FROM usuarios WHERE id = %s", (uid,))
         assert c.fetchone() is None
+
+
+@pytest.mark.parametrize("rol", [
+    "LIDER_CALIDAD", "LIDER_COMERCIAL", "COORDINADORA COMERCIAL", "DIRECTORA COMERCIAL", "COMERCIAL", "DIRECTOR DE PRODUCCION",
+])
+def test_admin_puede_crear_usuarios_de_todos_los_roles(admin, rol):
+    r = admin.post("/api/usuarios", json={"nombre": "Rol Prueba", "usuario": "rol_prueba", "contrasena": "Clave-Rol-1", "rol": rol})
+    assert r.status_code == 201, r.get_json()
+    assert admin.delete(f"/api/usuarios/{r.get_json()['id']}").status_code == 200
+
+
+def test_listado_de_usuarios_no_expone_hashes(admin):
+    usuarios = admin.get("/api/usuarios").get_json()["usuarios"]
+    assert usuarios and all("contrasena_hash" not in u for u in usuarios)
+
+
+def test_validaciones_de_usuario(admin):
+    base = {"nombre": "V", "usuario": "valida_prueba", "contrasena": "Clave-Val-1", "rol": "VENDEDOR", "linea_producto": "INAPEL"}
+    assert admin.post("/api/usuarios", json={**base, "documento": "abc"}).status_code == 400
+    assert admin.post("/api/usuarios", json={**base, "telefono": "12"}).status_code == 400
+    assert admin.post("/api/usuarios", json={**base, "correo": "no-es-correo"}).status_code == 400
+    assert admin.post("/api/usuarios", json={**base, "rol": "INVENTADO"}).status_code == 400
+    assert admin.post("/api/usuarios", json={**base, "linea_producto": "OTRA"}).status_code == 400
+    assert admin.post("/api/usuarios", json={**base, "usuario": "admin"}).status_code == 400
+    assert admin.post("/api/usuarios", json={"usuario": "x"}).status_code == 400
+
+
+def test_no_se_puede_eliminar_al_admin_principal_ni_a_si_mismo(admin):
+    uid = next(u["id"] for u in admin.get("/api/usuarios").get_json()["usuarios"] if u["usuario"] == "admin")
+    assert admin.delete(f"/api/usuarios/{uid}").status_code == 400

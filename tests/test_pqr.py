@@ -56,3 +56,9 @@ def test_seguimiento_se_puede_actualizar(admin, pqr):
     assert admin.post("/api/seguimiento/calidad", json={**base, "causa": "B", "resp": "Luis"}).status_code == 200
     inv = admin.get(f"/api/consultar/{pqr}").get_json()["investigacion"]
     assert (inv["resp"], inv["causa"]) == ("Luis", "B")
+
+
+def test_cambiar_estado_de_pqr_inexistente(admin):
+    r = admin.post("/api/cambiar_estado", json={"radicado": "PQR-1999-0001", "estado": "Cerrado"})
+    assert r.status_code == 404
+    assert admin.post("/api/cambiar_estado", json={"radicado": "x"}).status_code == 400

@@ -1,7 +1,7 @@
 """Concurrencia: cada PQR debe recibir un radicado único."""
 from concurrent.futures import ThreadPoolExecutor
 
-from app.repos.pqr import eliminar_pqr, guardar_pqr
+from app.repos.pqr import crear_pqr, eliminar_pqr
 from wsgi import app  # noqa: F401  (crea el esquema)
 
 MARCA = "TEST-CONCURRENCIA"
@@ -10,7 +10,7 @@ MARCA = "TEST-CONCURRENCIA"
 def _guardar(_):
     datos = {"cliente": MARCA, "nit": "1", "tipoSol": "Queja", "desc": "x", "email": "", "productos": []}
     try:
-        guardar_pqr(datos)
+        crear_pqr(datos)
         return datos["radicado"]
     except Exception as error:
         return error

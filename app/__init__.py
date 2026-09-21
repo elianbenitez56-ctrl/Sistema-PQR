@@ -1,10 +1,11 @@
 import logging
 import os
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, session
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.config import Config
+from app.errores import ErrorNegocio
 
 
 def create_app():
@@ -35,6 +36,12 @@ def create_app():
 
     for bp in blueprints:
         app.register_blueprint(bp)
+
+    @app.errorhandler(ErrorNegocio)
+    def error_de_negocio(error):
+        if error.cerrar_sesion:
+            session.clear()
+        return jsonify(error.cuerpo()), error.status
 
     @app.after_request
     def no_cache(response):

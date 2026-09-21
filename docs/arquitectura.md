@@ -7,9 +7,10 @@ JavaScript en línea) y una API JSON bajo `/api/*`. Los datos viven en MySQL y l
 
 ```
 Navegador ──HTTP──▶ gunicorn ──▶ Flask (app/)
-  (index.html)                     ├─ rutas/      valida la petición, comprueba rol, arma la respuesta
+  (index.html)                     ├─ rutas/      HTTP: lee la petición, exige rol, llama a un servicio, arma el JSON
+                                   ├─ servicios/  casos de uso y reglas: orquestan repos, correo y catálogo
+                                   ├─ dominio.py  reglas puras (flujo de seguimiento, herramientas)
                                    ├─ repos/      SQL (único lugar que habla con la base)
-                                   ├─ servicios/  correo SMTP, catálogo de productos
                                    └─ db.py ──▶ MySQL 8 (pool de conexiones)
                                    └─ disco ──▶ PQR_UPLOAD_DIR/<radicado>/  (evidencias)
 ```
@@ -20,22 +21,31 @@ Navegador ──HTTP──▶ gunicorn ──▶ Flask (app/)
 wsgi.py                     entrada: app = create_app()
 app/
   __init__.py               create_app(): configura, crea esquema, siembra usuarios, carga catálogo,
-                            registra blueprints, cabeceras anti-caché, "/" y "/healthz"
+                            registra blueprints y el manejador de ErrorNegocio, "/" y "/healthz"
   config.py                 variables de entorno -> Config
   db.py                     pool MySQL, get_db_cursor(), SCHEMA_SQL, asegurar_tablas() y migraciones
+  errores.py                ErrorNegocio: error esperado con su código HTTP (se traduce a JSON en un solo lugar)
   seguridad.py              constantes de roles, rol_requerido(), sesion_requerida()
-  validaciones.py           validadores y helpers compartidos por las rutas
-  repos/usuarios.py         usuarios: CRUD, autenticación, disponibilidad, siembra
-  repos/pqr.py              PQR, historial, investigaciones, adjuntos, dashboard, eliminación
-  rutas/                    un Blueprint por área: sesion, usuarios, catalogo, pqr, seguimiento, evidencias
+  validaciones.py           validadores de correo y teléfono
+  dominio.py                reglas puras sin BD ni Flask (estados del seguimiento, campos obligatorios, herramientas)
+  repos/usuarios.py         SQL de usuarios (nunca devuelve el hash salvo para autenticar)
+  repos/pqr.py              SQL de PQR, historial, investigaciones, adjuntos y dashboard
+  servicios/pqr.py          registrar (catálogo, receptor desde sesión, verificación, correo), consultar, cambiar estado, eliminar
+  servicios/seguimiento.py  guardar seguimiento Calidad/Comercial (permisos por sección, estados, aviso a comercial)
+  servicios/usuarios.py     autenticar, alta, edición, credenciales y baja con sus validaciones
   servicios/correo.py       envío de correos (confirmación al cliente, aviso a comercial)
   servicios/catalogo.py     catálogo maestro leído de datos/LISTADO PRODUCTOS.xlsx (en memoria, con recarga)
+  rutas/                    un Blueprint por área: sesion, usuarios, catalogo, pqr, seguimiento, evidencias
   semillas.py               usuarios iniciales de INAPEL
   templates/, static/       interfaz y recursos estáticos
 ```
 
-**Regla de dependencias:** `rutas → repos → db`. Las rutas no escriben SQL; los repos no conocen Flask
-(salvo la configuración) ni HTTP. `servicios` son independientes.
+**Regla de dependencias:** `rutas → servicios → repos → db`, y `dominio` no depende de nada de la aplicación salvo roles/errores.
+Las rutas no tienen lógica de negocio ni SQL; los servicios no conocen Flask ni HTTP (lanzan `ErrorNegocio`); los repos
+solo hacen SQL y no toman decisiones de negocio.
+
+**Errores:** un servicio lanza `ErrorNegocio(mensaje, status)` y `create_app` lo convierte en `{"ok": false, "mensaje": ...}`
+con ese código HTTP (`extra` agrega campos como `faltantes`; `clave="error"` mantiene el formato `{"error": ...}` de `/api/consultar`).
 
 ## Ciclo de arranque (`create_app`)
 

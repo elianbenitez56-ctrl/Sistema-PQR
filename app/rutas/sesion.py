@@ -3,8 +3,10 @@ from collections import defaultdict
 
 from flask import Blueprint, jsonify, request, session
 
-from app.repos.usuarios import autenticar_usuario, obtener_usuario_por_id
+from app.errores import ErrorNegocio
+from app.repos.usuarios import obtener_usuario_por_id
 from app.seguridad import VENDEDOR
+from app.servicios.usuarios import autenticar
 
 bp = Blueprint("sesion", __name__)
 
@@ -71,14 +73,11 @@ def api_login():
             "mensaje": "Demasiados intentos fallidos. Intente de nuevo en unos minutos."
         }), 429
 
-    resultado = autenticar_usuario(usuario, contrasena)
-
-    if "error" in resultado:
+    try:
+        resultado = autenticar(usuario, contrasena)
+    except ErrorNegocio:
         _FALLOS_LOGIN[clave_intentos].append(time.monotonic())
-        return jsonify({
-            "ok": False,
-            "mensaje": resultado["error"]
-        }), 401
+        raise
 
     _FALLOS_LOGIN.pop(clave_intentos, None)
     session.clear()

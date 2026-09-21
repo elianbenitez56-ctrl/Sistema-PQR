@@ -10,10 +10,10 @@ from wsgi import app as flask_app
 def sin_correos(monkeypatch):
     """Los tests nunca envían correo real."""
     for modulo, nombre in (
-        ("app.rutas.pqr", "enviar_confirmacion_pqr"),
-        ("app.rutas.seguimiento", "enviar_notificacion_comercial"),
+        ("app.servicios.pqr", "enviar_confirmacion_pqr"),
+        ("app.servicios.seguimiento", "enviar_notificacion_comercial"),
     ):
-        monkeypatch.setattr(f"{modulo}.{nombre}", lambda *a, **k: {"ok": True, "estado": "simulado"}, raising=False)
+        monkeypatch.setattr(f"{modulo}.{nombre}", lambda *a, **k: (True, ""))
 
 
 @pytest.fixture

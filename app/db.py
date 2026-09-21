@@ -142,7 +142,7 @@ SCHEMA_SQL = [
         herramienta TEXT DEFAULT (''),
         causa TEXT DEFAULT (''),
         accion TEXT DEFAULT (''),
-        notificar TINYINT(1) DEFAULT 0,
+        notificar VARCHAR(10) DEFAULT '',
         fecha_respuesta DATE,
         fecha_cierre DATE,
         cierre VARCHAR(10) DEFAULT 'No',
@@ -175,6 +175,18 @@ SCHEMA_SQL = [
 # Inicializar tablas al importar
 # -------------------------------------------------------------------------
 
+def _migrar_notificar(cursor):
+    """`notificar` guarda 'Sí'/'No'; en bases creadas antes era TINYINT y rechazaba esos valores."""
+    cursor.execute(
+        "SELECT DATA_TYPE FROM information_schema.COLUMNS "
+        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'investigaciones' AND COLUMN_NAME = 'notificar'"
+    )
+    fila = cursor.fetchone()
+    if fila and str(fila[0]).lower() == "tinyint":
+        cursor.execute("ALTER TABLE investigaciones MODIFY notificar VARCHAR(10) DEFAULT ''")
+        cursor.execute("UPDATE investigaciones SET notificar = CASE notificar WHEN '1' THEN 'Sí' ELSE '' END")
+
+
 def asegurar_tablas(intentos=30, espera=2):
     """Crea las tablas; espera a que MySQL acepte conexiones (arranque en docker)."""
     for intento in range(1, intentos + 1):
@@ -194,5 +206,6 @@ def asegurar_tablas(intentos=30, espera=2):
         cursor = conn.cursor()
         for sql in SCHEMA_SQL:
             cursor.execute(sql)
+        _migrar_notificar(cursor)
         conn.commit()
     logger.info("Tablas MySQL aseguradas correctamente.")

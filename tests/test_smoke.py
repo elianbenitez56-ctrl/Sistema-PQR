@@ -1,15 +1,5 @@
 """Smoke tests: requieren MySQL accesible (ej. `docker compose run --rm web pytest`)."""
 import io
-import os
-
-import pytest
-
-from wsgi import app
-
-
-@pytest.fixture
-def client():
-    return app.test_client()
 
 
 def test_healthz(client):
@@ -28,10 +18,8 @@ def test_login_bloquea_tras_fallos(client):
     assert r.status_code == 429
 
 
-def test_evidencias_rechaza_radicado_con_traversal(client):
-    login = client.post("/api/login", json={"usuario": "admin", "contrasena": os.environ["ADMIN_PASS"]})
-    assert login.status_code == 200
-    r = client.post(
+def test_evidencias_rechaza_radicado_con_traversal(admin):
+    r = admin.post(
         "/api/evidencias",
         data={"radicado": "../../tmp/x", "archivos": (io.BytesIO(b"x"), "a.txt")},
         content_type="multipart/form-data",

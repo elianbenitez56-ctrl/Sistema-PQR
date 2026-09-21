@@ -1,7 +1,11 @@
 import json
+import os
+import re
+import shutil
 from contextlib import contextmanager
 from datetime import datetime
 
+from app.config import Config
 from app.db import get_db_connection, get_db_cursor
 
 HERRAMIENTAS_ANALISIS = (
@@ -380,8 +384,8 @@ def guardar_investigacion(datos, calidad_estado=None, comercial_estado=None,
         datos.get("causa", ""),
         datos.get("acc", ""),
         datos.get("notif", ""),
-        datos.get("fResp", ""),
-        datos.get("fCierre", ""),
+        datos.get("fResp") or None,
+        datos.get("fCierre") or None,
         datos.get("cierre", ""),
         datos.get("respTxt", ""),
         datos.get("deptos", "")
@@ -398,7 +402,7 @@ def guardar_investigacion(datos, calidad_estado=None, comercial_estado=None,
                 "departamentos = %s, calidad_estado = %s, comercial_estado = %s, "
                 "notificacion_comercial_enviada = %s, respuesta_calidad = %s, "
                 "respuesta_comercial = %s WHERE radicado = %s",
-                (*valores, estado_calidad, estado_comercial,
+                (*valores[1:], estado_calidad, estado_comercial,
                  1 if aviso_enviado else 0, respuesta_calidad, respuesta_comercial, radicado)
             )
         else:
@@ -551,15 +555,21 @@ def serializar_herramientas(herramientas):
 # Eliminar PQR
 # -------------------------------------------------------------------------
 
+RADICADO_RE = re.compile(r"PQR-\d{4}-\d{4,}")
+
+
 def eliminar_pqr(radicado):
-    import os as os_mod
-    import shutil
+    """Elimina el PQR y sus evidencias. Devuelve True, o "not_found" si no existía."""
     with get_db_cursor(commit=True) as cursor:
         cursor.execute("DELETE FROM pqr WHERE radicado = %s", (radicado,))
+        existia = cursor.rowcount > 0
         cursor.execute("DELETE FROM historial WHERE radicado = %s", (radicado,))
         cursor.execute("DELETE FROM investigaciones WHERE radicado = %s", (radicado,))
         cursor.execute("DELETE FROM adjuntos WHERE radicado = %s", (radicado,))
-    carpeta = os_mod.path.join("Base_Datos", "Evidencias", str(radicado))
-    if os_mod.path.isdir(carpeta):
-        shutil.rmtree(carpeta, ignore_errors=True)
+    if not existia:
+        return "not_found"
+    if RADICADO_RE.fullmatch(str(radicado)):
+        carpeta = os.path.join(Config.UPLOAD_FOLDER, str(radicado))
+        if os.path.isdir(carpeta):
+            shutil.rmtree(carpeta, ignore_errors=True)
     return True

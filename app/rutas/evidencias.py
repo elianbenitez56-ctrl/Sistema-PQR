@@ -1,10 +1,9 @@
 import os
-import re
 
 from flask import Blueprint, current_app, jsonify, request, session
 from werkzeug.utils import secure_filename
 
-from app.repos.pqr import consultar_pqr, guardar_adjunto
+from app.repos.pqr import RADICADO_RE, consultar_pqr, guardar_adjunto
 from app.seguridad import VENDEDOR, sesion_requerida
 
 bp = Blueprint("evidencias", __name__)
@@ -14,7 +13,6 @@ bp = Blueprint("evidencias", __name__)
 # SUBIR EVIDENCIAS
 # ==========================================================
 
-RADICADO_RE = re.compile(r"PQR-\d{4}-\d{4,}")
 EXTENSIONES_EVIDENCIA = {
     ".jpg", ".jpeg", ".png", ".gif", ".webp",
     ".pdf", ".doc", ".docx", ".xls", ".xlsx",

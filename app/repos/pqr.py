@@ -257,6 +257,7 @@ def guardar_pqr(datos):
 
 
 def actualizar_estado_pqr(radicado, estado):
+    """Cambia el estado. El historial lo registra quien llama (guardar_historial / guardar_investigacion)."""
     with get_db_cursor(commit=True) as cursor:
         cursor.execute(
             "UPDATE pqr SET estado = %s WHERE radicado = %s",
@@ -264,14 +265,6 @@ def actualizar_estado_pqr(radicado, estado):
         )
         if cursor.rowcount == 0:
             return False
-    with get_db_cursor() as cursor:
-        cursor.execute(
-            "INSERT INTO historial (radicado, estado, usuario, fecha, hora, observacion) "
-            "VALUES (%s, %s, %s, %s, %s, %s)",
-            (radicado, estado, "Sistema",
-             datetime.now().strftime("%Y-%m-%d"), datetime.now().strftime("%H:%M:%S"),
-             "Estado actualizado")
-        )
     return True
 
 
@@ -494,7 +487,7 @@ def listar_adjuntos(radicado):
 
 
 def eliminar_adjunto(id_Adjunto):
-    with get_db_cursor() as cursor:
+    with get_db_cursor(commit=True) as cursor:
         cursor.execute("DELETE FROM adjuntos WHERE id = %s", (id_Adjunto,))
         affected = cursor.rowcount
     return affected > 0

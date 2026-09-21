@@ -23,7 +23,8 @@ Los tests usan la **base MySQL real** del compose (no hay mocks de base de datos
 |---|---|
 | `tests/test_smoke.py` | Salud, login inválido, bloqueo por intentos, evidencias con radicado malicioso |
 | `tests/test_pqr.py` | Flujo crear → consultar → cambiar estado → eliminar; seguimiento de Calidad (crear y actualizar) |
-| `tests/test_permisos.py` | 401/403 por rol; el vendedor no ve PQR ajenos |
+| `tests/test_permisos.py` | 401/403 por rol; el vendedor no ve PQR ajenos; editar, desactivar y eliminar usuarios persiste |
+| `tests/test_flujos.py` | Catálogo, PQR con productos (y rechazo de inventados), evidencias (subida, extensión inválida, borrado), cierre comercial, vendedor registra su PQR |
 | `tests/test_radicados.py` | 8 PQR simultáneos reciben radicados únicos |
 
 Convenciones (ver `tests/conftest.py`):

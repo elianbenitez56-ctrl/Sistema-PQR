@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from app.repos.pqr import eliminar_pqr
 from wsgi import app as flask_app
 
 
@@ -37,4 +38,4 @@ def pqr(admin):
     assert r.status_code == 200, r.get_json()
     radicado = r.get_json()["radicado"]
     yield radicado
-    admin.delete(f"/api/pqr/{radicado}")
+    eliminar_pqr(radicado)

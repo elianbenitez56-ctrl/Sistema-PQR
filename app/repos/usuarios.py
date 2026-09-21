@@ -181,7 +181,7 @@ def crear_usuario(nombre, usuario, contrasena, rol, documento="", linea_producto
 
 
 def actualizar_usuario(uid, **campos):
-    with get_db_cursor() as cursor:
+    with get_db_cursor(commit=True) as cursor:
         # Buscar usuario
         cursor.execute("SELECT id FROM usuarios WHERE id = %s", (uid,))
         if not cursor.fetchone():
@@ -259,7 +259,7 @@ def desactivar_usuario(uid):
 
 
 def eliminar_usuario(uid):
-    with get_db_cursor() as cursor:
+    with get_db_cursor(commit=True) as cursor:
         cursor.execute("DELETE FROM usuarios WHERE id = %s", (uid,))
         affected = cursor.rowcount
     if affected == 0:

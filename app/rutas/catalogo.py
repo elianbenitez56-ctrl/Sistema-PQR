@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+
 from app.seguridad import ADMIN, rol_requerido, sesion_requerida
 from app.servicios.catalogo import LINEAS_PRODUCTO, buscar_productos, recargar_catalogo
 

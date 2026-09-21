@@ -23,13 +23,12 @@ Nunca se escribe una contraseña en el código ni se expone en JSON/logs.
 
 import os
 import re
+import smtplib
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime
 from html import escape
 from urllib.parse import quote
-
-import smtplib
 
 NOMBRE_SISTEMA = "INAPEL · Industria Nacional Papelera S.A.S."
 

@@ -1,6 +1,6 @@
 from functools import wraps
-from flask import jsonify, session
 
+from flask import jsonify, session
 
 # ==========================================================
 # ROLES Y PERMISOS

@@ -2,7 +2,6 @@ import os
 
 from app.db import get_db_cursor
 
-
 # -------------------------------------------------------------------------
 # Helper: hashing de contraseñas (Werkzeug scrypt)
 # -------------------------------------------------------------------------
@@ -189,8 +188,6 @@ def actualizar_usuario(uid, **campos):
             return {"ok": False, "mensaje": "Usuario no encontrado."}
 
         # Construir update dinámico
-        allowed = {"nombre", "usuario", "contrasena", "rol", "linea_producto", "empresa", "activo",
-                   "documento", "correo", "telefono"}
         set_parts = []
         values = []
 
@@ -219,9 +216,9 @@ def actualizar_usuario(uid, **campos):
             set_parts.append("rol = %s")
             values.append(r)
         if "linea_producto" in campos:
-            l = str(campos["linea_producto"]).strip().upper()
+            linea = str(campos["linea_producto"]).strip().upper()
             set_parts.append("linea_producto = %s")
-            values.append(l if l in ("INAPEL", "TOROFIL", "") else "")
+            values.append(linea if linea in ("INAPEL", "TOROFIL", "") else "")
         if "empresa" in campos:
             e = str(campos["empresa"]).strip() or "INAPEL"
             set_parts.append("empresa = %s")

@@ -26,7 +26,7 @@ def generar_radicado():
         try:
             partes = str(row['radicado']).split("-")
             if len(partes) >= 2:
-                anio = int(partes[1])
+                int(partes[1])  # valida que el segundo segmento sea numérico
                 concat = int(partes[2])
                 consecutivo = concat + 1
             else:
@@ -163,7 +163,6 @@ def guardar_pqr(datos):
     elif hora_rec is None:
         hora_rec = datetime.now().strftime("%H:%M:%S")
 
-    rol_usuario = datos.get("rol_usuario", "")
     usuario_id = datos.get("usuario_id", 0)
     vendedor = datos.get("vendedor", "")
     linea = datos.get("linea", "")
@@ -302,10 +301,10 @@ def obtener_historial_radicado(radicado):
             (radicado,)
         )
         rows = cursor.fetchall()
-    
+
     if not rows:
         return []
-    
+
     return [
         {
             "id": row['id'],
@@ -535,8 +534,8 @@ def serializar_herramientas(herramientas):
 # -------------------------------------------------------------------------
 
 def eliminar_pqr(radicado):
-    import shutil
     import os as os_mod
+    import shutil
     with get_db_cursor(commit=True) as cursor:
         cursor.execute("DELETE FROM pqr WHERE radicado = %s", (radicado,))
         cursor.execute("DELETE FROM historial WHERE radicado = %s", (radicado,))

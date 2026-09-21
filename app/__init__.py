@@ -20,8 +20,8 @@ def create_app():
 
     from app.db import asegurar_tablas, get_db_cursor
     from app.repos.usuarios import sembrar_usuarios
-    from app.servicios import catalogo
     from app.rutas import blueprints
+    from app.servicios import catalogo
 
     asegurar_tablas()
     sembrar_usuarios()

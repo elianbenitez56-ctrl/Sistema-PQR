@@ -1,9 +1,9 @@
 import re
-from app.seguridad import ROLES_COMERCIAL
-from app.repos.usuarios import listar_usuarios
-from app.repos.pqr import HERRAMIENTAS_ANALISIS, normalizar_herramientas
-from app.servicios.catalogo import LINEAS_PRODUCTO, buscar_productos
 
+from app.repos.pqr import HERRAMIENTAS_ANALISIS, normalizar_herramientas
+from app.repos.usuarios import listar_usuarios
+from app.seguridad import ROLES_COMERCIAL
+from app.servicios.catalogo import LINEAS_PRODUCTO, buscar_productos
 
 # ==========================================================
 # VALIDACIONES COMUNES
@@ -56,13 +56,13 @@ def preparar_productos_catalogo(productos):
 
         def coincide(catalogo):
             for campo in ("detalle_presentacion", "producto"):
-                enviado = str(producto.get(campo, "") or "").strip()
+                enviado = str(producto.get(campo, "") or "").strip()  # noqa: B023 (se invoca dentro de la misma iteración)
                 maestro = str(catalogo.get(campo, "") or "").strip()
                 if enviado != maestro:
                     return False
             unidad_catalogo = str(catalogo.get("unidad", "") or "").strip()
             if unidad_catalogo:
-                unidad_enviada = str(producto.get("unidad", "") or "").strip()
+                unidad_enviada = str(producto.get("unidad", "") or "").strip()  # noqa: B023
                 if unidad_enviada != unidad_catalogo:
                     return False
             return True

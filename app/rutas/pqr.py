@@ -1,24 +1,19 @@
 from flask import Blueprint, current_app, jsonify, request, session
-from app.seguridad import (
-    ROLES_INVESTIGACION,
-    ROLES_VER_TODO,
-    VENDEDOR,
-    rol_requerido,
-    sesion_requerida
-)
-from app.validaciones import preparar_productos_catalogo, validar_correo
-from app.repos.usuarios import obtener_usuario_por_id
+
 from app.repos.pqr import (
-    correo_confirmacion_enviado,
     consultar_pqr,
+    correo_confirmacion_enviado,
     eliminar_pqr,
     generar_radicado,
     guardar_pqr,
     listar_pqrs,
     marcar_correo_confirmacion,
-    obtener_dashboard
+    obtener_dashboard,
 )
+from app.repos.usuarios import obtener_usuario_por_id
+from app.seguridad import ROLES_INVESTIGACION, ROLES_VER_TODO, VENDEDOR, rol_requerido, sesion_requerida
 from app.servicios.correo import enviar_confirmacion_pqr
+from app.validaciones import preparar_productos_catalogo, validar_correo
 
 bp = Blueprint("pqr", __name__)
 
@@ -207,7 +202,7 @@ def api_eliminar_pqr(radicado):
             "mensaje": "El registro ya fue eliminado o no existe."
         }), 404
 
-    if resultado != True:
+    if resultado is not True:
         return jsonify({
             "ok": False,
             "mensaje": "No fue posible eliminar el registro."

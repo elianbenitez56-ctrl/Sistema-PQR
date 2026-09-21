@@ -1,8 +1,10 @@
 import time
 from collections import defaultdict
+
 from flask import Blueprint, jsonify, request, session
-from app.seguridad import VENDEDOR
+
 from app.repos.usuarios import autenticar_usuario, obtener_usuario_por_id
+from app.seguridad import VENDEDOR
 
 bp = Blueprint("sesion", __name__)
 

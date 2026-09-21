@@ -1,9 +1,11 @@
 import os
 import re
+
 from flask import Blueprint, current_app, jsonify, request, session
 from werkzeug.utils import secure_filename
-from app.seguridad import VENDEDOR, sesion_requerida
+
 from app.repos.pqr import consultar_pqr, guardar_adjunto
+from app.seguridad import VENDEDOR, sesion_requerida
 
 bp = Blueprint("evidencias", __name__)
 

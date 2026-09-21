@@ -1,23 +1,19 @@
 import re
+
 from flask import Blueprint, jsonify, request, session
-from app.seguridad import (
-    ADMIN,
-    LIDER_CALIDAD,
-    ROLES_VALIDOS,
-    VENDEDOR,
-    rol_requerido
-)
-from app.validaciones import validar_correo, validar_telefono
+
 from app.repos.usuarios import (
-    documento_disponible,
     actualizar_usuario,
     correo_disponible,
     crear_usuario,
+    documento_disponible,
     eliminar_usuario,
     listar_usuarios,
     obtener_usuario_por_id,
-    usuario_disponible
+    usuario_disponible,
 )
+from app.seguridad import ADMIN, LIDER_CALIDAD, ROLES_VALIDOS, VENDEDOR, rol_requerido
+from app.validaciones import validar_correo, validar_telefono
 
 bp = Blueprint("usuarios", __name__)
 

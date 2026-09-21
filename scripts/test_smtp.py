@@ -15,11 +15,11 @@ Uso:
 NUNCA imprime SMTP_PASSWORD.
 """
 
-import sys
 import smtplib
+import sys
 from email.mime.text import MIMEText
 
-from app.servicios.correo import _var, variables_smtp_faltantes, smtp_configurado
+from app.servicios.correo import _var, smtp_configurado, variables_smtp_faltantes
 
 
 def _ocultar(correo):

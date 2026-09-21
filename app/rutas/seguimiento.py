@@ -1,26 +1,22 @@
 from flask import Blueprint, jsonify, request, session
+
+from app.repos.pqr import (
+    actualizar_estado_pqr,
+    consultar_pqr,
+    guardar_historial,
+    guardar_investigacion,
+    marcar_notificacion_comercial_enviada,
+)
 from app.seguridad import (
     ADMIN,
     LIDER_CALIDAD,
     ROLES_COMERCIAL,
     ROLES_INVESTIGACION,
     ROLES_SEGUIMIENTO,
-    rol_requerido
-)
-from app.validaciones import (
-    campos_faltantes,
-    campos_modificados,
-    correos_comerciales,
-    preparar_herramientas
-)
-from app.repos.pqr import (
-    actualizar_estado_pqr,
-    consultar_pqr,
-    guardar_historial,
-    guardar_investigacion,
-    marcar_notificacion_comercial_enviada
+    rol_requerido,
 )
 from app.servicios.correo import enviar_notificacion_comercial
+from app.validaciones import campos_faltantes, campos_modificados, correos_comerciales, preparar_herramientas
 
 bp = Blueprint("seguimiento", __name__)
 

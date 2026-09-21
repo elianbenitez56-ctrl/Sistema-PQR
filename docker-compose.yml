@@ -22,6 +22,7 @@ services:
     environment:
       MYSQL_HOST: db
       MYSQL_PORT: "3306"
+      PORT: "8000"  # puerto interno; el externo se elige con PORT en .env
     ports:
       - "${PORT:-8000}:8000"
     volumes:

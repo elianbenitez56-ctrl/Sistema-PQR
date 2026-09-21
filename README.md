@@ -1,41 +1,60 @@
 # Sistema PQR — INAPEL
 
-Aplicación Flask (Python 3.12) + MySQL 8 para gestionar Peticiones, Quejas y Reclamos.
+Aplicación web para registrar, investigar y dar seguimiento a **Peticiones, Quejas y Reclamos (PQR)** de clientes.
+Flask (Python 3.12) + MySQL 8, empaquetada con Docker y desplegada en Render.
 
-## Desarrollo local
+## Qué hace
+
+- Los **vendedores** registran PQR de sus clientes (con productos del catálogo maestro y evidencias adjuntas). El cliente recibe un correo de confirmación con su radicado.
+- **Calidad** investiga cada PQR (causa, herramientas de análisis, departamentos) y **Comercial** responde al cliente y cierra el caso.
+- Cada PQR recorre un flujo de estados con historial completo. Un dashboard resume conteos por estado, tipo y prioridad.
+- Acceso por roles (administrador, líder de calidad, líder/coordinación/dirección comercial, comercial, vendedor).
+
+## Inicio rápido
+
+Requisitos: [Docker](https://docs.docker.com/get-docker/) con Docker Compose.
 
 ```bash
-cp .env.example .env        # completar SECRET_KEY, ADMIN_PASS, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD
-docker compose up --build   # http://localhost:8000 (recarga automática, MySQL en 127.0.0.1:3307)
+cp .env.example .env
+# Edite .env: SECRET_KEY, ADMIN_PASS, MYSQL_PASSWORD y MYSQL_ROOT_PASSWORD (obligatorios)
+docker compose up --build
 ```
 
-Usuario inicial: `admin` con la contraseña de `ADMIN_PASS`.
+Abra <http://localhost:8000> e ingrese con usuario `admin` y la contraseña definida en `ADMIN_PASS`.
 
-## Calidad
+Para generar un `SECRET_KEY`: `python3 -c "import secrets; print(secrets.token_hex(32))"`.
 
-```bash
-docker compose exec web ruff check .          # lint
-docker compose exec web python -m pytest -q   # tests (usan la base MySQL del compose)
-```
+## Comandos habituales
 
-CI (`.github/workflows/ci.yml`) ejecuta lo mismo en cada push y pull request.
-
-## Estructura
-
-| Ruta | Responsabilidad |
+| Acción | Comando |
 |---|---|
-| `wsgi.py` | Punto de entrada (`gunicorn wsgi:app`) |
-| `app/__init__.py`, `app/config.py` | Fábrica de la app y configuración por entorno |
-| `app/db.py` | Pool MySQL, esquema y espera de arranque |
-| `app/repos/` | Acceso a datos (SQL) por dominio |
-| `app/rutas/` | Endpoints HTTP, un Blueprint por área |
-| `app/servicios/` | Correo SMTP y catálogo de productos |
-| `app/seguridad.py`, `app/validaciones.py` | Roles/decoradores y validaciones compartidas |
-| `datos/`, `docs/`, `scripts/`, `tests/` | Catálogo, documentación, utilidades y pruebas |
+| Levantar en desarrollo (recarga automática) | `docker compose up --build` |
+| Levantar como producción (gunicorn) | `docker compose -f docker-compose.yml up --build` |
+| Tests | `docker compose exec web pytest -q` |
+| Lint | `docker compose exec web ruff check .` |
+| Ver logs | `docker compose logs -f web` |
+| Detener | `docker compose down` |
+| Detener y **borrar datos** (base y evidencias) | `docker compose down -v` |
 
-Referencia de endpoints y roles: `AGENTS.md`.
+## Documentación
 
-## Despliegue (Render)
+| Documento | Contenido |
+|---|---|
+| [docs/ejecucion.md](docs/ejecucion.md) | Cómo ejecutar el proyecto (Docker y sin Docker), variables de entorno, problemas frecuentes |
+| [docs/arquitectura.md](docs/arquitectura.md) | Estructura del código, flujo de una petición, base de datos, seguridad, reglas de negocio |
+| [docs/api.md](docs/api.md) | Endpoints, permisos por rol y estados del PQR |
+| [docs/desarrollo.md](docs/desarrollo.md) | Flujo de trabajo, tests, lint, CI y cómo agregar funcionalidades |
+| [docs/despliegue.md](docs/despliegue.md) | Despliegue en Render y operación en producción |
+| [docs/diseno/](docs/diseno/) | Mockups y guías visuales de las pantallas |
 
-`render.yaml` construye el `Dockerfile`. Requiere una base MySQL externa (`MYSQL_HOST`, `MYSQL_USER`,
-`MYSQL_PASSWORD`) y, para conservar evidencias entre despliegues, un disco persistente en `/data/evidencias`.
+## Estructura del repositorio
+
+```
+wsgi.py            punto de entrada (gunicorn wsgi:app)
+app/               código de la aplicación (ver docs/arquitectura.md)
+datos/             catálogo maestro de productos (LISTADO PRODUCTOS.xlsx)
+docs/              documentación
+scripts/           utilidades (p. ej. prueba de SMTP)
+tests/             pruebas automatizadas
+Dockerfile, docker-compose*.yml, render.yaml   contenedores y despliegue
+```

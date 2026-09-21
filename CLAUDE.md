@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Flask single-page app (`templates/index.html`, inline CSS/JS) for PQR management (Peticiones/Quejas/Reclamos) at INAPEL. MySQL storage, Docker for dev and deploy (Render, `runtime: docker`). `AGENTS.md` still has a useful endpoint/roles table, but its Excel/storage sections are obsolete.
+Flask single-page app (`templates/index.html`, inline CSS/JS) for PQR management (Peticiones/Quejas/Reclamos) at INAPEL. MySQL storage, Docker for dev and deploy (Render, `runtime: docker`). Full docs live in `docs/` (see `README.md` for the index); keep them in sync when changing endpoints, env vars or schema.
 
 ## Commands
 

@@ -25,6 +25,14 @@ services:
         sync: false
       - key: SMTP_FROM
         sync: false
+      - key: MYSQL_HOST
+        value: localhost
+      - key: MYSQL_USER
+        value: root
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_DATABASE
+        value: sistema_pqr
       - key: PQR_URL_BASE
         value: https://sistema-pqr.onrender.com
       - key: CATALOGO_PRODUCTOS_PATH

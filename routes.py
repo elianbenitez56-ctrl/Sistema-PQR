@@ -4,24 +4,37 @@ import os
 import re
 from werkzeug.utils import secure_filename
 
-from excel_db import (
-    guardar_pqr,
+from mysql_db import (
+    generar_radicado,
     consultar_pqr,
-    guardar_investigacion,
+    guardar_pqr,
     actualizar_estado_pqr,
     guardar_historial,
     obtener_dashboard,
-    guardar_adjunto,
-    generar_radicado,
     listar_pqrs,
     eliminar_pqr,
-    correo_confirmacion_enviado,
-    marcar_correo_confirmacion,
+    guardar_adjunto,
+    listar_adjuntos,
     marcar_notificacion_comercial_enviada,
-    HERRAMIENTAS_ANALISIS,
+    usuario_disponible,
+    correo_disponible,
+    hash_contrasena,
+    verificar_contrasena,
+    listar_usuarios,
+    crear_usuario,
+    actualizar_usuario,
+    desactivar_usuario,
+    eliminar_usuario,
+    autenticar_usuario,
+    obtener_usuario_por_id,
+    obtener_usuario_por_documento,
+    usuario_disponible as ud,
+    correo_disponible as cd,
     normalizar_herramientas,
-    bloqueo_base_datos
+    serializar_herramientas,
+    marcar_correo_confirmacion
 )
+from excel_db import HERRAMIENTAS_ANALISIS
 from email_service import enviar_confirmacion_pqr, enviar_notificacion_comercial
 from catalogo_productos import (
     LINEAS_PRODUCTO,
@@ -30,16 +43,16 @@ from catalogo_productos import (
 )
 
 from users_db import (
-    autenticar_usuario,
-    crear_usuario,
-    listar_usuarios,
-    obtener_usuario_por_id,
-    usuario_disponible,
-    documento_disponible,
-    correo_disponible,
-    actualizar_usuario,
-    desactivar_usuario,
-    eliminar_usuario
+    autenticar_usuario as autenticar_usuario_db,
+    crear_usuario as crear_usuario_db,
+    listar_usuarios as listar_usuarios_db,
+    obtener_usuario_por_id as obtener_usuario_por_id_db,
+    usuario_disponible as usuario_disponible_db,
+    documento_disponible as documento_disponible_db,
+    correo_disponible as correo_disponible_db,
+    actualizar_usuario as actualizar_usuario_db,
+    desactivar_usuario as desactivar_usuario_db,
+    eliminar_usuario as eliminar_usuario_db,
 )
 
 routes = Blueprint("routes", __name__)
@@ -169,7 +182,7 @@ def sesion_requerida(f):
 @routes.route("/api/login", methods=["POST"])
 def api_login():
 
-    datos = request.get_json() or {}
+    datos = request.get_json(silent=True) or request.form or {}
 
     usuario = str(datos.get("usuario", "")).strip()
     contrasena = str(datos.get("contrasena", ""))
@@ -392,7 +405,7 @@ def api_usuarios_listar():
 @rol_requerido(ADMIN, LIDER_CALIDAD)
 def api_usuarios_crear():
 
-    datos = request.get_json() or {}
+    datos = request.get_json(silent=True) or request.form or {}
 
     nombre = str(datos.get("nombre", "")).strip()
     usuario = str(datos.get("usuario", "")).strip()
@@ -483,7 +496,7 @@ def api_usuarios_crear():
 @rol_requerido(ADMIN)
 def api_usuarios_actualizar(uid):
 
-    datos = request.get_json() or {}
+    datos = request.get_json(silent=True) or request.form or {}
 
     campos = {}
 
@@ -641,7 +654,7 @@ def api_usuarios_credenciales(uid):
             "mensaje": "No puede modificar las credenciales de usuarios administradores."
         }), 403
 
-    datos = request.get_json() or {}
+    datos = request.get_json(silent=True) or request.form or {}
 
     usuario = str(datos.get("usuario", "")).strip()
     contrasena = str(datos.get("contrasena", ""))

@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from excel_db import crear_excel, actualizar_estructura_excel
+from mysql_db import asegurar_tablas
 from users_db import sembrar_usuarios
 from catalogo_productos import CATALOGO_PATH, cargar_catalogo
 from routes import routes
@@ -30,12 +30,18 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # =====================================================
-# BASE DE DATOS
+# BASE DE DATOS MySQL
 # =====================================================
 
-crear_excel()
-actualizar_estructura_excel()
-sembrar_usuarios()
+# Asegurar tablas MySQL al iniciar
+asegurar_tablas()
+
+# Sembrar usuarios iniciales (admin y configurados en usuarios_iniciales.py)
+try:
+    sembrar_usuarios()
+    print(">>> USUARIOS SEMILLARoadS seeded <<<")
+except Exception as error:
+    print(f">>> ERROR AL SEMBRAR USUARIOS: {error} <<<")
 
 try:
     cargar_catalogo()

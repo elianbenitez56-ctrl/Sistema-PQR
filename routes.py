@@ -2,9 +2,12 @@ from flask import Blueprint, request, jsonify, current_app, session
 from functools import wraps
 import os
 import re
+import time
+from collections import defaultdict
 from werkzeug.utils import secure_filename
 
 from mysql_db import (
+    HERRAMIENTAS_ANALISIS,
     generar_radicado,
     consultar_pqr,
     guardar_pqr,
@@ -14,45 +17,23 @@ from mysql_db import (
     listar_pqrs,
     eliminar_pqr,
     guardar_adjunto,
-    listar_adjuntos,
     marcar_notificacion_comercial_enviada,
     usuario_disponible,
     correo_disponible,
-    hash_contrasena,
-    verificar_contrasena,
     listar_usuarios,
     crear_usuario,
     actualizar_usuario,
-    desactivar_usuario,
     eliminar_usuario,
     autenticar_usuario,
     obtener_usuario_por_id,
-    obtener_usuario_por_documento,
-    usuario_disponible as ud,
-    correo_disponible as cd,
     normalizar_herramientas,
-    serializar_herramientas,
     marcar_correo_confirmacion
 )
-from excel_db import HERRAMIENTAS_ANALISIS
 from email_service import enviar_confirmacion_pqr, enviar_notificacion_comercial
 from catalogo_productos import (
     LINEAS_PRODUCTO,
     buscar_productos,
     recargar_catalogo
-)
-
-from users_db import (
-    autenticar_usuario as autenticar_usuario_db,
-    crear_usuario as crear_usuario_db,
-    listar_usuarios as listar_usuarios_db,
-    obtener_usuario_por_id as obtener_usuario_por_id_db,
-    usuario_disponible as usuario_disponible_db,
-    documento_disponible as documento_disponible_db,
-    correo_disponible as correo_disponible_db,
-    actualizar_usuario as actualizar_usuario_db,
-    desactivar_usuario as desactivar_usuario_db,
-    eliminar_usuario as eliminar_usuario_db,
 )
 
 routes = Blueprint("routes", __name__)
@@ -179,6 +160,19 @@ def sesion_requerida(f):
 # AUTENTICACIÓN
 # ==========================================================
 
+# ponytail: contador en memoria por worker; usar Redis/Flask-Limiter si se escala a varias instancias.
+_FALLOS_LOGIN = defaultdict(list)
+_MAX_FALLOS = 5
+_VENTANA_SEG = 300
+
+
+def _login_bloqueado(clave):
+    ahora = time.monotonic()
+    recientes = [t for t in _FALLOS_LOGIN[clave] if ahora - t < _VENTANA_SEG]
+    _FALLOS_LOGIN[clave] = recientes
+    return len(recientes) >= _MAX_FALLOS
+
+
 @routes.route("/api/login", methods=["POST"])
 def api_login():
 
@@ -193,14 +187,23 @@ def api_login():
             "mensaje": "Ingrese usuario y contraseña."
         }), 400
 
+    clave_intentos = (request.remote_addr, usuario.lower())
+    if _login_bloqueado(clave_intentos):
+        return jsonify({
+            "ok": False,
+            "mensaje": "Demasiados intentos fallidos. Intente de nuevo en unos minutos."
+        }), 429
+
     resultado = autenticar_usuario(usuario, contrasena)
 
     if "error" in resultado:
+        _FALLOS_LOGIN[clave_intentos].append(time.monotonic())
         return jsonify({
             "ok": False,
             "mensaje": resultado["error"]
         }), 401
 
+    _FALLOS_LOGIN.pop(clave_intentos, None)
     session.clear()
     session.permanent = True
     session["usuario_id"] = resultado["id"]
@@ -1232,17 +1235,25 @@ def api_dashboard():
 # SUBIR EVIDENCIAS
 # ==========================================================
 
+RADICADO_RE = re.compile(r"PQR-\d{4}-\d{4,}")
+EXTENSIONES_EVIDENCIA = {
+    ".jpg", ".jpeg", ".png", ".gif", ".webp",
+    ".pdf", ".doc", ".docx", ".xls", ".xlsx",
+    ".mp4", ".mov", ".txt", ".csv",
+}
+
+
 @routes.route("/api/evidencias", methods=["POST"])
 @sesion_requerida
 def api_evidencias():
 
-    radicado = request.form.get("radicado")
+    radicado = (request.form.get("radicado") or "").strip()
     tipo = request.form.get("tipo", "")
 
-    if not radicado:
+    if not RADICADO_RE.fullmatch(radicado):
         return jsonify({
             "ok": False,
-            "mensaje": "No se recibió el radicado."
+            "mensaje": "Radicado inválido."
         }), 400
 
     # Un vendedor solo puede subir evidencias a sus propios PQR.
@@ -1275,6 +1286,13 @@ def api_evidencias():
             continue
 
         nombre = secure_filename(archivo.filename)
+        extension = os.path.splitext(nombre)[1].lower()
+
+        if not nombre or extension not in EXTENSIONES_EVIDENCIA:
+            return jsonify({
+                "ok": False,
+                "mensaje": f"Tipo de archivo no permitido: {archivo.filename}"
+            }), 400
 
         ruta = os.path.join(carpeta, nombre)
 

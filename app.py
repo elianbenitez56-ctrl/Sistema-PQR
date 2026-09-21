@@ -1,10 +1,15 @@
-from flask import Flask, render_template
-from mysql_db import asegurar_tablas
-from users_db import sembrar_usuarios
-from catalogo_productos import CATALOGO_PATH, cargar_catalogo
-from routes import routes
+import logging
 import os
 from datetime import timedelta
+
+from flask import Flask, jsonify, render_template
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+from mysql_db import asegurar_tablas, get_db_cursor, sembrar_usuarios
+from catalogo_productos import CATALOGO_PATH, cargar_catalogo
+from routes import routes
+
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -12,20 +17,26 @@ app = Flask(__name__)
 # CONFIGURACIÓN
 # =====================================================
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEBUG = os.getenv("FLASK_DEBUG") == "1"
 
-app.config["UPLOAD_FOLDER"] = os.path.join(
-    BASE_DIR,
-    "Base_Datos",
-    "Evidencias"
+secret_key = os.getenv("SECRET_KEY")
+if not secret_key:
+    if not DEBUG:
+        raise RuntimeError("SECRET_KEY es obligatoria fuera de modo desarrollo.")
+    secret_key = "solo-desarrollo"
+app.secret_key = secret_key
+
+app.config["UPLOAD_FOLDER"] = os.path.abspath(
+    os.getenv("PQR_UPLOAD_DIR", os.path.join("Base_Datos", "Evidencias"))
 )
-
-# Clave para firmar las sesiones (cookies).
-# En Render debe configurarse siempre SECRET_KEY como variable de entorno.
-app.secret_key = os.getenv("SECRET_KEY", "development-only-not-for-production")
-
-# Duración máxima de la sesión (12 horas).
+app.config["MAX_CONTENT_LENGTH"] = int(os.getenv("MAX_UPLOAD_MB", "25")) * 1024 * 1024
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=12)
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.getenv("SESSION_COOKIE_SECURE", "0" if DEBUG else "1") == "1"
+
+if os.getenv("TRUST_PROXY") == "1":
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
@@ -33,15 +44,8 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 # BASE DE DATOS MySQL
 # =====================================================
 
-# Asegurar tablas MySQL al iniciar
 asegurar_tablas()
-
-# Sembrar usuarios iniciales (admin y configurados en usuarios_iniciales.py)
-try:
-    sembrar_usuarios()
-    print(">>> USUARIOS SEMILLARoadS seeded <<<")
-except Exception as error:
-    print(f">>> ERROR AL SEMBRAR USUARIOS: {error} <<<")
+sembrar_usuarios()
 
 try:
     cargar_catalogo()
@@ -75,5 +79,12 @@ def no_cache(response):
 def inicio():
     return render_template("index.html")
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+@app.route("/healthz")
+def healthz():
+    try:
+        with get_db_cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+    except Exception:
+        return jsonify({"ok": False}), 503
+    return jsonify({"ok": True})

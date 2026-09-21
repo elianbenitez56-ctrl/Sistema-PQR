@@ -1,16 +1,29 @@
 services:
   - type: web
     name: sistema-pqr
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    # Sin disco (plan Free) las evidencias se pierden en cada deploy; con plan de pago descomente:
+    # disk:
+    #   name: evidencias
+    #   mountPath: /data/evidencias
+    #   sizeGB: 5
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.13
       - key: SECRET_KEY
-        sync: false
+        generateValue: true
       - key: ADMIN_PASS
         sync: false
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_PORT
+        value: "3306"
+      - key: MYSQL_USER
+        sync: false
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_DATABASE
+        value: sistema_pqr
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
@@ -25,14 +38,6 @@ services:
         sync: false
       - key: SMTP_FROM
         sync: false
-      - key: MYSQL_HOST
-        value: localhost
-      - key: MYSQL_USER
-        value: root
-      - key: MYSQL_PASSWORD
-        sync: false
-      - key: MYSQL_DATABASE
-        value: sistema_pqr
       - key: PQR_URL_BASE
         value: https://sistema-pqr.onrender.com
       - key: CATALOGO_PRODUCTOS_PATH

@@ -1,0 +1,20 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+*.log
+*.xlsx
+!datos/LISTADO PRODUCTOS.xlsx
+backup/
+Base_Datos/
+diseño*/
+Diseño*/
+*.md
+tests/
+scripts/
+docker-compose*.yml
+Dockerfile
+ngrok.*

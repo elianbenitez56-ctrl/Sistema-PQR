@@ -1,21 +1,25 @@
 import os
-import logging
-logger = logging.getLogger(__name__)
 import json
 import hashlib
+import logging
+import time
 from datetime import datetime
 from contextlib import contextmanager
 
-from flask import current_app
+import mysql.connector as mysql_connector
+from mysql.connector import Error, pooling
 
-try:
-    import mysql.connector as _mysql
-    from mysql.connector import Error as _Error
-    mysql_connector = _mysql
-    Error = _Error
-except ImportError:
-    mysql_connector = None
-    Error = Exception
+logger = logging.getLogger(__name__)
+
+HERRAMIENTAS_ANALISIS = (
+    "5 ¿Por qué?",
+    "Diagrama Ishikawa",
+    "Análisis Pareto",
+    "Inspección visual",
+    "Ensayos de laboratorio",
+    "Comparación muestra patrón",
+    "Checklist de inspección"
+)
 
 
 # -------------------------------------------------------------------------
@@ -23,6 +27,7 @@ except ImportError:
 # -------------------------------------------------------------------------
 
 MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
+MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
 MYSQL_USER = os.getenv("MYSQL_USER", "root")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "")
 MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "sistema_pqr")
@@ -32,23 +37,38 @@ MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "sistema_pqr")
 # Context managers para conexiones y cursores
 # -------------------------------------------------------------------------
 
-@contextmanager
-def get_db_connection():
-    conn = None
-    try:
-        conn = mysql_connector.connect(
+_POOL = None
+
+
+def _pool():
+    global _POOL
+    if _POOL is None:
+        _POOL = pooling.MySQLConnectionPool(
+            pool_name="pqr",
+            pool_size=int(os.getenv("MYSQL_POOL_SIZE", "8")),
+            pool_reset_session=True,
             host=MYSQL_HOST,
+            port=MYSQL_PORT,
             user=MYSQL_USER,
             password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE
+            database=MYSQL_DATABASE,
+            charset="utf8mb4",
+            connection_timeout=10,
         )
-        yield conn
-    except Error as e:
-        current_app.logger.exception("Error de conexión MySQL: %s", e)
+    return _POOL
+
+
+@contextmanager
+def get_db_connection():
+    try:
+        conn = _pool().get_connection()
+    except Error:
+        logger.exception("Error de conexión MySQL")
         raise
+    try:
+        yield conn
     finally:
-        if conn and conn.is_connected():
-            conn.close()
+        conn.close()  # devuelve la conexión al pool
 
 
 @contextmanager
@@ -100,9 +120,9 @@ SCHEMA_SQL = [
         correo VARCHAR(120) DEFAULT '',
         estado VARCHAR(50) DEFAULT 'Recibido',
         prioridad VARCHAR(50) DEFAULT '',
-        descripcion TEXT DEFAULT '',
-        expectativa TEXT DEFAULT '',
-        productos JSON DEFAULT '[]',
+        descripcion TEXT DEFAULT (''),
+        expectativa TEXT DEFAULT (''),
+        productos JSON DEFAULT ('[]'),
         empresa VARCHAR(100) DEFAULT 'INAPEL',
         vendedor VARCHAR(150) DEFAULT '',
         linea VARCHAR(50) DEFAULT '',
@@ -126,7 +146,7 @@ SCHEMA_SQL = [
         usuario VARCHAR(150) NOT NULL,
         fecha DATE NOT NULL,
         hora TIME NOT NULL,
-        observacion TEXT DEFAULT '',
+        observacion TEXT DEFAULT (''),
         INDEX idx_radicado (radicado)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;""",
     # Tabla Investigaciones
@@ -134,20 +154,20 @@ SCHEMA_SQL = [
         radicado VARCHAR(25) PRIMARY KEY,
         responsable VARCHAR(150) DEFAULT '',
         cargo VARCHAR(100) DEFAULT '',
-        herramienta TEXT DEFAULT '',
-        causa TEXT DEFAULT '',
-        accion TEXT DEFAULT '',
+        herramienta TEXT DEFAULT (''),
+        causa TEXT DEFAULT (''),
+        accion TEXT DEFAULT (''),
         notificar TINYINT(1) DEFAULT 0,
         fecha_respuesta DATE,
         fecha_cierre DATE,
         cierre VARCHAR(10) DEFAULT 'No',
-        respuesta TEXT DEFAULT '',
-        departamentos TEXT DEFAULT '',
+        respuesta TEXT DEFAULT (''),
+        departamentos TEXT DEFAULT (''),
         calidad_estado VARCHAR(50) DEFAULT 'pendiente',
         comercial_estado VARCHAR(50) DEFAULT 'pendiente',
         notificacion_comercial_enviada TINYINT(1) DEFAULT 0,
-        respuesta_calidad TEXT DEFAULT '',
-        respuesta_comercial TEXT DEFAULT '',
+        respuesta_calidad TEXT DEFAULT (''),
+        respuesta_comercial TEXT DEFAULT (''),
         INDEX idx_radicado (radicado)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;""",
     # Tabla Adjuntos
@@ -160,7 +180,7 @@ SCHEMA_SQL = [
         fecha DATE,
         hora TIME,
         usuario VARCHAR(150) DEFAULT '',
-        observacion TEXT DEFAULT '',
+        observacion TEXT DEFAULT (''),
         INDEX idx_radicado (radicado)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"""
 ]
@@ -170,18 +190,27 @@ SCHEMA_SQL = [
 # Inicializar tablas al importar
 # -------------------------------------------------------------------------
 
-def asegurar_tablas():
-    if mysql_connector is None:
-        return
-    try:
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            for sql in SCHEMA_SQL:
-                cursor.execute(sql)
-            conn.commit()
-            logger.info("Tablas MySQL aseguradas correctamente.")
-    except Error as e:
-        logger.exception("Error asegurando tablas MySQL: %s", e)
+def asegurar_tablas(intentos=30, espera=2):
+    """Crea las tablas; espera a que MySQL acepte conexiones (arranque en docker)."""
+    for intento in range(1, intentos + 1):
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT 1")
+                cursor.fetchone()
+            break
+        except Error:
+            if intento == intentos:
+                raise
+            logger.warning("MySQL no disponible (%s/%s), reintentando...", intento, intentos)
+            time.sleep(espera)
+
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        for sql in SCHEMA_SQL:
+            cursor.execute(sql)
+        conn.commit()
+    logger.info("Tablas MySQL aseguradas correctamente.")
 
 
 # -------------------------------------------------------------------------
@@ -969,3 +998,44 @@ def eliminar_pqr(radicado):
     if os_mod.path.isdir(carpeta):
         shutil.rmtree(carpeta, ignore_errors=True)
     return True
+
+# -------------------------------------------------------------------------
+# Semilla de usuarios
+# -------------------------------------------------------------------------
+
+def sembrar_usuarios():
+    """Crea el admin (ADMIN_PASS) y los usuarios de usuarios_iniciales.py si no existen."""
+
+    if not _existe_usuario("admin"):
+        clave = os.getenv("ADMIN_PASS")
+        if not clave:
+            raise RuntimeError(
+                "ADMIN_PASS debe configurarse antes de crear el administrador inicial."
+            )
+        crear_usuario(
+            nombre="Administrador General",
+            usuario="admin",
+            contrasena=clave,
+            rol="ADMIN",
+            empresa="INAPEL",
+        )
+
+    try:
+        from usuarios_iniciales import USUARIOS_INICIALES
+    except ImportError:
+        return
+
+    for u in USUARIOS_INICIALES:
+        usuario_login = str(u.get("usuario", "")).strip()
+        if not usuario_login or _existe_usuario(usuario_login):
+            continue
+        crear_usuario(
+            nombre=str(u.get("nombre", "")).strip(),
+            usuario=usuario_login,
+            contrasena=str(u.get("contrasena", "")),
+            rol=str(u.get("rol", "")).strip().upper(),
+            documento=str(u.get("documento", "")).strip(),
+            linea_producto=str(u.get("linea_producto", "")).strip().upper(),
+            empresa=str(u.get("empresa", "") or "INAPEL").strip().upper(),
+            activo=u.get("activo", True),
+        )

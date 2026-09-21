@@ -18,8 +18,6 @@ Base_Datos/Evidencias/
 BaseDatos_PQR.xlsx
 BaseDatos_PQR_corrupto_*.xlsx
 usuarios_iniciales.py
-excel_db_backup.py
-excel_db_corregido.py
 *.secret
 *.credentials
 credentials.*

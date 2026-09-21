@@ -1,0 +1,69 @@
+    <!-- ═══ BASE DE DATOS ═══ -->
+    <div id="panel-basedatos" class="panel">
+      <div id="gate-bd">
+        <div class="card"><div class="card-body">
+          <div class="gate">
+            <div class="gate-icon"><span class="material-symbols-outlined mat-icon">lock</span></div>
+            <h2>Acceso restringido</h2>
+            <p>Esta sección es de uso exclusivo del Departamento de Calidad de INAPEL.</p>
+            <div class="gate-row">
+              <label for="p-bd" class="visually-hidden">Contraseña de acceso</label>
+              <input type="password" id="p-bd" placeholder="Contraseña" autocomplete="off" onkeydown="if(event.key==='Enter')abrir('bd')">
+              <button class="btn btn-primary" onclick="abrir('bd')">Ingresar</button>
+            </div>
+            <p id="e-bd" class="gate-error" role="alert"></p>
+          </div>
+        </div></div>
+      </div>
+      <div id="con-bd" style="display:none">
+        <div class="toolbar">
+          <h2>Base de datos PQR</h2>
+          <div class="toolbar-actions">
+            <button class="btn btn-sm" onclick="expCSV()">
+              <span class="material-symbols-outlined" style="font-size:16px">download</span>
+              Exportar CSV
+            </button>
+            <button class="btn btn-sm btn-ghost" onclick="logout()">
+              <span class="material-symbols-outlined" style="font-size:16px">logout</span>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+        <div class="stats-grid" id="sg"></div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="card-body" style="padding-bottom:10px">
+            <div class="search-bar">
+              <input type="text" id="db-q" placeholder="Buscar por radicado, cliente..." oninput="renderDB()">
+              <select id="db-est" onchange="renderDB()">
+                <option value="">Todos los estados</option>
+                <option>Recibido</option><option>Radicado</option><option>En revisión</option>
+                <option>En investigación</option><option>Pendiente de información</option>
+                <option>Pendiente de decisión</option><option>Acción en proceso</option>
+                <option>Respuesta enviada</option><option>Cerrado</option><option>No procede</option>
+              </select>
+            </div>
+            <div class="date-filter">
+              <label>Desde:</label>
+              <input type="date" id="db-desde" onchange="renderDB()">
+              <label>Hasta:</label>
+              <input type="date" id="db-hasta" onchange="renderDB()">
+              <button class="btn btn-xs" onclick="document.getElementById('db-desde').value='';document.getElementById('db-hasta').value='';renderDB()" style="margin-left:auto">✕ Limpiar filtros</button>
+            </div>
+          </div>
+          <div class="db-wrap">
+            <table class="db-table">
+              <thead><tr>
+                <th>Radicado</th><th>Fecha</th><th>Días</th><th>Cliente</th>
+                <th>Tipo</th><th>Estado</th><th>Prioridad</th><th style="text-align:center">Acciones</th>
+              </tr></thead>
+              <tbody id="db-tb"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="db-empty">
+            <span class="material-symbols-outlined empty-icon">forum</span>
+            <p>Sin PQR registrados aún</p>
+            <small>Los PQR aparecerán aquí cuando sean guardados desde el formulario.</small>
+          </div>
+        </div>
+      </div>
+    </div>

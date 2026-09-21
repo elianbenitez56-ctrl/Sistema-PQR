@@ -1,0 +1,97 @@
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ambient-shadow {
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.entrance-animation {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.icon-fill {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* Integración con el sistema (no altera el diseño de Stitch) */
+#login-screen {
+  transition: opacity 0.35s ease, visibility 0.35s;
+}
+#login-screen.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+:root{
+  --navy: #001E40;
+  --navy-light: #0a2a52;
+  --blue: #1F5EAC;
+  --blue-light: #78acff;
+  --orange: #f37021;
+  --orange-bg: rgba(243,112,33,0.12);
+  --surface: #f4f6fc;
+  --surface-dim: #e8ecf5;
+  --surface-container: #e0e6f2;
+  --surface-container-low: #eef1f8;
+  --surface-container-lowest: #ffffff;
+  --outline: #b8c0d0;
+  --outline-soft: #d6dce8;
+  --on-surface: #171c23;
+  --on-surface-variant: #4a505e;
+  --success: #22c55e;
+  --success-bg: #dcfce7;
+  --error: #ba1a1a;
+  --error-bg: #fee2e2;
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+  --info-bg: #dbeafe;
+  --shadow-sm: 0 1px 3px rgba(0,30,64,0.05);
+  --shadow-md: 0 4px 16px rgba(0,30,64,0.07);
+  --shadow-lg: 0 8px 30px rgba(0,30,64,0.10);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 9999px;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --sidebar-w: 260px;
+  --topbar-h: 60px;
+  --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font); font-size:clamp(13px, 1vw + 2px, 15px); color:var(--on-surface);
+  background:var(--surface); min-height:100vh; line-height:1.6;
+  display:flex; overflow-x:hidden;
+}
+.material-symbols-outlined{
+  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+  vertical-align:middle; font-size:20px;
+  line-height:1; display:inline-block;
+}

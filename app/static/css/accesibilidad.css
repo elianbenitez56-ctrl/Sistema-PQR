@@ -1,0 +1,42 @@
+/* ─── VISUALLY HIDDEN ─── */
+.visually-hidden{
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip:rect(0,0,0,0); border:0; white-space:nowrap;
+}
+
+/* ─── SKIP LINK ─── */
+.skip-link{
+  position:fixed; top:-100%; left:8px; z-index:9999;
+  background:var(--navy); color:#fff; padding:10px 20px;
+  border-radius:var(--radius-md); font-size:13px; font-weight:600;
+  text-decoration:none; transition:top 0.2s ease;
+}
+.skip-link:focus{top:8px}
+
+/* ─── REDUCED MOTION ─── */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}
+}
+/* ─── PRINT ─── */
+@media print{
+  .sidebar,.topbar,.app-footer,.btn,#toast-container{display:none !important}
+  .main{margin-left:0 !important}
+  .content{padding:0 !important}
+  .card{border:1px solid #ddd;box-shadow:none;break-inside:avoid}
+  body{font-size:11pt;color:#000;background:#fff}
+}
+
+/* ─── FOCUS VISIBLE ─── */
+:focus-visible{
+  outline:2px solid var(--blue);
+  outline-offset:2px;
+}
+button:focus-visible,
+a:focus-visible{
+  outline:2px solid var(--blue);
+  outline-offset:2px;
+}
+.nav-item:focus-visible{
+  outline:2px solid var(--blue-light);
+  outline-offset:2px;
+}

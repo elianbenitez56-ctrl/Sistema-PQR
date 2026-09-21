@@ -1,0 +1,106 @@
+    <!-- ═══ SEGUIMIENTO ═══ -->
+    <div id="panel-seguimiento" class="panel">
+      <div id="gate-seg">
+        <div class="card"><div class="card-body">
+          <div class="gate">
+            <div class="gate-icon"><span class="material-symbols-outlined mat-icon">lock</span></div>
+            <h2>Acceso restringido</h2>
+            <p>Esta sección es de uso exclusivo del Departamento de Calidad de INAPEL.</p>
+            <div class="gate-row">
+              <label for="p-seg" class="visually-hidden">Contraseña de acceso</label>
+              <input type="password" id="p-seg" placeholder="Contraseña" autocomplete="off" onkeydown="if(event.key==='Enter')abrir('seg')">
+              <button class="btn btn-primary" onclick="abrir('seg')">Ingresar</button>
+            </div>
+            <p id="e-seg" class="gate-error" role="alert"></p>
+          </div>
+        </div></div>
+      </div>
+      <div id="con-seg" style="display:none">
+        <div class="toolbar">
+          <h2>Seguimiento y trazabilidad PQR</h2>
+          <button class="btn btn-sm btn-ghost" onclick="logout()">
+            <span class="material-symbols-outlined" style="font-size:16px">logout</span>
+            Cerrar sesión
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <p style="color:var(--on-surface-variant);font-size:13px;margin-bottom:13px">
+              Cargue un PQR por número de radicado para iniciar o continuar la investigación.
+            </p>
+            <div class="search-bar">
+              <input type="text" id="seg-q" placeholder="Ej: PQR-2026-0001" style="font-family:'Courier New',monospace;font-weight:600;text-transform:uppercase" onkeydown="if(event.key==='Enter')cargarSeg()">
+              <button class="btn btn-primary" onclick="cargarSeg()">
+                <span class="material-symbols-outlined" style="font-size:16px">search</span>
+                Cargar PQR
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">fact_check</span></div>
+            <h3>Revisión del producto</h3>
+          </div>
+          <div class="card-body">
+            <div class="revision-wrap">
+            <table class="revision-table">
+              <thead><tr>
+                <th>Acciones tomadas</th>
+                <th>Validación</th>
+                <th>Resultado</th>
+              </tr></thead>
+              <tbody>
+                <tr><td>Se verificó el lote de fabricación</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se revisó la orden de producción</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se verificó la trazabilidad (registros)</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se revisaron los parámetros de calidad</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se revisó la muestra de retención</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se inspeccionó muestra del cliente</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se verificó apariencia visual</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se entrevistó al personal involucrado</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se verificó dimensiones del producto</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se verificó el proceso de producción</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se verificó el proceso de empaque</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se revisó el almacenamiento</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se verificó el proceso de despacho</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+                <tr><td>Se revisó el historial de reclamos similares</td>
+                  <td><select><option>Si</option><option>No</option></select></td>
+                  <td><select><option>Conforme</option><option>No Conforme</option><option>No Aplica</option></select></td></tr>
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="seg-con"></div>
+      </div>
+    </div>

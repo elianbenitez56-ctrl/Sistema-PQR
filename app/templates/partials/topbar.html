@@ -1,0 +1,77 @@
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Abrir menú" title="Menú">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-logo">
+        <img class="topbar-logo-img" src="{{ url_for('static', filename='img/logo_inapel.png') }}" alt="INAPEL" loading="lazy">
+        <div class="page-title">INAPEL · <span id="page-title-sub">Sistema de Gestión PQR</span></div>
+      </div>
+      <div class="topbar-divider" aria-hidden="true"></div>
+      <div class="topbar-date">
+        <span class="material-symbols-outlined" style="font-size:16px">calendar_month</span>
+        <span id="nav-date"></span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" title="Notificaciones">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="dot"></span>
+      </button>
+      <div class="topbar-divider" aria-hidden="true"></div>
+      <span id="admin-badge" class="admin-badge" style="display:none">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        Modo Administrador
+      </span>
+      <div class="user-menu-wrap">
+        <button class="topbar-user" id="user-menu-trigger" onclick="toggleUserMenu()" aria-haspopup="true" aria-expanded="false" title="Menú de usuario">
+          <div class="avatar" id="user-avatar">US</div>
+          <div class="user-info">
+            <span class="user-name" id="user-name">Usuario</span>
+            <span class="user-role" id="user-role-label">Usuario</span>
+          </div>
+          <span class="material-symbols-outlined user-chevron" id="user-chevron">expand_more</span>
+        </button>
+        <div class="user-menu" id="user-menu" role="menu">
+          <div class="user-menu-header">
+            <div class="user-menu-avatar" id="user-menu-avatar">US</div>
+            <div class="user-menu-id">
+              <div class="user-menu-name" id="user-menu-name">Usuario</div>
+              <div class="user-menu-role" id="menu-role">Usuario</div>
+            </div>
+          </div>
+          <div class="user-menu-divider"></div>
+          <div class="user-menu-section" id="admin-section">
+            <div class="user-menu-label">Administración</div>
+            <button class="user-menu-item" id="dash-item" onclick="goTab('dashboard',this);closeUserMenu()" role="menuitem">
+              <span class="material-symbols-outlined">dashboard</span>
+              <span>Dashboard</span>
+              <span class="badge-count" id="urg-badge"></span>
+            </button>
+            <button class="user-menu-item" id="bd-item" onclick="goTab('basedatos',this);closeUserMenu()" role="menuitem">
+              <span class="material-symbols-outlined">database</span>
+              <span>Base de datos</span>
+            </button>
+            <button class="user-menu-item" id="seg-item" onclick="goTab('seguimiento',this);closeUserMenu()" role="menuitem">
+              <span class="material-symbols-outlined">troubleshoot</span>
+              <span>Seguimiento</span>
+            </button>
+            <button class="user-menu-item" id="us-item" onclick="goTab('usuarios',this);closeUserMenu()" role="menuitem">
+              <span class="material-symbols-outlined">manage_accounts</span>
+              <span>Gestión de usuarios</span>
+            </button>
+          </div>
+          <div class="user-menu-divider"></div>
+          <button class="user-menu-item" onclick="openProfile();closeUserMenu()" role="menuitem">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Mi perfil</span>
+          </button>
+          <button class="user-menu-item user-menu-danger" onclick="cerrarSesion();closeUserMenu()" role="menuitem">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>

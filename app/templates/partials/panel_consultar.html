@@ -1,0 +1,27 @@
+    <!-- ═══ CONSULTAR ═══ -->
+    <div id="panel-consultar" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><span class="material-symbols-outlined mat-icon">search</span></div>
+          <h3>Consultar estado del trámite</h3>
+        </div>
+        <div class="card-body">
+          <p style="color:var(--on-surface-variant);font-size:13px;margin-bottom:16px;line-height:1.6">Ingrese el número de radicado asignado al registrar el PQR para ver el estado actual e historial de su solicitud.</p>
+          <div class="search-bar">
+            <div class="search-wrap" style="flex:1">
+              <input type="text" id="c-rad" placeholder="Ej: PQR-2026-0001" style="width:100%;font-family:'Courier New',monospace;font-weight:600;letter-spacing:0.05em;text-transform:uppercase" onkeydown="if(event.key==='Enter')consultar()" onfocus="renderRecentSearches()">
+              <div class="search-drop" id="rs-drop"><div id="rs-list"></div></div>
+            </div>
+            <button class="btn btn-primary" onclick="consultar()">
+              <span class="material-symbols-outlined" style="font-size:16px">search</span>
+              Buscar
+            </button>
+          </div>
+          <div id="c-res"></div>
+        </div>
+      </div>
+      <div class="alert alert-info">
+        <span class="material-symbols-outlined" style="font-size:16px;flex-shrink:0;margin-top:2px">info</span>
+        Si no tiene el número de radicado, comuníquese con el área de Calidad o con su asesor comercial.
+      </div>
+    </div>

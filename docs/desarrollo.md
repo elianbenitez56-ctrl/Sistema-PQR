@@ -58,6 +58,13 @@ Convenciones (ver `tests/conftest.py`):
    en `information_schema`; ejemplo: `_migrar_notificar`). `CREATE TABLE IF NOT EXISTS` no modifica tablas ya creadas.
 3. En MySQL 8, las columnas `TEXT`/`JSON` no admiten `DEFAULT ''`; use `DEFAULT ('')`.
 
+### Una pantalla o comportamiento del frontend
+- HTML: `app/templates/partials/<vista>.html` (se incluye desde `index.html`).
+- Estilos: el archivo de `app/static/css/` que corresponda; **el orden de carga define la cascada**.
+- JavaScript: el módulo de `app/static/js/` de esa pantalla. Son scripts clásicos que comparten ámbito global y se cargan en el
+  orden de `index.html`; el código que se ejecuta al cargar y depende de funciones de otros módulos va en `arranque.js` (último).
+- Un archivo nuevo debe agregarse en `index.html` en la posición correcta.
+
 ### Un rol
 Constantes y agrupaciones (`ROLES_VER_TODO`, `ROLES_COMERCIAL`…) en `app/seguridad.py`; agréguelo también a `ROLES_VALIDOS`.
 
@@ -75,7 +82,7 @@ Léala en `app/config.py` (o el módulo que la use), agréguela a `.env.example`
 
 ## Deuda técnica conocida
 
-- `app/templates/index.html` concentra toda la interfaz (~4.500 líneas con CSS y JS en línea). Separar en archivos estáticos sería el siguiente paso de mantenibilidad.
+- El frontend usa scripts clásicos con funciones globales (`onclick="..."` en el HTML) y sin bundler ni pruebas automáticas; los tests solo comprueban que la página y sus assets se sirven. Migrar a módulos ES sería el siguiente paso.
 - Sin migraciones versionadas (Alembic sería el paso natural si el esquema crece).
 - Sin endpoint de descarga de evidencias ni de edición de PQR ya registrados.
 - Límite de intentos de login en memoria por proceso.

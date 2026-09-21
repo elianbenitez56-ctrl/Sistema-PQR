@@ -1,0 +1,55 @@
+    <!-- ═══ GESTIÓN DE USUARIOS ═══ -->
+    <div id="panel-usuarios" class="panel">
+      <div id="con-us" style="display:none">
+        <div class="toolbar">
+          <h2>Gestión de usuarios</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="crearUsuarioModal()">
+              <span class="material-symbols-outlined" style="font-size:16px">person_add</span>
+              Agregar usuario
+            </button>
+            <button class="btn btn-sm btn-ghost" onclick="logout()">
+              <span class="material-symbols-outlined" style="font-size:16px">logout</span>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">manage_accounts</span></div>
+            <h3>Usuarios del sistema</h3>
+          </div>
+          <div class="card-body">
+            <p style="color:var(--on-surface-variant);font-size:13px;margin-bottom:13px">
+              Aquí puede agregar usuarios, editar sus datos (nombre, documento, correo, teléfono, rol, línea y estado),
+              modificar credenciales o eliminar su acceso al sistema.
+            </p>
+            <div class="search-bar">
+              <input type="text" id="us-q" placeholder="Buscar por nombre, usuario, documento, correo o teléfono..." oninput="renderUsuarios()">
+            </div>
+            <div class="db-wrap" style="margin-top:14px">
+              <table class="db-table">
+                <thead><tr>
+                  <th>Nombre</th>
+                  <th>Documento</th>
+                  <th>Usuario</th>
+                  <th>Correo</th>
+                  <th>Teléfono</th>
+                  <th>Rol</th>
+                  <th>Línea</th>
+                  <th>Estado</th>
+                  <th style="text-align:center">Acciones</th>
+                </tr></thead>
+                <tbody id="us-tb"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="us-empty" style="display:none">
+              <span class="material-symbols-outlined empty-icon">search_off</span>
+              <p>No se encontraron usuarios.</p>
+              <small>Verifique el término de búsqueda e intente de nuevo.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

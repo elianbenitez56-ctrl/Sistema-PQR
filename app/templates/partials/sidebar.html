@@ -1,0 +1,18 @@
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()" aria-hidden="true"></div>
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="Menú principal">
+  <div class="sidebar-brand">
+    <img class="logo" src="{{ url_for('static', filename='img/logo_inapel.png') }}" alt="INAPEL" loading="lazy">
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Principal</div>
+    <button class="nav-item on" onclick="goTab('formulario',this)">
+      <span class="material-symbols-outlined mat-icon">edit_note</span>
+      <span>Nuevo PQR</span>
+    </button>
+    <button class="nav-item" onclick="goTab('consultar',this)">
+      <span class="material-symbols-outlined mat-icon">search</span>
+      <span>Consultar</span>
+    </button>
+  </nav>
+</aside>

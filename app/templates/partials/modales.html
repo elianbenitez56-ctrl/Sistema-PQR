@@ -1,0 +1,28 @@
+<!-- ═══ MODAL ═══ -->
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title" onclick="if(event.target===this)cModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="m-title"></h3>
+      <button class="modal-close" onclick="cModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast-container" role="status" aria-live="polite"></div>
+
+<!-- ═══ CONFIRM ═══ -->
+<div id="confirm-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" onclick="if(event.target===this)cConfirm()">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-body" style="text-align:center">
+      <div id="confirm-icon" style="font-size:36px;margin-bottom:10px" aria-hidden="true"></div>
+      <h3 id="confirm-title" style="font-size:16px;margin-bottom:6px"></h3>
+      <p id="confirm-msg" style="font-size:13px;color:var(--on-surface-variant);margin-bottom:18px;line-height:1.6"></p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn" onclick="cConfirm()" id="confirm-no">Cancelar</button>
+        <button class="btn btn-primary" id="confirm-yes">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>

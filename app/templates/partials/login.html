@@ -1,0 +1,77 @@
+<!-- ═══ LOGIN (HTML/CSS originales de Stitch AI, integrados con la lógica del sistema) ═══ -->
+<div id="login-screen" class="flex flex-col md:flex-row min-h-screen w-full fixed inset-0 z-[500] overflow-y-auto bg-background ">
+  <!-- Left Side: Hero Brand Area (45%) -->
+  <section class="relative w-full md:w-[40%] overflow-hidden hidden md:flex flex-col justify-end p-margin-mobile md:p-6">
+    <div class="absolute inset-0 z-0 overflow-hidden">
+      <picture>
+        <source type="image/webp" srcset="{{ url_for('static', filename='img/hero_login.webp') }}">
+        <img alt="Logistics facility background" class="absolute left-0 top-[-8.4%] w-full h-[108.4%] max-w-none object-cover object-bottom" src="{{ url_for('static', filename='img/hero_login.jpg') }}">
+      </picture>
+      <div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent"></div>
+    </div>
+    <div class="relative z-10 entrance-animation">
+      <h1 class="font-headline-xl text-[clamp(24px,2.2vw,30px)] text-white mb-3 leading-tight">
+        Gestiona las PQR de forma rápida, segura e inteligente.
+      </h1>
+      <p class="font-body-lg text-[16px] leading-[24px] text-white/80 border-l-4 border-secondary-container pl-stack-md">
+        Sistema Inteligente de Gestión PQR | Industria Nacional Papelera S.A.S.
+      </p>
+    </div>
+    <!-- Abstract Shapes for Premium Feel -->
+    <div class="absolute top-[-10%] right-[-10%] w-64 h-64 bg-secondary-container/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-[20%] left-[-5%] w-48 h-48 bg-tertiary-fixed-dim/10 rounded-full blur-2xl"></div>
+  </section>
+  <!-- Right Side: Interaction Area (55%) -->
+  <main class="relative w-full md:w-[60%] flex flex-col justify-between bg-surface-bright  p-margin-mobile md:p-6 login-main">
+    <!-- Login Container -->
+    <div class="max-w-3xl mx-auto w-full flex flex-col items-center justify-center flex-grow py-2 login-body">
+      <!-- Header -->
+      <header class="text-center mb-4 entrance-animation stagger-1">
+        <img alt="INAPEL Logo" class="h-[clamp(72px,6vw,96px)] w-auto mx-auto mb-4 drop-shadow-sm mix-blend-multiply  object-contain" src="{{ url_for('static', filename='img/logo_inapel.png') }}">
+        <p class="font-label-md text-[12.5px] leading-[18px] text-on-surface-variant  tracking-wider uppercase">
+          Sistema Inteligente de Gestión de PQR
+        </p>
+      </header>
+      <!-- Login Form -->
+      <div class="w-full max-w-md mx-auto">
+        <div class="group entrance-animation stagger-2 p-6 bg-white  rounded-[20px] ambient-shadow hover:shadow-xl transition-all duration-300 border border-outline-variant/30">
+          <div class="w-10 h-10 rounded-2xl bg-primary-container/10 flex items-center justify-center mb-3 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+            <span class="material-symbols-outlined text-[24px] icon-fill">lock</span>
+          </div>
+          <h3 class="font-headline-md text-[clamp(17px,1.35vw,19px)] leading-[26px] text-on-surface  mb-1.5">Iniciar sesión</h3>
+          <p class="font-body-md text-[14px] leading-[21px] text-on-surface-variant  mb-4">
+            Ingrese su usuario y contraseña para acceder al sistema.
+          </p>
+          <div class="space-y-2.5 flex flex-col">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">person</span>
+              <input class="w-full pl-8 pr-3 py-2.5 bg-surface-container-lowest  border border-outline-variant rounded-[20px] focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-[14px]" id="login-user" placeholder="Usuario" autocomplete="username" onkeydown="if(event.key==='Enter')loginUsuarios()">
+            </div>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">lock</span>
+              <input class="w-full pl-8 pr-8 py-2.5 bg-surface-container-lowest  border border-outline-variant rounded-[20px] focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-[14px]" id="login-pass" placeholder="Contraseña" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginUsuarios()">
+              <button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant hover:text-primary transition-colors" onclick="togglePass()" type="button" aria-label="Mostrar u ocultar contraseña" title="Mostrar contraseña">
+                <span class="material-symbols-outlined" id="pass-toggle-icon">visibility</span>
+              </button>
+            </div>
+            <p id="login-err" role="alert" class="text-error font-label-sm text-label-sm text-center min-h-3"></p>
+            <button class="w-full py-2.5 px-4 bg-primary text-white font-label-md text-[12.5px] rounded-[20px] hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 btn-ripple mt-auto" onclick="loginUsuarios()" id="login-btn">
+              <span class="material-symbols-outlined text-[18px]">login</span>
+              INICIAR SESIÓN
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Footer (Shared Component) -->
+    <footer class="flex flex-col md:flex-row justify-center items-center gap-stack-md w-full py-2">
+      <span class="text-[11px] leading-[15px] text-on-surface-variant  text-center opacity-80">
+        Industria Nacional Papelera S.A.S. • Sistema de Gestión de PQR • FGC-PQR-01 v1
+      </span>
+      <div class="flex gap-4">
+        <a class="text-[11px] text-on-surface-variant  hover:text-primary  underline transition-all" href="#">Privacidad</a>
+        <a class="text-[11px] text-on-surface-variant  hover:text-primary  underline transition-all" href="#">Soporte</a>
+      </div>
+    </footer>
+  </main>
+</div>

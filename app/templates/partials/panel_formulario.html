@@ -1,0 +1,306 @@
+    <!-- ═══ FORMULARIO ═══ -->
+    <div id="panel-formulario" class="panel on">
+
+      <!-- HERO BANNER -->
+      <div class="hero" id="hero-form">
+        <div class="hero-slides">
+          <div class="hero-slide on" style="background-image:url({{ url_for('static', filename='img/CONVERTIDORA 1.png') }})"></div>
+          <div class="hero-slide" style="background-image:url({{ url_for('static', filename='img/INYECCTORAS.jpeg') }})"></div>
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-left">
+          <div class="hero-label">Nueva solicitud</div>
+          <h1>Solicitud de PQR</h1>
+          <p>Complete los datos para radicar una nueva petición, queja o reclamo.</p>
+          <div class="hero-rad" id="rad-num">PQR · 2026 · XXXX</div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-date-label">Fecha de radicación</div>
+          <div class="hero-date" id="ban-fecha"></div>
+          <div class="hero-time" id="ban-hora"></div>
+        </div>
+        <div class="hero-dots" id="hero-dots"></div>
+      </div>
+
+      <!-- AVISO DE VALIDACIÓN DE PASOS -->
+      <div id="step-alert" class="alert alert-error" style="display:none;margin-bottom:16px">⚠ Debe completar todos los campos obligatorios para continuar.</div>
+
+      <!-- PROGRESS INDICATOR -->
+      <div class="form-progress" id="form-progress">
+        <div class="progress-step on" data-step="1" onclick="goStep(1)">
+          <div class="step-circle">1</div>
+          <div class="step-label">Recepción</div>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step" data-step="2" onclick="goStep(2)">
+          <div class="step-circle">2</div>
+          <div class="step-label">Cliente</div>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step" data-step="3" onclick="goStep(3)">
+          <div class="step-circle">3</div>
+          <div class="step-label">Solicitud</div>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step" data-step="4" onclick="goStep(4)">
+          <div class="step-circle">4</div>
+          <div class="step-label">Adjuntos</div>
+        </div>
+        <div class="progress-line"></div>
+        <div class="progress-step" data-step="5" onclick="goStep(5)">
+          <div class="step-circle">5</div>
+          <div class="step-label">Resultado</div>
+        </div>
+      </div>
+
+      <!-- STEP 1: RECEPCIÓN -->
+      <div class="form-step on" data-step="1">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">call</span></div>
+            <h3>Información de recepción</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="field required"><label>Fecha de recepción <span class="field-auto">AUTOMÁTICA</span></label><input type="date" id="f-fecha"></div>
+              <div class="field"><label>Hora <span class="field-auto">AUTOMÁTICA</span></label><input type="time" id="f-hora"></div>
+              <div class="field required full"><label>Nombre de quien recibe <span class="field-auto">USUARIO AUTENTICADO</span></label><input type="text" id="f-recibe" placeholder="Se carga con el usuario autenticado" readonly></div>
+              <div class="field"><label>Documento de quien recibe <span class="field-auto">AUTOMÁTICO</span></label><input type="text" id="f-doc-rec" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Correo de quien recibe <span class="field-auto">AUTOMÁTICO</span></label><input type="email" id="f-correo-rec" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Teléfono de quien recibe <span class="field-auto">AUTOMÁTICO</span></label><input type="text" id="f-tel-rec" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Cargo <span class="field-auto">AUTOMÁTICO</span></label><input type="text" id="f-cargo" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Centro de costo / Área <span class="field-auto">AUTOMÁTICO</span></label><input type="text" id="f-centro" placeholder="No registrado" readonly></div>
+              <div class="field"><label>Ciudad / Municipio</label><input type="text" id="f-ciudad-r"></div>
+              <div class="field"><label>Departamento</label><input type="text" id="f-dpto-r"></div>
+              <div class="field required full"><label>Medio de recepción</label>
+                <select id="f-medio" onchange="tog('f-medio','Otros','f-otro-medio')">
+                  <option value="">Seleccionar...</option>
+                  <option>Correo electrónico</option><option>Llamada</option>
+                  <option>Visita comercial</option><option>WhatsApp</option>
+                  <option>Página web</option><option>Presencial</option><option>Otros</option>
+                </select>
+              </div>
+              <div class="field full" id="f-otro-medio" style="display:none">
+                <label>Especifique el medio</label>
+                <input type="text" id="f-otro-m" placeholder="Describa el canal...">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn btn-ghost" onclick="limpiar()"><span class="material-symbols-outlined" style="font-size:16px">delete</span> Limpiar</button>
+          <button class="btn btn-primary" onclick="nextStep(2)">Continuar <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></button>
+        </div>
+      </div>
+
+      <!-- STEP 2: CLIENTE -->
+      <div class="form-step" data-step="2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">person</span></div>
+            <h3>Información del cliente</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="field required full"><label>Tipo de solicitud</label>
+                <select id="f-tipo">
+                  <option value="">Seleccionar...</option>
+                  <option>Petición</option><option>Queja</option><option>Reclamo</option>
+                  <option>Sugerencia</option><option>Solicitud de información</option>
+                </select>
+              </div>
+              <div class="field required full"><label>Nombre o razón social</label><input type="text" id="f-cliente" placeholder="Empresa o nombre del cliente"></div>
+              <div class="field"><label>NIT o Cédula del cliente</label><input type="text" id="f-nit" placeholder="Ingrese NIT o cédula del cliente"></div>
+              <div class="field"><label>Contacto del cliente</label><input type="text" id="f-contacto" placeholder="Nombre del contacto del cliente"></div>
+              <div class="field full"><label>Dirección</label><input type="text" id="f-dir"></div>
+              <div class="field"><label>Ciudad / Municipio</label><input type="text" id="f-ciudad-c"></div>
+              <div class="field"><label>Departamento</label><input type="text" id="f-dpto-c"></div>
+              <div class="field"><label>Teléfono</label><input type="text" id="f-tel"></div>
+              <div class="field"><label>WhatsApp</label><input type="text" id="f-wa"></div>
+              <div class="field full"><label>Correo electrónico</label><input type="email" id="f-email"></div>
+            </div>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn btn-ghost" onclick="prevStep(1)"><span class="material-symbols-outlined" style="font-size:16px">arrow_back</span> Anterior</button>
+          <button class="btn btn-primary" onclick="nextStep(3)">Continuar <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></button>
+        </div>
+      </div>
+
+      <!-- STEP 3: SOLICITUD -->
+      <div class="form-step" data-step="3">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">description</span></div>
+            <h3>Descripción detallada del PQR</h3>
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label>Descripción completa</label>
+              <textarea id="f-desc" rows="5" placeholder="Describa con detalle la petición, queja, reclamo o sugerencia. Incluya fechas, impacto y cualquier información relevante..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">inventory_2</span></div>
+            <h3>Productos del reclamo</h3>
+            <span class="card-sub">Una fila por producto</span>
+          </div>
+          <div class="card-body" style="padding-bottom:12px">
+            <div class="table-wrap">
+              <table class="table-pqr">
+                <colgroup>
+                  <col class="col-pqr-linea">
+                  <col class="col-pqr-referencia">
+                  <col class="col-pqr-producto">
+                  <col class="col-pqr-detalle">
+                  <col class="col-pqr-lote">
+                  <col class="col-pqr-fecha">
+                  <col class="col-pqr-cantidad">
+                  <col class="col-pqr-unidad">
+                  <col class="col-pqr-tipo-doc">
+                  <col class="col-pqr-num-doc">
+                  <col class="col-pqr-acciones">
+                </colgroup>
+                <thead><tr>
+                  <th style="min-width:105px">Línea</th>
+                  <th style="min-width:100px">REFERENCIA SIESA</th>
+                  <th style="min-width:205px">Producto involucrado</th>
+                  <th style="min-width:205px">Detalle / presentación</th>
+                  <th style="min-width:95px">Lote / OP</th>
+                  <th style="min-width:105px">Fecha empaque</th>
+                  <th style="min-width:60px">Cant.</th>
+                  <th style="min-width:100px">Unidad</th>
+                  <th style="min-width:115px">Tipo doc.</th>
+                  <th style="min-width:85px">N° doc.</th>
+                  <th></th>
+                </tr></thead>
+                <tbody id="prod-tbody">
+                  <tr>
+                    <td><select class="prod-linea" onchange="catalogoLineaCambio(this)">
+                      <option value="">Seleccionar...</option>
+                      <option value="INAPEL">INAPEL</option>
+                      <option value="MARFIL">MARFIL</option>
+                      <option value="TOROFIL">TOROFIL</option>
+                    </select></td>
+                    <td><input type="text" class="prod-ref" placeholder="REFERENCIA SIESA" autocomplete="off" oninput="catalogoReferenciaCambio(this)"></td>
+                    <td>
+                      <textarea class="catalog-field catalog-producto" rows="2" placeholder="Catálogo" readonly disabled></textarea>
+                      <select class="catalog-choice" style="display:none;margin-top:4px" onchange="seleccionarCatalogo(this)"></select>
+                      <small class="catalog-message" style="display:block;min-height:15px;color:var(--error);font-size:10px"></small>
+                    </td>
+                    <td><textarea class="catalog-field catalog-detalle" rows="2" placeholder="Catálogo" readonly disabled></textarea></td>
+                    <td><input type="text" class="prod-lote" placeholder="Lote/OP"></td>
+                    <td><input type="date" class="prod-fecha"></td>
+                    <td><input type="number" class="prod-cantidad" min="0" placeholder="0"></td>
+                    <td><input type="text" class="catalog-field catalog-unidad" placeholder="Catálogo" readonly disabled></td>
+                    <td><input type="text" class="prod-tipo-doc fixed-doc-type" value="Factura de venta" readonly aria-readonly="true"></td>
+                    <td><input type="text" class="prod-num-doc" placeholder="N°"></td>
+                    <td><button class="btn-del" onclick="rmRow(this)" title="Eliminar">✕</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn btn-sm" style="margin-top:12px" onclick="addRow()">
+              <span class="material-symbols-outlined" style="font-size:16px">add</span>
+              Agregar producto
+            </button>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn btn-ghost" onclick="prevStep(2)"><span class="material-symbols-outlined" style="font-size:16px">arrow_back</span> Anterior</button>
+          <button class="btn btn-primary" onclick="nextStep(4)">Continuar <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></button>
+        </div>
+      </div>
+
+      <!-- STEP 4: EVIDENCIAS -->
+      <div class="form-step" data-step="4">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">attach_file</span></div>
+            <h3>Evidencias</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="field"><label>Tipo de evidencia</label>
+                <select id="f-tip-ev" onchange="tog('f-tip-ev','Otros','f-otro-ev')">
+                  <option value="">Seleccionar...</option>
+                  <option>Fotografía</option><option>Video</option><option>Muestra física</option>
+                  <option>Factura</option><option>Correos electrónicos</option><option>Remisión</option><option>Otros</option>
+                </select>
+              </div>
+              <div class="field"><label>Número de evidencias</label><input type="number" id="f-num-ev" min="0" placeholder="0"></div>
+              <div class="field full" id="f-otro-ev" style="display:none">
+                <label>Especifique el tipo</label>
+                <input type="text" id="f-otro-ev-txt" placeholder="Describa el tipo de evidencia...">
+              </div>
+              <div class="field full">
+                <label>Adjuntar archivos</label>
+                <div class="attach-zone" onclick="document.getElementById('f-files').click()">
+                  <span class="material-symbols-outlined attach-icon">upload_file</span>
+                  <p>Haz clic para adjuntar</p>
+                  <small>Fotos, videos, documentos, etc.</small>
+                </div>
+                <input type="file" id="f-files" multiple style="display:none" onchange="showFiles()">
+                <ul class="file-list" id="file-list"></ul>
+              </div>
+              <div class="field full">
+                <label>Información adicional</label>
+                <textarea id="f-info-ad" rows="3" placeholder="Observaciones adicionales relevantes..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn btn-ghost" onclick="prevStep(3)"><span class="material-symbols-outlined" style="font-size:16px">arrow_back</span> Anterior</button>
+          <button class="btn btn-primary" onclick="nextStep(5)">Continuar <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></button>
+        </div>
+      </div>
+
+      <!-- STEP 5: RESULTADO -->
+      <div class="form-step" data-step="5">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><span class="material-symbols-outlined mat-icon">checklist</span></div>
+            <h3>Resultado esperado</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="field full"><label>¿Qué espera el cliente como solución?</label>
+                <select id="f-exp">
+                  <option value="">Seleccionar...</option>
+                  <option>Cambio de producto</option><option>Nota crédito</option>
+                  <option>Reposición</option><option>Revisión técnica</option>
+                  <option>Aclaración de información</option>
+                </select>
+              </div>
+              <div class="field"><label>¿Producto fue utilizado?</label>
+                <select id="f-util">
+                  <option value="">Seleccionar...</option>
+                  <option>Sí</option><option>No</option><option>Parcialmente</option><option>No aplica</option>
+                </select>
+              </div>
+              <div class="field"><label>Prioridad</label>
+                <select id="f-pri">
+                  <option value="">Seleccionar...</option>
+                  <option>Alta</option><option>Media</option><option>Baja</option>
+                </select>
+              </div>
+            </div>
+            <div class="aviso">
+              <strong>Aviso de datos personales:</strong> La información suministrada será tratada por INAPEL conforme a la Ley 1581 de 2012, el Decreto 1074 de 2015 y la Política interna de Protección de Datos Personales.
+            </div>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn btn-ghost" onclick="prevStep(4)"><span class="material-symbols-outlined" style="font-size:16px">arrow_back</span> Anterior</button>
+          <button class="btn btn-primary" onclick="guardar()">
+            <span class="material-symbols-outlined" style="font-size:18px">send</span>
+            Radicar solicitud
+          </button>
+        </div>
+        <div id="msg-form"></div>
+      </div>
+
+    </div>

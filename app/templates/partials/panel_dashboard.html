@@ -1,0 +1,59 @@
+    <!-- ═══ DASHBOARD ═══ -->
+    <div id="panel-dashboard" class="panel">
+      <div id="gate-dash">
+        <div class="card"><div class="card-body">
+          <div class="gate">
+            <div class="gate-icon"><span class="material-symbols-outlined mat-icon">lock</span></div>
+            <h2>Acceso restringido</h2>
+            <p>Esta sección es de uso exclusivo del Departamento de Calidad de INAPEL.</p>
+            <div class="gate-row">
+              <label for="p-dash" class="visually-hidden">Contraseña de acceso</label>
+              <input type="password" id="p-dash" placeholder="Contraseña" autocomplete="off" onkeydown="if(event.key==='Enter')abrir('dash')">
+              <button class="btn btn-primary" onclick="abrir('dash')">Ingresar</button>
+            </div>
+            <p id="e-dash" class="gate-error" role="alert"></p>
+          </div>
+        </div></div>
+      </div>
+      <div id="con-dash" style="display:none">
+        <div class="toolbar">
+          <h2>Dashboard ejecutivo</h2>
+          <button class="btn btn-sm btn-ghost" onclick="logout()">
+            <span class="material-symbols-outlined" style="font-size:16px">logout</span>
+            Cerrar sesión
+          </button>
+        </div>
+      <div class="dashboard-grid">
+        <div class="dash-card">
+          <h4>Total PQR</h4>
+          <div class="dash-value" id="total">0</div>
+        </div>
+        <div class="dash-card">
+          <h4>Abiertas</h4>
+          <div class="dash-value" id="abiertas">0</div>
+        </div>
+        <div class="dash-card">
+          <h4>Cerradas</h4>
+          <div class="dash-value" id="cerradas">0</div>
+        </div>
+        <div class="dash-card">
+          <h4>Prioridad alta</h4>
+          <div class="dash-value" id="alta">0</div>
+        </div>
+      </div>
+      <div class="charts">
+        <div class="chart-card">
+          <h3>PQR por estado</h3>
+          <div class="chart-box">
+            <canvas id="grafEstados"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>PQR por tipo de solicitud</h3>
+          <div class="chart-box">
+            <canvas id="grafTipos"></canvas>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>

@@ -1,0 +1,63 @@
+/* ─── TOAST ─── */
+#toast-container{
+  position:fixed; top:76px; right:24px; z-index:300;
+  display:flex; flex-direction:column; gap:8px; pointer-events:none;
+}
+.toast{
+  pointer-events:auto; padding:12px 18px; border-radius:var(--radius-md);
+  font-size:13px; font-weight:500; line-height:1.5;
+  display:flex; align-items:flex-start; gap:10px;
+  box-shadow:var(--shadow-lg);
+  animation:toastIn 0.3s ease; max-width:380px;
+  backdrop-filter:blur(8px);
+}
+.toast.success{background:rgba(22,101,52,0.95);color:#fff}
+.toast.error{background:rgba(153,27,27,0.95);color:#fff}
+.toast.info{background:rgba(21,71,154,0.92);color:#fff}
+.toast-out{animation:toastOut 0.3s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
+
+/* ─── SPINNER ─── */
+.spin{
+  display:inline-block; width:18px; height:18px;
+  border:2.5px solid rgba(255,255,255,0.25);
+  border-top-color:#fff; border-radius:50%;
+  animation:sp 0.6s linear infinite;
+  vertical-align:middle; margin-right:6px;
+}
+.spin-dark{
+  display:inline-block; width:18px; height:18px;
+  border:2.5px solid var(--outline-soft);
+  border-top-color:var(--blue); border-radius:50%;
+  animation:sp 0.6s linear infinite;
+  vertical-align:middle; margin-right:6px;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ─── HAMBURGER ─── */
+.hamburger{
+  display:none; flex-direction:column; justify-content:center; gap:4px;
+  width:32px; height:32px; border:none; background:none; cursor:pointer;
+  padding:4px; border-radius:var(--radius-sm); flex-shrink:0;
+  transition:var(--transition);
+}
+.hamburger:hover{background:var(--surface-container)}
+.hamburger span{
+  display:block; height:2px; background:var(--on-surface-variant);
+  border-radius:2px; transition:var(--transition);
+}
+.hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+/* ─── SIDEBAR OVERLAY ─── */
+.sidebar-overlay{
+  display:none; position:fixed; inset:0; z-index:99;
+  background:rgba(0,0,0,0.5); opacity:0;
+  transition:opacity 0.3s ease;
+}
+.sidebar-overlay.open{display:block;opacity:1}
+
+/* ─── SIDEBAR OPEN STATE ─── */
+.sidebar.open{transform:translateX(0)}

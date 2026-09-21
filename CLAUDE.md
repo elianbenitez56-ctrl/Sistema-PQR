@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Flask single-page app (`templates/index.html`, inline CSS/JS) for PQR management (Peticiones/Quejas/Reclamos) at INAPEL. MySQL storage, Docker for dev and deploy (Render, `runtime: docker`). Full docs live in `docs/` (see `README.md` for the index); keep them in sync when changing endpoints, env vars or schema.
+Flask single-page app (`templates/index.html` + partials, CSS/JS in `static/`) for PQR management (Peticiones/Quejas/Reclamos) at INAPEL. MySQL storage, Docker for dev and deploy (Render, `runtime: docker`). Full docs live in `docs/` (see `README.md` for the index); keep them in sync when changing endpoints, env vars or schema.
 
 ## Commands
 
@@ -30,7 +30,8 @@ app/
   servicios/            use cases (pqr, seguimiento, usuarios) + correo (SMTP) + catalogo (xlsx)
   rutas/                thin Blueprints: read request -> call servicio -> jsonify
   semillas.py           seed users; SEED_USER_PASSWORD overrides their shared temporary password
-  templates/ static/    single-page UI (index.html, inline CSS/JS)
+  templates/            index.html (skeleton) + partials/ (one view per file)
+  static/css js/        styles (cascade order) and classic scripts sharing global scope, loaded in order; arranque.js last
 datos/  docs/  scripts/  tests/
 ```
 

@@ -2,8 +2,8 @@
 
 ## Visión general
 
-Aplicación monolítica: un servidor Flask que sirve la interfaz (una sola página, `app/templates/index.html`, con CSS y
-JavaScript en línea) y una API JSON bajo `/api/*`. Los datos viven en MySQL y las evidencias en disco.
+Aplicación monolítica: un servidor Flask que sirve la interfaz (una sola página compuesta por `index.html` + parciales Jinja,
+con CSS y JavaScript en `app/static/`) y una API JSON bajo `/api/*`. Los datos viven en MySQL y las evidencias en disco.
 
 ```
 Navegador ──HTTP──▶ gunicorn ──▶ Flask (app/)
@@ -37,7 +37,14 @@ app/
   servicios/catalogo.py     catálogo maestro leído de datos/LISTADO PRODUCTOS.xlsx (en memoria, con recarga)
   rutas/                    un Blueprint por área: sesion, usuarios, catalogo, pqr, seguimiento, evidencias
   semillas.py               usuarios iniciales de INAPEL
-  templates/, static/       interfaz y recursos estáticos
+  templates/index.html      esqueleto de la página (enlaza CSS/JS e incluye los parciales)
+  templates/partials/       una vista por archivo: login, sidebar, topbar, panel_* (formulario, consultar,
+                            basedatos, seguimiento, usuarios, dashboard) y modales
+  static/css/               estilos por capa, en orden de cascada: base, layout, formulario, componentes,
+                            pantallas, feedback, responsive, accesibilidad
+  static/js/                scripts clásicos (comparten ámbito global) cargados en orden: nucleo, sesion, layout,
+                            formulario, consultar, basedatos, usuarios, seguimiento, arranque (al final)
+  static/img/, manifest.json  imágenes y manifiesto PWA
 ```
 
 **Regla de dependencias:** `rutas → servicios → repos → db`, y `dominio` no depende de nada de la aplicación salvo roles/errores.

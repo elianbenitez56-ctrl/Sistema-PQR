@@ -1032,7 +1032,7 @@ def sembrar_usuarios():
         crear_usuario(
             nombre=str(u.get("nombre", "")).strip(),
             usuario=usuario_login,
-            contrasena=str(u.get("contrasena", "")),
+            contrasena=os.getenv("SEED_USER_PASSWORD") or str(u.get("contrasena", "")),
             rol=str(u.get("rol", "")).strip().upper(),
             documento=str(u.get("documento", "")).strip(),
             linea_producto=str(u.get("linea_producto", "")).strip().upper(),

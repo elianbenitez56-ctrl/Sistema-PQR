@@ -22,6 +22,6 @@ docker compose exec web python -m scripts.test_smtp  # SMTP sanity check
 - `mysql_db.py`: all data access (pooled connections, `get_db_cursor`), schema in `SCHEMA_SQL`, user CRUD/auth, PQR CRUD, dashboard, seeding. Note MySQL 8 rejects `TEXT DEFAULT ''`; use `DEFAULT ('')`. `generar_radicado()` is read-last-then-write (race under concurrency).
 - `routes.py`: single blueprint, session-cookie auth with roles (`rol_requerido`), login rate limit (in-memory per worker), evidence upload validated by `RADICADO_RE` + extension whitelist.
 - `email_service.py`: Gmail SMTP via `SMTP_*` env vars. `catalogo_productos.py`: product list from `datos/LISTADO PRODUCTOS.xlsx` (non-fatal on failure).
-- `usuarios_iniciales.py`: seed users (temporary shared password inside; replace before real use).
+- `usuarios_iniciales.py`: seed users; set `SEED_USER_PASSWORD` to override their shared temporary password (`Inapel2026` in the file).
 - Evidence files go to `PQR_UPLOAD_DIR` (`/data/evidencias`, a Docker volume). On Render they persist only if a paid disk is mounted (see `render.yaml`).
 - Deploy: Render builds the `Dockerfile`; MySQL must be an external managed instance (`MYSQL_HOST/USER/PASSWORD` env vars).

@@ -13,11 +13,9 @@ stderr.log
 stderrr.log
 backups/
 backup/
-diseño login/
 Base_Datos/Evidencias/
 BaseDatos_PQR.xlsx
 BaseDatos_PQR_corrupto_*.xlsx
-usuarios_iniciales.py
 *.secret
 *.credentials
 credentials.*

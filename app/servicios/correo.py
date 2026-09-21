@@ -23,8 +23,6 @@ Nunca se escribe una contraseña en el código ni se expone en JSON/logs.
 
 import os
 import re
-import sys
-import traceback
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
@@ -41,7 +39,7 @@ EMAIL_REGEX = r"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$"
 def _leer_env_local():
     """Carga variables de un archivo .env local si existe (solo desarrollo)."""
 
-    ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    ruta = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env")
 
     if not os.path.exists(ruta):
         return

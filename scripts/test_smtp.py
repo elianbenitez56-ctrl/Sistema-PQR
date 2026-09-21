@@ -19,7 +19,7 @@ import sys
 import smtplib
 from email.mime.text import MIMEText
 
-from email_service import _var, variables_smtp_faltantes, smtp_configurado
+from app.servicios.correo import _var, variables_smtp_faltantes, smtp_configurado
 
 
 def _ocultar(correo):

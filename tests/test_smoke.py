@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from app import app
+from wsgi import app
 
 
 @pytest.fixture

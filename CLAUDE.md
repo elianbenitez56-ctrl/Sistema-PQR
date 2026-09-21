@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Flask single-page app (`templates/index.html`, inline CSS/JS) for PQR management (Peticiones/Quejas/Reclamos) at INAPEL. MySQL storage (`mysql_db.py`), Docker for dev and deploy (Render, `runtime: docker`). `AGENTS.md` still has a useful endpoint/roles table, but its Excel/storage sections are obsolete.
+Flask single-page app (`templates/index.html`, inline CSS/JS) for PQR management (Peticiones/Quejas/Reclamos) at INAPEL. MySQL storage, Docker for dev and deploy (Render, `runtime: docker`). `AGENTS.md` still has a useful endpoint/roles table, but its Excel/storage sections are obsolete.
 
 ## Commands
 
@@ -18,10 +18,24 @@ docker compose exec web python -m scripts.test_smtp  # SMTP sanity check
 
 ## Architecture
 
-- `app.py`: config from env, `asegurar_tablas()` (waits for MySQL, creates schema) + `sembrar_usuarios()` at import time, `/healthz` (does `SELECT 1`). `SECRET_KEY` is mandatory unless `FLASK_DEBUG=1`.
-- `mysql_db.py`: all data access (pooled connections, `get_db_cursor`), schema in `SCHEMA_SQL`, user CRUD/auth, PQR CRUD, dashboard, seeding. Note MySQL 8 rejects `TEXT DEFAULT ''`; use `DEFAULT ('')`. `generar_radicado()` is read-last-then-write (race under concurrency).
-- `routes.py`: single blueprint, session-cookie auth with roles (`rol_requerido`), login rate limit (in-memory per worker), evidence upload validated by `RADICADO_RE` + extension whitelist.
-- `email_service.py`: Gmail SMTP via `SMTP_*` env vars. `catalogo_productos.py`: product list from `datos/LISTADO PRODUCTOS.xlsx` (non-fatal on failure).
-- `usuarios_iniciales.py`: seed users; set `SEED_USER_PASSWORD` to override their shared temporary password (`Inapel2026` in the file).
+```
+wsgi.py                 entrypoint (gunicorn wsgi:app / flask --app wsgi)
+app/
+  __init__.py           create_app(): config, ensure schema, seed users, load catalog, register blueprints, /healthz
+  config.py             env -> Config (SECRET_KEY mandatory unless FLASK_DEBUG=1)
+  db.py                 MySQL pool, get_db_cursor, SCHEMA_SQL, asegurar_tablas (waits for MySQL)
+  seguridad.py          roles + rol_requerido / sesion_requerida
+  validaciones.py       shared request validators/helpers
+  repos/                data access: usuarios.py (users, auth, seed), pqr.py (PQR, historial, investigaciones, adjuntos, dashboard)
+  rutas/                one Blueprint per area: sesion, usuarios, catalogo, pqr, seguimiento, evidencias
+  servicios/            correo.py (Gmail SMTP), catalogo.py (product list from datos/LISTADO PRODUCTOS.xlsx)
+  semillas.py           seed users; SEED_USER_PASSWORD overrides their shared temporary password
+  templates/ static/    single-page UI (index.html, inline CSS/JS)
+datos/  docs/  scripts/  tests/
+```
+
+- MySQL 8 rejects `TEXT DEFAULT ''`; use `DEFAULT ('')`. `generar_radicado()` is read-last-then-write (race under concurrency).
+- Login rate limit is in-memory per worker (`rutas/sesion.py`); evidence upload validated by `RADICADO_RE` + extension whitelist (`rutas/evidencias.py`).
 - Evidence files go to `PQR_UPLOAD_DIR` (`/data/evidencias`, a Docker volume). On Render they persist only if a paid disk is mounted (see `render.yaml`).
 - Deploy: Render builds the `Dockerfile`; MySQL must be an external managed instance (`MYSQL_HOST/USER/PASSWORD` env vars).
+- The `.env` loader in `servicios/correo.py` only matters outside Docker; compose injects env via `env_file`.

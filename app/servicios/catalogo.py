@@ -7,7 +7,7 @@ from threading import RLock
 from openpyxl import load_workbook
 
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 _ruta_configurada = os.getenv(
     "CATALOGO_PRODUCTOS_PATH",
     str(BASE_DIR / "datos" / "LISTADO PRODUCTOS.xlsx")

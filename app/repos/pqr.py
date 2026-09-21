@@ -1,7 +1,8 @@
 import json
+from contextlib import contextmanager
 from datetime import datetime
 
-from app.db import get_db_cursor
+from app.db import get_db_connection, get_db_cursor
 
 HERRAMIENTAS_ANALISIS = (
     "5 ¿Por qué?",
@@ -18,26 +19,44 @@ HERRAMIENTAS_ANALISIS = (
 # PQR
 # -------------------------------------------------------------------------
 
-def generar_radicado():
-    with get_db_cursor() as cursor:
-        cursor.execute("SELECT radicado FROM pqr ORDER BY radicado DESC LIMIT 1")
-        row = cursor.fetchone()
+@contextmanager
+def _radicado_bloqueado():
+    """Cursor con lock nombrado de MySQL: serializa generar radicado + insertar (entre hilos y procesos).
+
+    Usa una sola conexión (el pool no se agota esperando el lock) y confirma o revierte al salir.
+    """
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+        try:
+            cursor.execute("SELECT GET_LOCK('pqr_radicado', 10) AS ok")
+            if cursor.fetchone()["ok"] != 1:
+                raise RuntimeError("No fue posible obtener el bloqueo para generar el radicado.")
+            try:
+                yield cursor
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                cursor.execute("SELECT RELEASE_LOCK('pqr_radicado')")
+                cursor.fetchone()
+        finally:
+            cursor.close()
+
+
+def _siguiente_radicado(cursor):
+    cursor.execute(
+        "SELECT radicado FROM pqr "
+        "ORDER BY CAST(SUBSTRING_INDEX(radicado, '-', -1) AS UNSIGNED) DESC LIMIT 1"
+    )
+    row = cursor.fetchone()
+    consecutivo = 1
     if row and row['radicado']:
         try:
-            partes = str(row['radicado']).split("-")
-            if len(partes) >= 2:
-                int(partes[1])  # valida que el segundo segmento sea numérico
-                concat = int(partes[2])
-                consecutivo = concat + 1
-            else:
-                consecutivo = 1
+            consecutivo = int(str(row['radicado']).split("-")[2]) + 1
         except (ValueError, IndexError):
-            consecutivo = 1
-    else:
-        consecutivo = 1
-    from datetime import datetime
-    anio_actual = datetime.now().year
-    return f"PQR-{anio_actual}-{consecutivo:04d}"
+            pass
+    return f"PQR-{datetime.now().year}-{consecutivo:04d}"
 
 
 def consultar_pqr(valor_busqueda):
@@ -149,9 +168,6 @@ def listar_pqrs():
 
 
 def guardar_pqr(datos):
-    radicado = generar_radicado()
-    datos["radicado"] = radicado
-
     fecha_rec = datos.get("fechaRec")
     hora_rec = datos.get("horaRec")
     if isinstance(fecha_rec, str):
@@ -179,7 +195,10 @@ def guardar_pqr(datos):
 
     productos_json = json.dumps(datos.get("productos", []), ensure_ascii=False)
 
-    with get_db_cursor(commit=True) as cursor:
+    with _radicado_bloqueado() as cursor:
+        radicado = _siguiente_radicado(cursor)
+        datos["radicado"] = radicado
+
         cursor.execute(
             "INSERT INTO pqr "
             "(radicado, fecha, hora, tipo, cliente, nit, contacto, telefono, correo, "
@@ -222,7 +241,6 @@ def guardar_pqr(datos):
             )
         )
 
-    with get_db_cursor(commit=True) as cursor:
         cursor.execute(
             "INSERT INTO historial (radicado, estado, usuario, fecha, hora, observacion) "
             "VALUES (%s, %s, %s, %s, %s, %s)",

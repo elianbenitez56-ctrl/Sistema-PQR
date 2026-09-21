@@ -4,7 +4,6 @@ from app.repos.pqr import (
     consultar_pqr,
     correo_confirmacion_enviado,
     eliminar_pqr,
-    generar_radicado,
     guardar_pqr,
     listar_pqrs,
     marcar_correo_confirmacion,
@@ -71,8 +70,7 @@ def api_guardar_pqr():
             "mensaje": "La sesión del usuario ya no es válida. Inicie sesión nuevamente."
         }), 401
 
-    radicado = generar_radicado()
-    datos["radicado"] = radicado
+    radicado = None
 
     # Los datos del receptor se toman siempre del usuario autenticado.
     # Los valores enviados por el navegador no pueden alterarlos.
@@ -90,6 +88,7 @@ def api_guardar_pqr():
     # 1) SIEMPRE se guarda la PQR primero. El correo nunca bloquea el registro.
     try:
         guardar_pqr(datos)
+        radicado = datos["radicado"]
     except Exception:
         current_app.logger.exception(
             "Error al guardar la PQR %s",

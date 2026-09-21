@@ -30,7 +30,7 @@ def _pool():
     if _POOL is None:
         _POOL = pooling.MySQLConnectionPool(
             pool_name="pqr",
-            pool_size=int(os.getenv("MYSQL_POOL_SIZE", "8")),
+            pool_size=int(os.getenv("MYSQL_POOL_SIZE", "16")),
             pool_reset_session=True,
             host=MYSQL_HOST,
             port=MYSQL_PORT,

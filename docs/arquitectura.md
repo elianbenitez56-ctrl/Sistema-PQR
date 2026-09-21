@@ -73,7 +73,7 @@ Las relaciones se hacen por `radicado` (sin claves foráneas); `eliminar_pqr()` 
 ### Radicado
 
 Formato `PQR-{año}-{consecutivo:04d}`, p. ej. `PQR-2026-0042`. El consecutivo es global (no se reinicia cada año).
-Se genera dentro de `guardar_pqr()` con un *lock* nombrado de MySQL (`GET_LOCK('pqr_radicado')`), de modo que la
+Se genera dentro de `crear_pqr()` con un *lock* nombrado de MySQL (`GET_LOCK('pqr_radicado')`), de modo que la
 generación y la inserción son atómicas incluso con varios procesos.
 
 ## Autenticación y autorización

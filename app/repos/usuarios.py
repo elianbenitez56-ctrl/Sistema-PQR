@@ -1,5 +1,6 @@
 import os
 
+from psycopg.errors import UniqueViolation
 from werkzeug.security import generate_password_hash
 
 from app.db import get_db_cursor
@@ -101,7 +102,11 @@ def eliminar_usuario(uid):
 
 
 def sembrar_usuarios():
-    """Crea el admin (ADMIN_PASS) y los usuarios de semillas.py que aún no existan."""
+    """Crea el admin (ADMIN_PASS) y los usuarios de semillas.py que aún no existan.
+
+    Con varios workers de gunicorn arrancando a la vez contra una base vacía, dos procesos
+    pueden ver "no existe" al mismo tiempo; el que pierde la carrera de insertar ignora el duplicado.
+    """
 
     if usuario_disponible("admin"):
         clave = os.getenv("ADMIN_PASS")
@@ -109,7 +114,10 @@ def sembrar_usuarios():
             raise RuntimeError(
                 "ADMIN_PASS debe configurarse antes de crear el administrador inicial."
             )
-        crear_usuario(nombre="Administrador General", usuario="admin", contrasena=clave, rol="ADMIN")
+        try:
+            crear_usuario(nombre="Administrador General", usuario="admin", contrasena=clave, rol="ADMIN")
+        except UniqueViolation:
+            pass
 
     from app.semillas import USUARIOS_INICIALES
 
@@ -117,13 +125,16 @@ def sembrar_usuarios():
         usuario_login = str(u.get("usuario", "")).strip()
         if not usuario_login or not usuario_disponible(usuario_login):
             continue
-        crear_usuario(
-            nombre=str(u.get("nombre", "")).strip(),
-            usuario=usuario_login,
-            contrasena=os.getenv("SEED_USER_PASSWORD") or str(u.get("contrasena", "")),
-            rol=str(u.get("rol", "")).strip().upper(),
-            documento=str(u.get("documento", "")).strip(),
-            linea_producto=str(u.get("linea_producto", "")).strip().upper(),
-            empresa=str(u.get("empresa", "") or "INAPEL").strip().upper(),
-            activo=u.get("activo", True),
-        )
+        try:
+            crear_usuario(
+                nombre=str(u.get("nombre", "")).strip(),
+                usuario=usuario_login,
+                contrasena=os.getenv("SEED_USER_PASSWORD") or str(u.get("contrasena", "")),
+                rol=str(u.get("rol", "")).strip().upper(),
+                documento=str(u.get("documento", "")).strip(),
+                linea_producto=str(u.get("linea_producto", "")).strip().upper(),
+                empresa=str(u.get("empresa", "") or "INAPEL").strip().upper(),
+                activo=u.get("activo", True),
+            )
+        except UniqueViolation:
+            pass

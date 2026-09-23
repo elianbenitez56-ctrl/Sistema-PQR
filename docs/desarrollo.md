@@ -5,7 +5,7 @@
 1. `docker compose up --build` (recarga automática al guardar; ver [ejecucion.md](ejecucion.md)).
 2. Haga los cambios en una rama: `git switch -c mi-cambio`.
 3. Antes de subir: `docker compose exec web ruff check .` y `docker compose exec web pytest -q`.
-4. Abra un pull request hacia `main`. El CI (`.github/workflows/ci.yml`) levanta MySQL 8.4 y ejecuta lint y tests.
+4. Abra un pull request hacia `main`. El CI (`.github/workflows/ci.yml`) levanta PostgreSQL 16 y ejecuta lint y tests.
 
 Mensajes de commit: una línea que diga **qué y por qué** (en español, como el resto del historial).
 
@@ -17,7 +17,7 @@ docker compose exec web pytest -q tests/test_pqr.py    # un archivo
 docker compose exec web pytest -q -k seguimiento       # por nombre
 ```
 
-Los tests usan la **base MySQL real** del compose (no hay mocks de base de datos), así que el contenedor `db` debe estar arriba.
+Los tests usan la **base PostgreSQL real** del compose (no hay mocks de base de datos), así que el contenedor `db` debe estar arriba.
 
 | Archivo | Cubre |
 |---|---|
@@ -56,7 +56,7 @@ Convenciones (ver `tests/conftest.py`):
 1. Edite `SCHEMA_SQL` en `app/db.py` (para bases nuevas).
 2. Para bases **existentes** agregue una migración idempotente en `asegurar_tablas()` (`ALTER TABLE ...` comprobando antes
    en `information_schema`; ejemplo: `_migrar_notificar`). `CREATE TABLE IF NOT EXISTS` no modifica tablas ya creadas.
-3. En MySQL 8, las columnas `TEXT`/`JSON` no admiten `DEFAULT ''`; use `DEFAULT ('')`.
+3. Evite columnas `JSON` nativas si el código ya hace `json.dumps`/`json.loads` a mano (psycopg convierte `json`/`jsonb` a objetos Python automáticamente al leer); use `TEXT` en ese caso, como hace `pqr.productos`.
 
 ### Una pantalla o comportamiento del frontend
 - HTML: `app/templates/partials/<vista>.html` (se incluye desde `index.html`).

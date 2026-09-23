@@ -1,7 +1,7 @@
 # Sistema PQR — INAPEL
 
 Aplicación web para registrar, investigar y dar seguimiento a **Peticiones, Quejas y Reclamos (PQR)** de clientes.
-Flask (Python 3.12) + MySQL 8, empaquetada con Docker y desplegada en Render.
+Flask (Python 3.12) + PostgreSQL, empaquetada con Docker y desplegada en Render (base en Supabase/Neon).
 
 ## Qué hace
 
@@ -16,7 +16,7 @@ Requisitos: [Docker](https://docs.docker.com/get-docker/) con Docker Compose.
 
 ```bash
 cp .env.example .env
-# Edite .env: SECRET_KEY, ADMIN_PASS, MYSQL_PASSWORD y MYSQL_ROOT_PASSWORD (obligatorios)
+# Edite .env: SECRET_KEY, ADMIN_PASS y PGPASSWORD (obligatorios)
 docker compose up --build
 ```
 

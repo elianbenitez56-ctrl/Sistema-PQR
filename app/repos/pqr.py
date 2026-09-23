@@ -5,8 +5,10 @@ import shutil
 from contextlib import contextmanager
 from datetime import datetime
 
+from psycopg.rows import dict_row
+
 from app.config import Config
-from app.db import get_db_connection, get_db_cursor
+from app.db import Error, get_db_connection, get_db_cursor
 from app.dominio import normalizar_herramientas, serializar_herramientas
 
 # -------------------------------------------------------------------------
@@ -15,33 +17,31 @@ from app.dominio import normalizar_herramientas, serializar_herramientas
 
 @contextmanager
 def _radicado_bloqueado():
-    """Cursor con lock nombrado de MySQL: serializa generar radicado + insertar (entre hilos y procesos).
+    """Cursor con advisory lock de PostgreSQL, con ámbito de transacción: serializa generar
+    radicado + insertar (entre procesos), y se libera solo al hacer commit o rollback.
 
-    Usa una sola conexión (el pool no se agota esperando el lock) y confirma o revierte al salir.
+    Usa una sola conexión (el pool no se agota esperando el lock).
     """
     with get_db_connection() as conn:
-        cursor = conn.cursor(dictionary=True)
-        try:
-            cursor.execute("SELECT GET_LOCK('pqr_radicado', 10) AS ok")
-            if cursor.fetchone()["ok"] != 1:
-                raise RuntimeError("No fue posible obtener el bloqueo para generar el radicado.")
+        with conn.cursor(row_factory=dict_row) as cursor:
+            cursor.execute("SET LOCAL statement_timeout = '10s'")
+            try:
+                cursor.execute("SELECT pg_advisory_xact_lock(hashtext('pqr_radicado'))")
+            except Error as error:
+                conn.rollback()
+                raise RuntimeError("No fue posible obtener el bloqueo para generar el radicado.") from error
             try:
                 yield cursor
                 conn.commit()
             except Exception:
                 conn.rollback()
                 raise
-            finally:
-                cursor.execute("SELECT RELEASE_LOCK('pqr_radicado')")
-                cursor.fetchone()
-        finally:
-            cursor.close()
 
 
 def _siguiente_radicado(cursor):
     cursor.execute(
         "SELECT radicado FROM pqr "
-        "ORDER BY CAST(SUBSTRING_INDEX(radicado, '-', -1) AS UNSIGNED) DESC LIMIT 1"
+        "ORDER BY CAST(split_part(radicado, '-', 3) AS INTEGER) DESC LIMIT 1"
     )
     row = cursor.fetchone()
     consecutivo = 1

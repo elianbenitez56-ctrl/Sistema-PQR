@@ -1,4 +1,4 @@
-"""Smoke tests: requieren MySQL accesible (ej. `docker compose run --rm web pytest`)."""
+"""Smoke tests: requieren PostgreSQL accesible (ej. `docker compose run --rm web pytest`)."""
 import io
 
 

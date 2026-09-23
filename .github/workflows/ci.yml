@@ -9,22 +9,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-      mysql:
-        image: mysql:8.4
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: sistema_pqr
-        ports: ["3306:3306"]
+          POSTGRES_USER: pqr
+          POSTGRES_PASSWORD: pqr
+          POSTGRES_DB: sistema_pqr
+        ports: ["5432:5432"]
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-cmd="pg_isready -U pqr -d sistema_pqr"
           --health-interval=5s --health-timeout=5s --health-retries=20
     env:
       SECRET_KEY: ci-secret
       ADMIN_PASS: ci-admin-pass
-      MYSQL_HOST: 127.0.0.1
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
-      MYSQL_DATABASE: sistema_pqr
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: pqr
+      PGPASSWORD: pqr
+      PGDATABASE: sistema_pqr
+      PGSSLMODE: disable
       SESSION_COOKIE_SECURE: "0"
     steps:
       - uses: actions/checkout@v4

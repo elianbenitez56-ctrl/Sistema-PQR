@@ -3,7 +3,7 @@
 ## Visión general
 
 Aplicación monolítica: un servidor Flask que sirve la interfaz (una sola página compuesta por `index.html` + parciales Jinja,
-con CSS y JavaScript en `app/static/`) y una API JSON bajo `/api/*`. Los datos viven en MySQL y las evidencias en disco.
+con CSS y JavaScript en `app/static/`) y una API JSON bajo `/api/*`. Los datos viven en PostgreSQL y las evidencias en disco.
 
 ```
 Navegador ──HTTP──▶ gunicorn ──▶ Flask (app/)
@@ -11,7 +11,7 @@ Navegador ──HTTP──▶ gunicorn ──▶ Flask (app/)
                                    ├─ servicios/  casos de uso y reglas: orquestan repos, correo y catálogo
                                    ├─ dominio.py  reglas puras (flujo de seguimiento, herramientas)
                                    ├─ repos/      SQL (único lugar que habla con la base)
-                                   └─ db.py ──▶ MySQL 8 (pool de conexiones)
+                                   └─ db.py ──▶ PostgreSQL (pool de conexiones, psycopg)
                                    └─ disco ──▶ PQR_UPLOAD_DIR/<radicado>/  (evidencias)
 ```
 
@@ -23,7 +23,7 @@ app/
   __init__.py               create_app(): configura, crea esquema, siembra usuarios, carga catálogo,
                             registra blueprints y el manejador de ErrorNegocio, "/" y "/healthz"
   config.py                 variables de entorno -> Config
-  db.py                     pool MySQL, get_db_cursor(), SCHEMA_SQL, asegurar_tablas() y migraciones
+  db.py                     pool PostgreSQL (psycopg_pool), get_db_cursor(), SCHEMA_SQL, asegurar_tablas()
   errores.py                ErrorNegocio: error esperado con su código HTTP (se traduce a JSON en un solo lugar)
   seguridad.py              constantes de roles, rol_requerido(), sesion_requerida()
   validaciones.py           validadores de correo y teléfono
@@ -57,15 +57,20 @@ con ese código HTTP (`extra` agrega campos como `faltantes`; `clave="error"` ma
 ## Ciclo de arranque (`create_app`)
 
 1. Lee la configuración (`SECRET_KEY` es obligatoria salvo `FLASK_DEBUG=1`).
-2. `asegurar_tablas()`: espera hasta 60 s a que MySQL responda, crea las tablas que falten y aplica migraciones.
+2. `asegurar_tablas()`: espera hasta 60 s a que PostgreSQL responda y crea las tablas que falten.
 3. `sembrar_usuarios()`: crea `admin` (con `ADMIN_PASS`) y los usuarios de `semillas.py` que no existan.
 4. Carga el catálogo de productos. Si falla, la app arranca igual y el error queda en el log.
 5. Registra los blueprints. `GET /healthz` hace `SELECT 1` y devuelve 200/503 (lo usan Docker y Render).
 
-## Base de datos (MySQL 8, `utf8mb4`)
+## Base de datos (PostgreSQL 14+)
 
 El esquema está en `app/db.py` (`SCHEMA_SQL`) y se crea solo. No hay herramienta de migraciones: los cambios
-sobre tablas existentes se agregan como función en `asegurar_tablas()` (ver `_migrar_notificar`).
+sobre tablas existentes se agregan como una sentencia idempotente más (`CREATE TABLE IF NOT EXISTS`, `CREATE INDEX
+IF NOT EXISTS`) o una función que se llama desde `asegurar_tablas()`.
+
+`productos` (en `pqr`) se guarda como `TEXT` con JSON serializado a mano (`json.dumps`/`json.loads`), no como
+columna `JSON` nativa: psycopg convierte automáticamente las columnas `json`/`jsonb` a objetos Python al leerlas,
+lo que habría obligado a cambiar ese código; con `TEXT` el comportamiento es idéntico al de antes.
 
 | Tabla | Contenido | Clave |
 |---|---|---|
@@ -80,8 +85,9 @@ Las relaciones se hacen por `radicado` (sin claves foráneas); `eliminar_pqr()` 
 ### Radicado
 
 Formato `PQR-{año}-{consecutivo:04d}`, p. ej. `PQR-2026-0042`. El consecutivo es global (no se reinicia cada año).
-Se genera dentro de `crear_pqr()` con un *lock* nombrado de MySQL (`GET_LOCK('pqr_radicado')`), de modo que la
-generación y la inserción son atómicas incluso con varios procesos.
+Se genera dentro de `crear_pqr()` bajo un *advisory lock* de PostgreSQL con ámbito de transacción
+(`pg_advisory_xact_lock`), de modo que la generación y la inserción son atómicas incluso con varios procesos;
+el bloqueo se libera solo al hacer commit o rollback.
 
 ## Autenticación y autorización
 

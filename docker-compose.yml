@@ -1,16 +1,15 @@
 services:
   db:
-    image: mysql:8.4
+    image: postgres:16
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD en .env}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-sistema_pqr}
-      MYSQL_USER: ${MYSQL_USER:-pqr}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?defina MYSQL_PASSWORD en .env}
+      POSTGRES_DB: ${PGDATABASE:-sistema_pqr}
+      POSTGRES_USER: ${PGUSER:-pqr}
+      POSTGRES_PASSWORD: ${PGPASSWORD:?defina PGPASSWORD en .env}
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-pqr} -d ${PGDATABASE:-sistema_pqr}"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -20,8 +19,9 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      MYSQL_HOST: db
-      MYSQL_PORT: "3306"
+      PGHOST: db
+      PGPORT: "5432"
+      PGSSLMODE: disable
       PORT: "8000"  # puerto interno; el externo se elige con PORT en .env
     ports:
       - "${PORT:-8000}:8000"
@@ -32,5 +32,5 @@ services:
         condition: service_healthy
 
 volumes:
-  mysql_data:
+  postgres_data:
   evidencias:

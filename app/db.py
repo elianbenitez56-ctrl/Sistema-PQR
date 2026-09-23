@@ -3,23 +3,35 @@ import os
 import time
 from contextlib import contextmanager
 
-from mysql.connector import Error, pooling
+import psycopg
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 
 logger = logging.getLogger(__name__)
 
-# -------------------------------------------------------------------------
-# Configuración de conexión MySQL (variables de entorno)
-# -------------------------------------------------------------------------
-
-MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
-MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
-MYSQL_USER = os.getenv("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "")
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "sistema_pqr")
-
+Error = psycopg.Error
 
 # -------------------------------------------------------------------------
-# Context managers para conexiones y cursores
+# Configuración de conexión PostgreSQL (variables de entorno)
+# -------------------------------------------------------------------------
+
+PG_HOST = os.getenv("PGHOST", "localhost")
+PG_PORT = os.getenv("PGPORT", "5432")
+PG_USER = os.getenv("PGUSER", "postgres")
+PG_PASSWORD = os.getenv("PGPASSWORD", "")
+PG_DATABASE = os.getenv("PGDATABASE", "sistema_pqr")
+PG_SSLMODE = os.getenv("PGSSLMODE", "prefer")  # Supabase/Neon exigen "require"
+
+
+def _conninfo():
+    return (
+        f"host={PG_HOST} port={PG_PORT} user={PG_USER} password={PG_PASSWORD} "
+        f"dbname={PG_DATABASE} sslmode={PG_SSLMODE}"
+    )
+
+
+# -------------------------------------------------------------------------
+# Pool de conexiones y context managers
 # -------------------------------------------------------------------------
 
 _POOL = None
@@ -28,48 +40,35 @@ _POOL = None
 def _pool():
     global _POOL
     if _POOL is None:
-        _POOL = pooling.MySQLConnectionPool(
-            pool_name="pqr",
-            pool_size=int(os.getenv("MYSQL_POOL_SIZE", "16")),
-            pool_reset_session=True,
-            host=MYSQL_HOST,
-            port=MYSQL_PORT,
-            user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE,
-            charset="utf8mb4",
-            connection_timeout=10,
+        _POOL = ConnectionPool(
+            conninfo=_conninfo(),
+            min_size=1,
+            max_size=int(os.getenv("PG_POOL_SIZE", "16")),
+            open=False,
         )
+        _POOL.open(wait=False)
     return _POOL
 
 
 @contextmanager
 def get_db_connection():
     try:
-        conn = _pool().get_connection()
+        with _pool().connection() as conn:
+            yield conn
     except Error:
-        logger.exception("Error de conexión MySQL")
+        logger.exception("Error de conexión PostgreSQL")
         raise
-    try:
-        yield conn
-    finally:
-        conn.close()  # devuelve la conexión al pool
 
 
 @contextmanager
 def get_db_cursor(commit=False):
     with get_db_connection() as conn:
-        try:
-            cursor = conn.cursor(dictionary=True)
+        with conn.cursor(row_factory=dict_row) as cursor:
             yield cursor
             if commit:
                 conn.commit()
-        except Error:
-            if conn.is_connected():
+            else:
                 conn.rollback()
-            raise
-        finally:
-            cursor.close()
 
 
 # -------------------------------------------------------------------------
@@ -79,23 +78,23 @@ def get_db_cursor(commit=False):
 SCHEMA_SQL = [
     # Tabla usuarios
     """CREATE TABLE IF NOT EXISTS usuarios (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         nombre VARCHAR(150) NOT NULL,
         usuario VARCHAR(80) UNIQUE NOT NULL,
         contrasena_hash VARCHAR(255) NOT NULL,
         rol VARCHAR(50) NOT NULL,
         linea_producto VARCHAR(50) DEFAULT '',
         empresa VARCHAR(100) DEFAULT 'INAPEL',
-        activo TINYINT(1) DEFAULT 1,
-        fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        activo SMALLINT DEFAULT 1,
+        fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         documento VARCHAR(20) DEFAULT '',
         correo VARCHAR(120) DEFAULT '',
         telefono VARCHAR(20) DEFAULT ''
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;""",
+    );""",
     # Tabla PQR
     """CREATE TABLE IF NOT EXISTS pqr (
         radicado VARCHAR(25) PRIMARY KEY,
-        fecha DATETIME NOT NULL,
+        fecha TIMESTAMP NOT NULL,
         hora TIME NOT NULL,
         tipo VARCHAR(50) DEFAULT '',
         cliente VARCHAR(150) DEFAULT '',
@@ -105,14 +104,14 @@ SCHEMA_SQL = [
         correo VARCHAR(120) DEFAULT '',
         estado VARCHAR(50) DEFAULT 'Recibido',
         prioridad VARCHAR(50) DEFAULT '',
-        descripcion TEXT DEFAULT (''),
-        expectativa TEXT DEFAULT (''),
-        productos JSON DEFAULT ('[]'),
+        descripcion TEXT DEFAULT '',
+        expectativa TEXT DEFAULT '',
+        productos TEXT DEFAULT '[]',
         empresa VARCHAR(100) DEFAULT 'INAPEL',
         vendedor VARCHAR(150) DEFAULT '',
         linea VARCHAR(50) DEFAULT '',
         usuario_id INT DEFAULT 0,
-        correo_confirmacion_enviado TINYINT(1) DEFAULT 0,
+        correo_confirmacion_enviado SMALLINT DEFAULT 0,
         documento_receptor VARCHAR(20) DEFAULT '',
         correo_receptor VARCHAR(120) DEFAULT '',
         telefono_receptor VARCHAR(20) DEFAULT '',
@@ -122,42 +121,41 @@ SCHEMA_SQL = [
         departamento_recepcion VARCHAR(100) DEFAULT '',
         medio_recepcion VARCHAR(50) DEFAULT '',
         otro_medio_recepcion VARCHAR(100) DEFAULT ''
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;""",
+    );""",
     # Tabla Historial
     """CREATE TABLE IF NOT EXISTS historial (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         radicado VARCHAR(25) NOT NULL,
         estado VARCHAR(50) NOT NULL,
         usuario VARCHAR(150) NOT NULL,
         fecha DATE NOT NULL,
         hora TIME NOT NULL,
-        observacion TEXT DEFAULT (''),
-        INDEX idx_radicado (radicado)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;""",
+        observacion TEXT DEFAULT ''
+    );""",
+    "CREATE INDEX IF NOT EXISTS idx_historial_radicado ON historial (radicado);",
     # Tabla Investigaciones
     """CREATE TABLE IF NOT EXISTS investigaciones (
         radicado VARCHAR(25) PRIMARY KEY,
         responsable VARCHAR(150) DEFAULT '',
         cargo VARCHAR(100) DEFAULT '',
-        herramienta TEXT DEFAULT (''),
-        causa TEXT DEFAULT (''),
-        accion TEXT DEFAULT (''),
+        herramienta TEXT DEFAULT '',
+        causa TEXT DEFAULT '',
+        accion TEXT DEFAULT '',
         notificar VARCHAR(10) DEFAULT '',
         fecha_respuesta DATE,
         fecha_cierre DATE,
         cierre VARCHAR(10) DEFAULT 'No',
-        respuesta TEXT DEFAULT (''),
-        departamentos TEXT DEFAULT (''),
+        respuesta TEXT DEFAULT '',
+        departamentos TEXT DEFAULT '',
         calidad_estado VARCHAR(50) DEFAULT 'pendiente',
         comercial_estado VARCHAR(50) DEFAULT 'pendiente',
-        notificacion_comercial_enviada TINYINT(1) DEFAULT 0,
-        respuesta_calidad TEXT DEFAULT (''),
-        respuesta_comercial TEXT DEFAULT (''),
-        INDEX idx_radicado (radicado)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;""",
+        notificacion_comercial_enviada SMALLINT DEFAULT 0,
+        respuesta_calidad TEXT DEFAULT '',
+        respuesta_comercial TEXT DEFAULT ''
+    );""",
     # Tabla Adjuntos
     """CREATE TABLE IF NOT EXISTS adjuntos (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         radicado VARCHAR(25) NOT NULL,
         tipo VARCHAR(50) DEFAULT '',
         archivo_original VARCHAR(255) NOT NULL,
@@ -165,9 +163,9 @@ SCHEMA_SQL = [
         fecha DATE,
         hora TIME,
         usuario VARCHAR(150) DEFAULT '',
-        observacion TEXT DEFAULT (''),
-        INDEX idx_radicado (radicado)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"""
+        observacion TEXT DEFAULT ''
+    );""",
+    "CREATE INDEX IF NOT EXISTS idx_adjuntos_radicado ON adjuntos (radicado);",
 ]
 
 
@@ -175,37 +173,24 @@ SCHEMA_SQL = [
 # Inicializar tablas al importar
 # -------------------------------------------------------------------------
 
-def _migrar_notificar(cursor):
-    """`notificar` guarda 'Sí'/'No'; en bases creadas antes era TINYINT y rechazaba esos valores."""
-    cursor.execute(
-        "SELECT DATA_TYPE FROM information_schema.COLUMNS "
-        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'investigaciones' AND COLUMN_NAME = 'notificar'"
-    )
-    fila = cursor.fetchone()
-    if fila and str(fila[0]).lower() == "tinyint":
-        cursor.execute("ALTER TABLE investigaciones MODIFY notificar VARCHAR(10) DEFAULT ''")
-        cursor.execute("UPDATE investigaciones SET notificar = CASE notificar WHEN '1' THEN 'Sí' ELSE '' END")
-
-
 def asegurar_tablas(intentos=30, espera=2):
-    """Crea las tablas; espera a que MySQL acepte conexiones (arranque en docker)."""
+    """Crea las tablas; espera a que PostgreSQL acepte conexiones (arranque en docker)."""
     for intento in range(1, intentos + 1):
         try:
             with get_db_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT 1")
-                cursor.fetchone()
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT 1")
+                    cursor.fetchone()
             break
         except Error:
             if intento == intentos:
                 raise
-            logger.warning("MySQL no disponible (%s/%s), reintentando...", intento, intentos)
+            logger.warning("PostgreSQL no disponible (%s/%s), reintentando...", intento, intentos)
             time.sleep(espera)
 
     with get_db_connection() as conn:
-        cursor = conn.cursor()
-        for sql in SCHEMA_SQL:
-            cursor.execute(sql)
-        _migrar_notificar(cursor)
+        with conn.cursor() as cursor:
+            for sql in SCHEMA_SQL:
+                cursor.execute(sql)
         conn.commit()
-    logger.info("Tablas MySQL aseguradas correctamente.")
+    logger.info("Tablas PostgreSQL aseguradas correctamente.")

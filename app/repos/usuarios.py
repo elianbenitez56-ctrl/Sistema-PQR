@@ -59,11 +59,11 @@ def crear_usuario(nombre, usuario, contrasena, rol, documento="", linea_producto
         cursor.execute(
             "INSERT INTO usuarios (nombre, usuario, contrasena_hash, rol, linea_producto, "
             "empresa, activo, documento, correo, telefono) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
             (nombre, usuario, generate_password_hash(contrasena), rol, linea_producto,
              empresa, 1 if activo else 0, documento, correo, telefono)
         )
-        return cursor.lastrowid
+        return cursor.fetchone()["id"]
 
 
 def actualizar_usuario(uid, **campos):

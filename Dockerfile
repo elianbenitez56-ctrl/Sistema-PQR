@@ -13,7 +13,9 @@ COPY . .
 RUN useradd --create-home app && mkdir -p /data/evidencias && chown -R app /app /data
 USER app
 
-ENV PORT=8000 PQR_UPLOAD_DIR=/data/evidencias TRUST_PROXY=1
+# ponytail: TZ fija en <-05>5 (Colombia no tiene horario de verano); si el sistema opera en
+# otro país con DST, cambiar por una zona de la base tz (p. ej. America/Bogota + paquete tzdata).
+ENV PORT=8000 PQR_UPLOAD_DIR=/data/evidencias TRUST_PROXY=1 TZ=<-05>5
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \

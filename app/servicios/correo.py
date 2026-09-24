@@ -1,34 +1,32 @@
 """
 Servicio de correo electrónico — Sistema PQR INAPEL.
 
-Envía la confirmación de recepción de PQR al cliente.
+Envía la confirmación de recepción de PQR al cliente y el aviso a Comercial.
 
-Usa una API HTTPS en lugar de SMTP. Las credencialas se leen exclusivamente
-de variables de entorno del sistema. Nunca se escribe una contraseña en el
-código ni se expone en JSON/logs.
+Dos formas de envío, en este orden de preferencia:
+  1. API HTTPS de Brevo (BREVO_API_KEY) — necesaria en Render Free, que bloquea
+     los puertos SMTP salientes (25/465/587).
+  2. SMTP clásico (SMTP_HOST/SMTP_USER/SMTP_PASSWORD) — sirve en local/Docker
+     o en un plan de Render que sí permita SMTP.
 
-Variables de entorno obligatorias:
-    EMAIL_API_URL: Endpoint HTTPS del servicio de correo (ej:
-                   https://api.email-service.com/v1/send)
-    EMAIL_API_KEY:  Clave de autorización para el servicio de correo
-
-Variables de entorno opcionales:
-    EMAIL_USE_TLS:  "1"/"true" para modo TLS (predeterminado: true)
-    PQR_URL_BASE  -> URL pública del sistema para el enlace de consulta
-
+Nunca se escribe una contraseña o API key en el código ni se expone en JSON/logs.
 También soporta un archivo .env local (solo desarrollo; está en .gitignore).
-
-Nunca se escribe una contraseña en el código ni se expone en JSON/logs.
 """
 
+import json
+import logging
 import os
 import re
 import smtplib
+import urllib.error
+import urllib.request
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from html import escape
 from urllib.parse import quote
+
+logger = logging.getLogger(__name__)
 
 NOMBRE_SISTEMA = "INAPEL · Industria Nacional Papelera S.A.S."
 
@@ -93,14 +91,55 @@ def variables_smtp_faltantes():
     faltantes = [nombre for nombre in requeridos if not _var(nombre, "")]
     return faltantes
 
-def variables_api_faltantes():
-    """Devuelve la lista de variables API obligatorias que están vacías."""
 
-    faltantes = []
-    for nombre in ("EMAIL_API_URL", "EMAIL_API_KEY"):
-        if not _var(nombre, ""):
-            faltantes.append(nombre)
-    return faltantes
+def brevo_configurado():
+    """Indica si existe la API key de Brevo (envío por HTTPS, para Render Free)."""
+    return bool(_var("BREVO_API_KEY", ""))
+
+
+def correo_configurado():
+    """Indica si hay alguna forma de envío disponible (Brevo o SMTP)."""
+    return brevo_configurado() or smtp_configurado()
+
+
+def _remitente():
+    return (_var("SMTP_FROM") or _var("SMTP_USER") or "").strip()
+
+
+def _enviar_brevo(destinatarios, asunto, html):
+    """Envía un correo vía la API HTTPS de Brevo. Retorna (True, "") o (False, motivo). Nunca lanza."""
+    api_key = _var("BREVO_API_KEY", "").strip()
+    remitente = _remitente()
+    if not remitente:
+        return False, "Falta SMTP_FROM/SMTP_USER para usar como remitente."
+
+    cuerpo = json.dumps({
+        "sender": {"email": remitente, "name": NOMBRE_SISTEMA},
+        "to": [{"email": d} for d in destinatarios],
+        "subject": asunto,
+        "htmlContent": html,
+    }).encode("utf-8")
+
+    peticion = urllib.request.Request(
+        "https://api.brevo.com/v3/smtp/email",
+        data=cuerpo,
+        method="POST",
+        headers={
+            "api-key": api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(peticion, timeout=20):
+            return True, ""
+    except urllib.error.HTTPError as error:
+        detalle = error.read().decode("utf-8", errors="replace")[:300]
+        logger.error("Brevo respondió %s: %s", error.code, detalle)
+        return False, f"Brevo HTTP {error.code}"
+    except Exception as error:
+        logger.exception("Error al enviar correo vía Brevo")
+        return False, f"Error de envío Brevo: {error}"
 
 
 def _enviar_smtp(destinatarios, mensaje):
@@ -152,14 +191,32 @@ def _enviar_smtp(destinatarios, mensaje):
 
         servidor.sendmail(remitente, destinatarios, mensaje.as_string())
         return True, ""
-    except Exception:
-        return False, "Error de envío SMTP"
+    except Exception as error:
+        logger.exception("Error de envío SMTP")
+        return False, f"Error de envío SMTP: {error}"
     finally:
         if servidor is not None:
             try:
                 servidor.quit()
             except Exception:
                 pass
+
+
+def _enviar(destinatarios, asunto, html):
+    """Envía por Brevo si está configurado; si no, por SMTP. (True, "") o (False, motivo)."""
+    if brevo_configurado():
+        return _enviar_brevo(destinatarios, asunto, html)
+
+    if not smtp_configurado():
+        faltan = ", ".join(variables_smtp_faltantes())
+        return False, f"No hay servicio de correo configurado (faltan las variables: {faltan})."
+
+    mensaje = MIMEMultipart("alternative")
+    mensaje["Subject"] = asunto
+    mensaje["From"] = _remitente()
+    mensaje["To"] = ", ".join(destinatarios)
+    mensaje.attach(MIMEText(html, "html", "utf-8"))
+    return _enviar_smtp(destinatarios, mensaje)
 
 
 def enviar_confirmacion_pqr(radicado, correo_cliente, datos):
@@ -171,28 +228,20 @@ def enviar_confirmacion_pqr(radicado, correo_cliente, datos):
     y se devuelve como (False, motivo) para no bloquear la PQR.
     """
 
-    if not smtp_configurado():
-        faltan = ", ".join(variables_smtp_faltantes())
+    if not correo_configurado():
         print(
-            f"[correo] SMTP no configurado: faltan las variables {faltan}. "
-            "El correo de confirmación NO se envió."
+            "[correo] No hay servicio de correo configurado (falta BREVO_API_KEY o las "
+            "variables SMTP). El correo de confirmación NO se envió."
         )
-        return False, f"SMTP no configurado (faltan las variables: {faltan})."
+        return False, "No hay servicio de correo configurado."
 
     if not _correo_valido(correo_cliente):
         return False, "El correo del cliente no es válido."
 
     asunto = f"Confirmación de PQR - {radicado}"
-
     html = _plantilla_html(radicado, correo_cliente.strip(), datos)
 
-    mensaje = MIMEMultipart("alternative")
-    mensaje["Subject"] = asunto
-    mensaje["From"] = _var("SMTP_FROM", _var("SMTP_USER", "")).strip()
-    mensaje["To"] = correo_cliente.strip()
-    mensaje.attach(MIMEText(html, "html", "utf-8"))
-
-    ok, motivo = _enviar_smtp([correo_cliente.strip()], mensaje)
+    ok, motivo = _enviar([correo_cliente.strip()], asunto, html)
 
     if ok:
         print(
@@ -217,11 +266,10 @@ def enviar_notificacion_comercial(
     campos_pendientes,
     url_base=None
 ):
-    """Notifica a Comercial usando SMTP."""
+    """Notifica a Comercial (Brevo o SMTP, ver `_enviar`)."""
 
-    if not smtp_configurado():
-        faltan = ", ".join(variables_smtp_faltantes())
-        mensaje = f"SMTP no configurado (faltan las variables: {faltan})."
+    if not correo_configurado():
+        mensaje = "No hay servicio de correo configurado (falta BREVO_API_KEY o las variables SMTP)."
         print(f"[correo] Notificación comercial NO enviada: {mensaje}")
         return False, mensaje
 
@@ -250,13 +298,7 @@ def enviar_notificacion_comercial(
         enlace
     )
 
-    mensaje = MIMEMultipart("alternative")
-    mensaje["Subject"] = asunto
-    mensaje["From"] = _var("SMTP_FROM", _var("SMTP_USER", "")).strip()
-    mensaje["To"] = ", ".join(correos)
-    mensaje.attach(MIMEText(html, "html", "utf-8"))
-
-    ok, motivo = _enviar_smtp(correos, mensaje)
+    ok, motivo = _enviar(correos, asunto, html)
 
     if ok:
         print(
@@ -325,11 +367,11 @@ def _plantilla_notificacion_comercial(radicado, datos, campos_pendientes, enlace
 
 def _plantilla_html(radicado, correo_cliente, datos):
 
-    nombre_cliente = str(datos.get("cliente", "") or "").strip() or correo_cliente
-    fecha = str(datos.get("fechaRec", "") or "").strip()
-    tipo = str(datos.get("tipoSol", "") or "").strip() or "PQR"
-    estado = str(datos.get("estado", "") or "Recibido").strip()
-    descripcion = str(datos.get("desc", "") or "").strip()
+    nombre_cliente = escape(str(datos.get("cliente", "") or "").strip() or correo_cliente)
+    fecha = escape(str(datos.get("fechaRec", "") or "").strip())
+    tipo = escape(str(datos.get("tipoSol", "") or "").strip() or "PQR")
+    estado = escape(str(datos.get("estado", "") or "Recibido").strip())
+    descripcion = escape(str(datos.get("desc", "") or "").strip())
     anio = datetime.now().year
 
     url_base = _var("PQR_URL_BASE", "").strip().rstrip("/")

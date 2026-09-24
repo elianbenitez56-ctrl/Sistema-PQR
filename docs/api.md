@@ -37,6 +37,7 @@ pero sin el rol necesario, **403**. Los errores de validación devuelven **400**
 | `POST /api/cambiar_estado` | ADMIN, LIDER_CALIDAD | `{"radicado", "estado"}`; registra el cambio en el historial. `404` si el PQR no existe |
 | `GET /api/dashboard` | ver todo | `{"total", "estados": {...}, "tipos": {...}, "prioridades": {...}}` |
 | `POST /api/evidencias` | sesión (vendedor: solo suyos) | Multipart: `radicado`, `tipo`, `archivos` (uno o varios) |
+| `GET /api/evidencias/<id>` | sesión (vendedor: solo suyos) | Descarga el archivo: redirige a una URL firmada (Supabase Storage) o lo sirve del disco local |
 | `GET /healthz` | público | `{"ok": true}` si la base responde; `503` si no |
 | `GET /` | público | Interfaz web |
 

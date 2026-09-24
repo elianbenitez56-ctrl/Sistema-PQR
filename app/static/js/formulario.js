@@ -488,6 +488,6 @@ function limpiar() {
   var stepAlerta = document.getElementById('step-alert');
   if (stepAlerta) stepAlerta.style.display = 'none';
   var now = new Date();
-  document.getElementById('f-fecha').value = now.toISOString().slice(0, 10);
+  document.getElementById('f-fecha').value = now.toLocaleDateString('en-CA'); // fecha local (no UTC)
   document.getElementById('f-hora').value = now.toTimeString().slice(0, 5);
 }

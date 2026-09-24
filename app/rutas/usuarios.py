@@ -22,7 +22,7 @@ def api_usuarios_listar():
 @bp.route("/api/usuarios", methods=["POST"])
 @rol_requerido(ADMIN, LIDER_CALIDAD)
 def api_usuarios_crear():
-    return jsonify(servicio.crear(_cuerpo())), 201
+    return jsonify(servicio.crear(_cuerpo(), session.get("rol"))), 201
 
 
 @bp.route("/api/usuarios/<int:uid>", methods=["PUT"])

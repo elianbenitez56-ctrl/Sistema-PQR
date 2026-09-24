@@ -1,13 +1,10 @@
 import json
-import os
 import re
-import shutil
 from contextlib import contextmanager
 from datetime import datetime
 
 from psycopg.rows import dict_row
 
-from app.config import Config
 from app.db import Error, get_db_connection, get_db_cursor
 from app.dominio import normalizar_herramientas, serializar_herramientas
 
@@ -59,10 +56,13 @@ def _fila_a_pqr(row):
     except (TypeError, ValueError):
         productos = []
 
+    fecha_str = row['fecha'].strftime("%Y-%m-%d") if hasattr(row['fecha'], "strftime") else str(row['fecha'])
+    hora_str = str(row['hora']) if row['hora'] else ""
+
     return {
         "radicado": row['radicado'],
-        "fechaRec": str(row['fecha']),
-        "horaRec": str(row['hora']),
+        "fechaRec": fecha_str,
+        "horaRec": hora_str,
         "tipoSol": row['tipo'] or "",
         "cliente": row['cliente'] or "",
         "nit": row['nit'] or "",
@@ -87,7 +87,7 @@ def _fila_a_pqr(row):
         "departamento_recepcion": row['departamento_recepcion'] or "",
         "medio_recepcion": row['medio_recepcion'] or "",
         "otro_medio_recepcion": row['otro_medio_recepcion'] or "",
-        "savedAt": f"{row['fecha']}T{row['hora']}" if row['hora'] else row['fecha'],
+        "savedAt": f"{fecha_str}T{hora_str}" if hora_str else fecha_str,
     }
 
 
@@ -108,6 +108,15 @@ def consultar_pqr(valor_busqueda):
     pqr = _fila_a_pqr(row)
     pqr["investigacion"] = obtener_investigacion_radicado(row['radicado'])
     pqr["historial"] = obtener_historial_radicado(row['radicado'])
+    pqr["adjuntos"] = [
+        {
+            "id": a["id"],
+            "nombre": a["archivo_original"],
+            "tipo": a["tipo"] or "",
+            "fecha": str(a["fecha"]) if a["fecha"] else "",
+        }
+        for a in listar_adjuntos(row['radicado'])
+    ]
     return pqr
 
 
@@ -396,6 +405,12 @@ def listar_adjuntos(radicado):
         return cursor.fetchall()
 
 
+def obtener_adjunto(id_adjunto):
+    with get_db_cursor() as cursor:
+        cursor.execute("SELECT * FROM adjuntos WHERE id = %s", (id_adjunto,))
+        return cursor.fetchone()
+
+
 def eliminar_adjunto(id_Adjunto):
     with get_db_cursor(commit=True) as cursor:
         cursor.execute("DELETE FROM adjuntos WHERE id = %s", (id_Adjunto,))
@@ -441,17 +456,14 @@ RADICADO_RE = re.compile(r"PQR-\d{4}-\d{4,}")
 
 
 def eliminar_pqr(radicado):
-    """Elimina el PQR y sus evidencias. Devuelve True, o "not_found" si no existía."""
+    """Elimina de la base de datos el PQR y sus registros asociados (historial, investigación,
+    adjuntos). Los archivos de evidencia en el almacenamiento los borra la capa de servicios.
+    Devuelve True, o "not_found" si no existía.
+    """
     with get_db_cursor(commit=True) as cursor:
         cursor.execute("DELETE FROM pqr WHERE radicado = %s", (radicado,))
         existia = cursor.rowcount > 0
         cursor.execute("DELETE FROM historial WHERE radicado = %s", (radicado,))
         cursor.execute("DELETE FROM investigaciones WHERE radicado = %s", (radicado,))
         cursor.execute("DELETE FROM adjuntos WHERE radicado = %s", (radicado,))
-    if not existia:
-        return "not_found"
-    if RADICADO_RE.fullmatch(str(radicado)):
-        carpeta = os.path.join(Config.UPLOAD_FOLDER, str(radicado))
-        if os.path.isdir(carpeta):
-            shutil.rmtree(carpeta, ignore_errors=True)
-    return True
+    return True if existia else "not_found"

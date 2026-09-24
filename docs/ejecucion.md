@@ -82,16 +82,21 @@ flask --app wsgi run --debug --port 8000
 | `MAX_UPLOAD_MB` | No | `25` | Tamaño máximo por petición de subida |
 | `CATALOGO_PRODUCTOS_PATH` | No | `datos/LISTADO PRODUCTOS.xlsx` | Catálogo maestro de productos |
 | `PQR_URL_BASE` | Recomendada | — | URL pública, usada en los enlaces de los correos |
-| `SMTP_HOST`, `SMTP_PORT` | Para correo | — / `587` | Servidor SMTP (Gmail: `smtp.gmail.com`, `587`) |
-| `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Para correo | — | Credenciales y remitente. En Gmail use una *contraseña de aplicación* |
+| `BREVO_API_KEY`, `SMTP_FROM` | Para correo (única forma que funciona en Render) | — | API key de [Brevo](https://app.brevo.com) y remitente verificado. Tiene prioridad sobre SMTP si ambas están presentes |
+| `SMTP_HOST`, `SMTP_PORT` | Para correo (solo local/Docker) | — / `587` | Servidor SMTP (Gmail: `smtp.gmail.com`, `587`) — Render bloquea estos puertos salientes |
+| `SMTP_USER`, `SMTP_PASSWORD` | Para correo (solo local/Docker) | — | Credenciales. En Gmail use una *contraseña de aplicación* |
 | `SMTP_USE_TLS`, `SMTP_USE_SSL` | No | `true` / `false` | Cifrado del SMTP |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | Para evidencias persistentes en Render | — | Proyecto Supabase con un bucket privado (`SUPABASE_BUCKET`, por defecto `evidencias`) |
+| `SUPABASE_BUCKET` | No | `evidencias` | Nombre del bucket de Supabase Storage |
 | `FLASK_DEBUG` | No | — | `1` = modo desarrollo (permite `SECRET_KEY` por defecto y cookies sin `Secure`) |
 | `SESSION_COOKIE_SECURE` | No | `1` (`0` con `FLASK_DEBUG=1`) | Cookies solo por HTTPS |
 | `TRUST_PROXY` | No | `0` (`1` en la imagen) | Confiar en `X-Forwarded-*` de un proxy (Render) |
 
-Si faltan las variables `SMTP_*`, la aplicación funciona igual pero **no envía correos**.
+Si faltan `BREVO_API_KEY` y las variables `SMTP_*`, la aplicación funciona igual pero **no envía correos**.
+Si faltan `SUPABASE_URL`/`SUPABASE_SERVICE_KEY`, las evidencias se guardan en `PQR_UPLOAD_DIR` (disco local).
 
-Probar el envío de correo: `docker compose exec web python -m scripts.test_smtp`.
+Probar el envío de correo SMTP: `docker compose exec web python -m scripts.test_smtp` (no aplica a Brevo, que se
+prueba directamente registrando un PQR con correo real).
 
 ## 4. Problemas frecuentes
 
@@ -104,5 +109,7 @@ Probar el envío de correo: `docker compose exec web python -m scripts.test_smtp
 | `web` reintenta conectarse a PostgreSQL varios segundos | Normal: espera hasta 60 s a que la base esté lista |
 | `password authentication failed` tras cambiar la contraseña | El volumen conserva la contraseña original: `docker compose down -v` (borra datos) o cambie la clave dentro de Postgres |
 | `SSL connection is required` contra Supabase/Neon | Defina `PGSSLMODE=require` |
-| No llegan correos | Revise `SMTP_*`, use contraseña de aplicación de Gmail y ejecute `scripts.test_smtp` |
+| No llegan correos (en Render) | Render bloquea SMTP saliente en todos sus planes: configure `BREVO_API_KEY` |
+| No llegan correos (local/Docker) | Revise `SMTP_*`, use contraseña de aplicación de Gmail y ejecute `scripts.test_smtp` |
+| Las evidencias desaparecen tras un deploy en Render | Configure `SUPABASE_URL`/`SUPABASE_SERVICE_KEY` (o el disco de pago en `render.yaml`) |
 | Puerto 8000 ocupado | Defina `PORT=8080` en `.env` |

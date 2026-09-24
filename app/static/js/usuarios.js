@@ -34,7 +34,7 @@ function crearUsuarioModal() {
           '<option value="DIRECTORA COMERCIAL">DIRECTORA COMERCIAL</option>' +
           '<option value="COMERCIAL">COMERCIAL</option>' +
           '<option value="DIRECTOR DE PRODUCCION">DIRECTOR DE PRODUCCION</option>' +
-          '<option value="ADMIN">ADMIN</option>' +
+          (currentUser && currentUser.rol === 'ADMIN' ? '<option value="ADMIN">ADMIN</option>' : '') +
         '</select></div>' +
       '<div class="field"><label for="nu-linea">Línea de producto</label>' +
         '<select id="nu-linea"><option value="INAPEL">INAPEL</option><option value="TOROFIL">TOROFIL</option></select></div>' +
@@ -147,7 +147,7 @@ function renderUsuarios() {
       '<td style="text-align:center">' +
         (puedeEditar ? '<button class="btn btn-xs" title="Editar usuario" onclick="editarUsuario(' + u.id + ')">✏️ Editar</button> ' : '') +
         '<button class="btn btn-xs" onclick="editarCredenciales(' + u.id + ')">Editar credenciales</button> ' +
-        '<button class="btn btn-xs btn-danger" title="Eliminar usuario" onclick="mEliminarUsuario(' + u.id + ')">🗑 Eliminar</button>' +
+        (puedeEditar ? '<button class="btn btn-xs btn-danger" title="Eliminar usuario" onclick="mEliminarUsuario(' + u.id + ')">🗑 Eliminar</button>' : '') +
       '</td>';
     tbody.appendChild(tr);
   });

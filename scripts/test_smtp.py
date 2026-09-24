@@ -1,6 +1,10 @@
 """
 Prueba independiente de conexión SMTP — Sistema PQR INAPEL.
 
+Solo prueba SMTP clásico. Si el sistema usa BREVO_API_KEY (obligatorio en Render, que
+bloquea los puertos SMTP salientes), este script no aplica: pruebe el envío registrando
+un PQR con un correo real, o revise los logs "[correo]" en el panel de Render.
+
 NO crea PQR. Verifica por etapas:
   1. Estado de las variables de entorno
   2. Conexión al servidor

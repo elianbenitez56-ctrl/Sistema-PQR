@@ -3,16 +3,19 @@ import logging
 
 from app.errores import ErrorNegocio
 from app.repos.pqr import (
+    RADICADO_RE,
     actualizar_estado_pqr,
     consultar_pqr,
     correo_confirmacion_enviado,
     crear_pqr,
     eliminar_pqr,
     guardar_historial,
+    listar_adjuntos,
     marcar_correo_confirmacion,
 )
 from app.repos.usuarios import obtener_usuario_por_id
 from app.seguridad import VENDEDOR
+from app.servicios import almacenamiento
 from app.servicios.catalogo import LINEAS_PRODUCTO, buscar_productos
 from app.servicios.correo import enviar_confirmacion_pqr
 from app.validaciones import validar_correo
@@ -208,8 +211,14 @@ def cambiar_estado(datos, nombre_usuario):
 
 
 def eliminar(radicado):
+    claves_adjuntos = [a["ruta_archivo"] for a in listar_adjuntos(radicado)]
+
     resultado = eliminar_pqr(radicado)
     if resultado == "not_found":
         raise ErrorNegocio("El registro ya fue eliminado o no existe.", 404)
     if resultado is not True:
         raise ErrorNegocio("No fue posible eliminar el registro.", 500)
+
+    if RADICADO_RE.fullmatch(str(radicado)):
+        almacenamiento.borrar(claves_adjuntos)
+        almacenamiento.borrar_carpeta_local(str(radicado))

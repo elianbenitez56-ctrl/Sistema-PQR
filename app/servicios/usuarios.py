@@ -110,7 +110,7 @@ def autenticar(usuario, contrasena):
     }
 
 
-def crear(datos):
+def crear(datos, rol_actual=None):
     nombre = _texto(datos.get("nombre", ""))
     usuario = _texto(datos.get("usuario", ""))
     contrasena = str(datos.get("contrasena", ""))
@@ -122,7 +122,11 @@ def crear(datos):
 
     if not nombre or not usuario or not contrasena:
         raise ErrorNegocio("Nombre, usuario y contraseña son obligatorios.")
+    if len(contrasena) < 6:
+        raise ErrorNegocio("La contraseña debe tener al menos 6 caracteres.")
     _validar_rol(rol)
+    if rol == ADMIN and rol_actual == LIDER_CALIDAD:
+        raise ErrorNegocio("No puede crear usuarios con rol ADMIN.", 403)
     if rol == VENDEDOR:
         _validar_linea(linea)
     _validar_documento(documento)

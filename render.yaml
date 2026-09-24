@@ -4,7 +4,8 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     healthCheckPath: /healthz
-    # Sin disco (plan Free) las evidencias se pierden en cada deploy; con plan de pago descomente:
+    # Sin disco de evidencias local: use SUPABASE_URL/SUPABASE_SERVICE_KEY abajo, o
+    # (plan de pago) descomente este disco:
     # disk:
     #   name: evidencias
     #   mountPath: /data/evidencias
@@ -26,17 +27,8 @@ services:
         sync: false
       - key: PGSSLMODE
         value: require
-      - key: SMTP_HOST
-        value: smtp.gmail.com
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_USE_TLS
-        value: "true"
-      - key: SMTP_USE_SSL
-        value: "false"
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASSWORD
+      # Render bloquea los puertos SMTP salientes: el envío usa la API de Brevo.
+      - key: BREVO_API_KEY
         sync: false
       - key: SMTP_FROM
         sync: false
@@ -44,3 +36,9 @@ services:
         value: https://sistema-pqr.onrender.com
       - key: CATALOGO_PRODUCTOS_PATH
         value: datos/LISTADO PRODUCTOS.xlsx
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: evidencias

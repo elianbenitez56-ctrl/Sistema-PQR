@@ -3,7 +3,8 @@
 ## Visión general
 
 Aplicación monolítica: un servidor Flask que sirve la interfaz (una sola página compuesta por `index.html` + parciales Jinja,
-con CSS y JavaScript en `app/static/`) y una API JSON bajo `/api/*`. Los datos viven en PostgreSQL y las evidencias en disco.
+con CSS y JavaScript en `app/static/`) y una API JSON bajo `/api/*`. Los datos viven en PostgreSQL; las evidencias en
+Supabase Storage si está configurado, o en disco local si no.
 
 ```
 Navegador ──HTTP──▶ gunicorn ──▶ Flask (app/)
@@ -12,7 +13,7 @@ Navegador ──HTTP──▶ gunicorn ──▶ Flask (app/)
                                    ├─ dominio.py  reglas puras (flujo de seguimiento, herramientas)
                                    ├─ repos/      SQL (único lugar que habla con la base)
                                    └─ db.py ──▶ PostgreSQL (pool de conexiones, psycopg)
-                                   └─ disco ──▶ PQR_UPLOAD_DIR/<radicado>/  (evidencias)
+                                   └─ servicios/almacenamiento.py ──▶ Supabase Storage (o disco local: PQR_UPLOAD_DIR/<radicado>/)
 ```
 
 ## Estructura del código
@@ -33,7 +34,8 @@ app/
   servicios/pqr.py          registrar (catálogo, receptor desde sesión, verificación, correo), consultar, cambiar estado, eliminar
   servicios/seguimiento.py  guardar seguimiento Calidad/Comercial (permisos por sección, estados, aviso a comercial)
   servicios/usuarios.py     autenticar, alta, edición, credenciales y baja con sus validaciones
-  servicios/correo.py       envío de correos (confirmación al cliente, aviso a comercial)
+  servicios/correo.py       envío de correos (confirmación al cliente, aviso a comercial): API de Brevo o SMTP
+  servicios/almacenamiento.py  guarda/lee/borra evidencias: Supabase Storage o disco local (PQR_UPLOAD_DIR)
   servicios/catalogo.py     catálogo maestro leído de datos/LISTADO PRODUCTOS.xlsx (en memoria, con recarga)
   rutas/                    un Blueprint por área: sesion, usuarios, catalogo, pqr, seguimiento, evidencias
   semillas.py               usuarios iniciales de INAPEL
@@ -105,12 +107,16 @@ el bloqueo se libera solo al hacer commit o rollback.
 
 `POST /api/evidencias` recibe archivos multipart para un radicado. Validaciones: radicado con formato
 `PQR-AAAA-NNNN`, extensión permitida (imágenes, PDF, Office, txt/csv, mp4/mov), nombre saneado con
-`secure_filename`, tamaño máximo de petición `MAX_UPLOAD_MB`. Se guardan en `PQR_UPLOAD_DIR/<radicado>/` y se
-registran en `adjuntos`. **Aún no existe un endpoint para descargarlos.**
+`secure_filename`, tamaño máximo de petición `MAX_UPLOAD_MB`. Se guardan vía `servicios/almacenamiento.py` bajo
+la clave `<radicado>/<nombre>` (Supabase Storage si está configurado, si no en `PQR_UPLOAD_DIR/<radicado>/`) y se
+registran en `adjuntos`. `GET /api/evidencias/<id>` las descarga (redirige a una URL firmada de Supabase, o sirve
+el archivo local), con el mismo control de permisos que consultar un PQR. `consultar_pqr()` incluye la lista de
+adjuntos y la sección "Consultar" del panel la muestra con enlaces de descarga.
 
 ## Correo
 
-`servicios/correo.py` usa SMTP (Gmail por defecto).
+`servicios/correo.py` usa la API HTTPS de Brevo si hay `BREVO_API_KEY` (necesario en Render, que bloquea los
+puertos SMTP salientes), o SMTP clásico si no (sirve en local/Docker).
 
 | Cuándo | A quién | Condición |
 |---|---|---|
@@ -127,8 +133,9 @@ cada producto enviado se valida contra el catálogo por línea y referencia SIES
 
 ## Limitaciones conocidas
 
-- Sin descarga de evidencias ni edición de un PQR ya registrado (solo estado y seguimiento).
+- Sin edición de un PQR ya registrado (solo estado y seguimiento).
 - El límite de intentos de login es por proceso (ver arriba).
 - Sin migraciones versionadas: los cambios de esquema sobre bases existentes se programan a mano.
-- En Render sin disco persistente las evidencias se pierden en cada despliegue (ver [despliegue.md](despliegue.md)).
+- Sin Supabase Storage configurado, las evidencias se guardan en disco local y en Render (sin disco pago) se
+  pierden en cada despliegue (ver [despliegue.md](despliegue.md)).
 - Contraseña temporal compartida en `app/semillas.py`; use `SEED_USER_PASSWORD` y haga que cada usuario la cambie.

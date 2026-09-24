@@ -94,3 +94,28 @@ def test_validaciones_de_usuario(admin):
 def test_no_se_puede_eliminar_al_admin_principal_ni_a_si_mismo(admin):
     uid = next(u["id"] for u in admin.get("/api/usuarios").get_json()["usuarios"] if u["usuario"] == "admin")
     assert admin.delete(f"/api/usuarios/{uid}").status_code == 400
+
+
+def test_lider_calidad_no_puede_crear_admin(admin):
+    r = admin.post("/api/usuarios", json={
+        "nombre": "Calidad Prueba", "usuario": "calidad_prueba", "contrasena": "Clave-Cal-1", "rol": "LIDER_CALIDAD",
+    })
+    assert r.status_code == 201, r.get_json()
+    uid_calidad = r.get_json()["id"]
+    try:
+        calidad = admin.application.test_client()
+        assert calidad.post("/api/login", json={"usuario": "calidad_prueba", "contrasena": "Clave-Cal-1"}).status_code == 200
+
+        r = calidad.post("/api/usuarios", json={
+            "nombre": "Hacker", "usuario": "hacker_prueba", "contrasena": "Clave-Hac-1", "rol": "ADMIN",
+        })
+        assert r.status_code == 403, r.get_json()
+
+        r = calidad.post("/api/usuarios", json={
+            "nombre": "Vendedor OK", "usuario": "vendedor_ok_prueba", "contrasena": "Clave-Ok1-1", "rol": "VENDEDOR",
+            "linea_producto": "INAPEL",
+        })
+        assert r.status_code == 201, r.get_json()
+        admin.delete(f"/api/usuarios/{r.get_json()['id']}")
+    finally:
+        admin.delete(f"/api/usuarios/{uid_calidad}")

@@ -9,7 +9,7 @@
   var bh = document.getElementById('ban-hora');
   if (bh) bh.textContent = now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
   var fd = document.getElementById('f-fecha');
-  if (fd) fd.value = now.toISOString().slice(0, 10);
+  if (fd) fd.value = now.toLocaleDateString('en-CA'); // fecha local (no UTC) en formato AAAA-MM-DD
   var fh = document.getElementById('f-hora');
   if (fh) fh.value = now.toTimeString().slice(0, 5);
   actualizarUrgentes();

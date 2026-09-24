@@ -129,6 +129,17 @@ function renderConsulta(p) {
     '<div class="table-wrap"><table class="table-pqr" style="min-width:620px;font-size:12px">' +
       '<thead><tr><th>Línea</th><th>REFERENCIA SIESA</th><th>Producto</th><th>Detalle / presentación</th><th>Lote / OP</th><th>Cantidad</th><th>Documento</th></tr></thead>' +
     '<tbody>' + prodRows + '</tbody></table></div></div>';
+  var evidenciasHtml = '';
+  if (p.adjuntos && p.adjuntos.length) {
+    var evidRows = p.adjuntos.map(function(a) {
+      return '<li style="padding:4px 0"><a href="/api/evidencias/' + a.id + '" target="_blank" rel="noopener">' +
+        (a.nombre || 'Archivo') + '</a>' + (a.tipo ? ' <span style="color:var(--on-surface-variant)">(' + a.tipo + ')</span>' : '') + '</li>';
+    }).join('');
+    evidenciasHtml =
+      '<div style="margin-top:18px;border-top:1px solid var(--outline-soft);padding-top:14px">' +
+      '<div class="detail-label" style="margin-bottom:6px">Evidencias adjuntas</div>' +
+      '<ul style="margin:0;padding-left:18px;font-size:13px">' + evidRows + '</ul></div>';
+  }
   div.innerHTML =
     '<div class="result-card">' +
     '<div class="result-top"><span class="result-rad">' + p.radicado + '</span><span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></div>' +
@@ -146,6 +157,8 @@ function renderConsulta(p) {
     '<div style="border-top:1px solid var(--outline-soft);padding-top:12px">' +
     '<div class="detail-label" style="margin-bottom:7px">Historial de estados</div>' +
     '<div class="timeline">' + hist + '</div></div>' +
+
+    evidenciasHtml +
 
     '<div style="margin-top:25px;border-top:1px solid var(--outline-soft);padding-top:18px">' +
     '<div class="inv-card">' +

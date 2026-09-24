@@ -62,3 +62,30 @@ def test_cambiar_estado_de_pqr_inexistente(admin):
     r = admin.post("/api/cambiar_estado", json={"radicado": "PQR-1999-0001", "estado": "Cerrado"})
     assert r.status_code == 404
     assert admin.post("/api/cambiar_estado", json={"radicado": "x"}).status_code == 400
+
+
+def test_fecha_y_hora_de_recepcion_tienen_formato_valido(admin, pqr):
+    import re
+    from datetime import datetime
+
+    p = admin.get(f"/api/consultar/{pqr}").get_json()
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", p["fechaRec"])
+    datetime.fromisoformat(p["savedAt"])  # no lanza si el formato es válido
+
+
+def test_aviso_comercial_se_reintenta_si_fallo_antes(admin, pqr, monkeypatch):
+    """Si el correo a Comercial falló la primera vez, el siguiente guardado de Calidad lo reintenta."""
+    base = {"radicado": pqr, "resp": "Ana", "cargo": "Calidad", "causa": "A",
+            "herramientas": ["5 ¿Por qué?"], "deptos": "Producción"}
+
+    monkeypatch.setattr("app.servicios.seguimiento.enviar_notificacion_comercial",
+                         lambda *a, **k: (False, "SMTP no configurado"))
+    r = admin.post("/api/seguimiento/calidad", json=base)
+    assert r.status_code == 200, r.get_json()
+    assert r.get_json()["notificacion_comercial_enviada"] is False
+
+    monkeypatch.setattr("app.servicios.seguimiento.enviar_notificacion_comercial",
+                         lambda *a, **k: (True, ""))
+    r = admin.post("/api/seguimiento/calidad", json={**base, "causa": "B"})
+    assert r.status_code == 200, r.get_json()
+    assert r.get_json()["notificacion_comercial_enviada"] is True

@@ -97,7 +97,9 @@ def guardar_seguimiento(datos, seccion, rol, url_base):
         seccion, rol, calidad_anterior, comercial_anterior,
         campos_faltantes(datos, CAMPOS_CALIDAD), campos_faltantes(datos, CAMPOS_COMERCIALES),
     )
-    avisar = calidad_anterior != "completada" and calidad_nuevo == "completada" and not aviso_enviado
+    # Se reintenta en cada guardado de Calidad mientras el aviso no se haya podido enviar
+    # (p. ej. si el servicio de correo falló la primera vez).
+    avisar = calidad_nuevo == "completada" and not aviso_enviado
 
     a_guardar = _datos_a_guardar(datos, investigacion, rol)
     guardar_investigacion(radicado, a_guardar, calidad_nuevo, comercial_nuevo, aviso_enviado)

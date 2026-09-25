@@ -61,9 +61,12 @@ def guardar(clave, datos, tipo_mime=None):
             raise RuntimeError(f"Error al subir a Supabase Storage: {error}") from error
 
     ruta = os.path.join(Config.UPLOAD_FOLDER, clave)
-    os.makedirs(os.path.dirname(ruta), exist_ok=True)
-    with open(ruta, "wb") as f:
-        f.write(datos)
+    try:
+        os.makedirs(os.path.dirname(ruta), exist_ok=True)
+        with open(ruta, "wb") as f:
+            f.write(datos)
+    except OSError as error:
+        raise RuntimeError(f"Error al guardar en disco local: {error}") from error
 
 
 def url_descarga(clave, segundos=600):
@@ -106,8 +109,11 @@ def borrar(claves):
 
     for clave in claves:
         ruta = os.path.join(Config.UPLOAD_FOLDER, clave)
-        if os.path.isfile(ruta):
-            os.remove(ruta)
+        try:
+            if os.path.isfile(ruta):
+                os.remove(ruta)
+        except OSError:
+            logger.exception("No fue posible borrar el archivo local %s", ruta)
 
 
 def borrar_carpeta_local(radicado):

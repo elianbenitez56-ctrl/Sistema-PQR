@@ -36,9 +36,11 @@ def _radicado_bloqueado():
 
 
 def _siguiente_radicado(cursor):
+    anio = datetime.now().year
     cursor.execute(
-        "SELECT radicado FROM pqr "
-        "ORDER BY CAST(split_part(radicado, '-', 3) AS INTEGER) DESC LIMIT 1"
+        "SELECT radicado FROM pqr WHERE split_part(radicado, '-', 2) = %s "
+        "ORDER BY CAST(split_part(radicado, '-', 3) AS INTEGER) DESC LIMIT 1",
+        (str(anio),)
     )
     row = cursor.fetchone()
     consecutivo = 1
@@ -47,7 +49,7 @@ def _siguiente_radicado(cursor):
             consecutivo = int(str(row['radicado']).split("-")[2]) + 1
         except (ValueError, IndexError):
             pass
-    return f"PQR-{datetime.now().year}-{consecutivo:04d}"
+    return f"PQR-{anio}-{consecutivo:04d}"
 
 
 def _fila_a_pqr(row):
@@ -208,7 +210,7 @@ def crear_pqr(datos):
             "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
             (
                 radicado,
-                fecha_rec if isinstance(fecha_rec, datetime) else datetime.now(),
+                fecha_rec if isinstance(fecha_rec, str) else datetime.now(),
                 hora_rec if isinstance(hora_rec, str) else datetime.now().strftime("%H:%M:%S"),
                 datos.get("tipoSol", ""),
                 datos.get("cliente", ""),

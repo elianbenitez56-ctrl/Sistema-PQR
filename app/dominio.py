@@ -35,6 +35,14 @@ CAMPOS_CALIDAD_EDITABLES = CAMPOS_CALIDAD + (
     ("respuesta_calidad", "Respuesta detallada de Calidad"),
 )
 
+# Estados que se pueden asignar manualmente (panel "Base de datos" -> Cambiar
+# estado). Debe reflejar las opciones de app/static/js/nucleo.js::mEstado.
+ESTADOS_PQR = (
+    "Recibido", "Radicado", "En revisión", "En investigación",
+    "Pendiente de información", "Pendiente de decisión",
+    "Acción en proceso", "Respuesta enviada", "Cerrado", "No procede",
+)
+
 
 # ---------------------------------------------------------- herramientas
 

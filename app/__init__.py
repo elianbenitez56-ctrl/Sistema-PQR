@@ -1,7 +1,8 @@
 import logging
 import os
 
-from flask import Flask, jsonify, render_template, session
+from flask import Flask, jsonify, render_template, request, session
+from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.config import Config
@@ -42,6 +43,17 @@ def create_app():
         if error.cerrar_sesion:
             session.clear()
         return jsonify(error.cuerpo()), error.status
+
+    @app.errorhandler(Exception)
+    def error_inesperado(error):
+        # Sin esto, un error no previsto en /api/* devuelve la página HTML de
+        # error de Flask y el fetch() del frontend revienta al hacer .json().
+        if isinstance(error, HTTPException):
+            return error
+        if request.path.startswith("/api/"):
+            app.logger.exception("Error no controlado en %s", request.path)
+            return jsonify({"ok": False, "mensaje": "Error interno del servidor."}), 500
+        raise error
 
     @app.after_request
     def no_cache(response):

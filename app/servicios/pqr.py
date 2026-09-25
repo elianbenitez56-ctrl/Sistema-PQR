@@ -1,6 +1,7 @@
 """Casos de uso del PQR: registrar, consultar, cambiar estado y eliminar."""
 import logging
 
+from app.dominio import ESTADOS_PQR
 from app.errores import ErrorNegocio
 from app.repos.pqr import (
     RADICADO_RE,
@@ -218,6 +219,8 @@ def consultar_publico(radicado, token):
 def cambiar_estado(datos, nombre_usuario):
     if not datos or "radicado" not in datos or "estado" not in datos:
         raise ErrorNegocio("Faltan datos")
+    if datos["estado"] not in ESTADOS_PQR:
+        raise ErrorNegocio("Estado inválido.")
 
     if not actualizar_estado_pqr(datos["radicado"], datos["estado"]):
         raise ErrorNegocio("El PQR no existe.", 404)

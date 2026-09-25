@@ -132,8 +132,7 @@ def crear(datos, rol_actual=None):
     _validar_documento(documento)
     _validar_correo(correo)
     _validar_telefono(telefono)
-    if not usuario_disponible(usuario):
-        raise ErrorNegocio("El usuario ya existe.")
+    _validar_nombre_usuario(usuario)
 
     uid = crear_usuario(
         nombre=nombre, usuario=usuario, contrasena=contrasena, rol=rol, documento=documento,

@@ -258,6 +258,92 @@ def enviar_confirmacion_pqr(radicado, correo_cliente, datos):
 
 
 # ==========================================================
+# NOTIFICACIÓN A CALIDAD (PQR recién radicado)
+# ==========================================================
+
+def enviar_notificacion_calidad(radicado, datos, destinatarios, url_base=None):
+    """Avisa a Calidad que hay un PQR nuevo por investigar (Brevo o SMTP, ver `_enviar`)."""
+
+    if not correo_configurado():
+        mensaje = "No hay servicio de correo configurado (falta BREVO_API_KEY o las variables SMTP)."
+        print(f"[correo] Notificación a Calidad NO enviada: {mensaje}")
+        return False, mensaje
+
+    correos = []
+    vistos = set()
+    for correo in destinatarios or []:
+        correo = str(correo or "").strip()
+        if _correo_valido(correo) and correo.lower() not in vistos:
+            correos.append(correo)
+            vistos.add(correo.lower())
+
+    if not correos:
+        return False, "No hay líderes de Calidad activos con correo válido."
+
+    base = (_var("PQR_URL_BASE", "") or str(url_base or "")).strip().rstrip("/")
+    enlace = ""
+    if base:
+        separador = "&" if "?" in base else "?"
+        enlace = f"{base}{separador}seguimiento={quote(str(radicado))}"
+
+    asunto = f"PQR {radicado} pendiente de investigación (Calidad)"
+    html = _plantilla_notificacion_calidad(radicado, datos, enlace)
+
+    ok, motivo = _enviar(correos, asunto, html)
+
+    if ok:
+        print(f"[correo] Notificación a Calidad enviada para {radicado} -> {len(correos)} destinatarios")
+    else:
+        print(f"[correo] No fue posible enviar notificación a Calidad para {radicado}: {motivo}")
+
+    return ok, motivo
+
+
+def _plantilla_notificacion_calidad(radicado, datos, enlace):
+    cliente = escape(str(datos.get("cliente", "") or "").strip() or "No informado")
+    tipo = escape(str(datos.get("tipoSol", "") or "").strip() or "PQR")
+    fecha = escape(str(datos.get("fechaRec", "") or "").strip() or "No informada")
+    descripcion = escape(str(datos.get("desc", "") or "").strip() or "Sin descripción")
+    radicado_html = escape(str(radicado))
+    enlace_html = (
+        f'<p style="margin:20px 0"><a href="{escape(enlace, quote=True)}" '
+        'style="background:#00325e;color:#ffffff;text-decoration:none;padding:10px 18px;'
+        'border-radius:6px;display:inline-block;font-weight:bold">Abrir seguimiento del PQR</a></p>'
+        if enlace else
+        '<p style="margin:20px 0;color:#555555">Ingrese al aplicativo y busque el radicado '
+        f"<strong>{radicado_html}</strong> en la sección Seguimiento.</p>"
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4f8;padding:24px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border:1px solid #dde5ee;border-radius:10px;overflow:hidden">
+        <tr><td style="background:#00325e;padding:24px 30px;color:#ffffff;font-size:22px;font-weight:bold">INAPEL</td></tr>
+        <tr><td style="padding:28px 30px;color:#555555;font-size:14px;line-height:1.6">
+          <h2 style="margin:0 0 16px;color:#00325e;font-size:19px">Nuevo PQR por investigar</h2>
+          <p>Se radicó un nuevo PQR y requiere la investigación de Calidad.</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;margin:18px 0">
+            <tr><td style="padding:7px 0;color:#888888">Radicado</td><td style="padding:7px 0;text-align:right;font-weight:bold;color:#00325e">{radicado_html}</td></tr>
+            <tr><td style="padding:7px 0;color:#888888">Cliente</td><td style="padding:7px 0;text-align:right">{cliente}</td></tr>
+            <tr><td style="padding:7px 0;color:#888888">Tipo de solicitud</td><td style="padding:7px 0;text-align:right">{tipo}</td></tr>
+            <tr><td style="padding:7px 0;color:#888888">Fecha del PQR</td><td style="padding:7px 0;text-align:right">{fecha}</td></tr>
+          </table>
+          <p style="margin:0 0 6px;color:#888888">Descripción</p>
+          <p style="margin:0 0 18px">{descripcion}</p>
+          {enlace_html}
+          <p style="font-size:11px;color:#8a97a5">Correo generado automáticamente por el Sistema de Gestión PQR.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+# ==========================================================
 # NOTIFICACIÓN COMERCIAL
 # ==========================================================
 

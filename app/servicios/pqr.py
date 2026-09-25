@@ -15,11 +15,11 @@ from app.repos.pqr import (
     listar_adjuntos,
     marcar_correo_confirmacion,
 )
-from app.repos.usuarios import obtener_usuario_por_id
-from app.seguridad import VENDEDOR, verificar_token_consulta_publica
+from app.repos.usuarios import listar_usuarios, obtener_usuario_por_id
+from app.seguridad import LIDER_CALIDAD, VENDEDOR, verificar_token_consulta_publica
 from app.servicios import almacenamiento
 from app.servicios.catalogo import LINEAS_PRODUCTO, buscar_productos
-from app.servicios.correo import enviar_confirmacion_pqr
+from app.servicios.correo import enviar_confirmacion_pqr, enviar_notificacion_calidad
 from app.validaciones import validar_correo
 
 logger = logging.getLogger(__name__)
@@ -172,7 +172,31 @@ def _resultado_correo(enviado, estado, mensaje):
     return {"email_enviado": enviado, "email_estado": estado, "email_mensaje": mensaje}
 
 
-def registrar_pqr(datos, usuario_id):
+def _correos_lider_calidad():
+    """Correos únicos de los líderes de Calidad activos."""
+    correos = {}
+    for usuario in listar_usuarios():
+        rol = str(usuario.get("rol", "") or "").strip().upper()
+        correo = str(usuario.get("correo", "") or "").strip()
+        if rol == LIDER_CALIDAD and usuario.get("activo", True) and correo:
+            correos.setdefault(correo.lower(), correo)
+    return list(correos.values())
+
+
+def _avisar_a_calidad(radicado, datos, url_base):
+    """Notifica a Calidad que hay un PQR nuevo por investigar. Nunca falla: el resultado se informa en la respuesta."""
+    try:
+        enviado, mensaje = enviar_notificacion_calidad(radicado, datos, _correos_lider_calidad(), url_base)
+    except Exception:
+        logger.exception("Error inesperado al notificar a Calidad de %s", radicado)
+        enviado, mensaje = False, ""
+
+    if not enviado:
+        logger.warning("No se notificó a Calidad de %s: %s", radicado, mensaje)
+    return {"notificacion_calidad_enviada": enviado, "notificacion_calidad_mensaje": mensaje}
+
+
+def registrar_pqr(datos, usuario_id, url_base=None):
     if not datos:
         raise ErrorNegocio("No se recibieron datos.")
 
@@ -187,6 +211,7 @@ def registrar_pqr(datos, usuario_id):
         "radicado": radicado,
         "mensaje": "PQR guardado correctamente",
         **_enviar_confirmacion(radicado, datos),
+        **_avisar_a_calidad(radicado, datos, url_base),
     }
 
 

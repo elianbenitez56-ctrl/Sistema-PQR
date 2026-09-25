@@ -27,7 +27,7 @@ pero sin el rol necesario, **403**. Los errores de validación devuelven **400**
 | `PUT /api/usuarios/<id>/credenciales` | ADMIN, LIDER_CALIDAD | Cambia solo usuario y contraseña; LIDER_CALIDAD no puede tocar cuentas ADMIN |
 | `GET /api/catalogo/productos?linea=&referencia_siesa=` | sesión | Busca productos. `linea` ∈ `INAPEL`, `MARFIL`, `TOROFIL` |
 | `POST /api/catalogo/recargar` | ADMIN | Relee el catálogo desde el Excel |
-| `POST /api/pqr` | sesión | Registra un PQR (ver abajo). Devuelve `radicado` y el resultado del correo |
+| `POST /api/pqr` | sesión | Registra un PQR (ver abajo). Devuelve `radicado`, el resultado del correo de confirmación al cliente y el de la notificación a Calidad |
 | `GET /api/pqr/todos` | ver todo (ADMIN, calidad, comerciales, producción) | Lista todos los PQR |
 | `GET /api/consultar/<valor>` | sesión (vendedor: solo suyos) | Busca por radicado, cliente o NIT; incluye investigación e historial. `404` si no existe |
 | `DELETE /api/pqr/<radicado>` | ADMIN, LIDER_CALIDAD | Elimina el PQR, su historial, investigación y evidencias. `404` si no existe |
@@ -55,9 +55,11 @@ Campos principales del cuerpo JSON:
 | `fechaRec`, `horaRec`, `ciudadRec`, `dptoRec`, `medio`, `otroMedio` | Datos de la recepción |
 
 El vendedor, línea, empresa y datos del receptor se completan **desde la sesión**; lo que envíe el navegador se ignora.
-El PQR siempre se guarda primero; si el correo falla, la respuesta lo indica (`email_estado`) pero el registro se mantiene.
+El PQR siempre se guarda primero; si algún correo falla, la respuesta lo indica pero el registro se mantiene.
+Al radicarse, además de la confirmación al cliente, se notifica por correo a los usuarios con rol `LIDER_CALIDAD` activos
+(mismo mecanismo de envío que la notificación comercial; nunca bloquea el registro).
 
-Respuesta: `{"ok": true, "radicado": "PQR-2026-0001", "email_enviado": bool, "email_estado": "...", "email_mensaje": "...", "mensaje": "..."}`.
+Respuesta: `{"ok": true, "radicado": "PQR-2026-0001", "email_enviado": bool, "email_estado": "...", "email_mensaje": "...", "notificacion_calidad_enviada": bool, "notificacion_calidad_mensaje": "...", "mensaje": "..."}`.
 
 ### Seguimiento
 

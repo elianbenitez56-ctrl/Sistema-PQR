@@ -349,6 +349,14 @@ function toastEmailEstado(data) {
     toast("No se pudo enviar el correo de confirmación al cliente", "error", 6000);
   }
 }
+function toastCalidadEstado(data) {
+  if (!data) return;
+  if (data.notificacion_calidad_enviada) {
+    toast("Se notificó a Calidad por correo", "success", 6000);
+  } else {
+    toast("No se pudo notificar a Calidad por correo" + (data.notificacion_calidad_mensaje ? " (" + data.notificacion_calidad_mensaje + ")" : ""), "error", 6000);
+  }
+}
 function guardar() {
   var req = [
     {id:'f-fecha', label:'Fecha de recepción'},
@@ -442,6 +450,7 @@ function guardar() {
           toast("PQR " + rad + " registrado, pero fallaron las evidencias: " + (res.mensaje || 'error desconocido'), "error", 6000);
         }
         toastEmailEstado(data);
+        toastCalidadEstado(data);
         if (btnRadicar) loadBtn(btnRadicar, false);
         setTimeout(limpiar, 5000);
       })
@@ -449,6 +458,7 @@ function guardar() {
         console.error("Error adjuntos:", err);
         toast("PQR " + rad + " registrado, pero hubo un error de conexión al subir las evidencias", "error", 6000);
         toastEmailEstado(data);
+        toastCalidadEstado(data);
         if (btnRadicar) loadBtn(btnRadicar, false);
         setTimeout(limpiar, 5000);
       });
@@ -457,6 +467,7 @@ function guardar() {
       msg('msg-form', msjRegistro(rad, data), 'success');
       toast("PQR " + rad + " registrado exitosamente", "success", 5000);
       toastEmailEstado(data);
+      toastCalidadEstado(data);
       if (btnRadicar) loadBtn(btnRadicar, false);
       setTimeout(limpiar, 5000);
     }

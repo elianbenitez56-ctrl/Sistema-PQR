@@ -22,7 +22,7 @@ def consulta_publica(radicado):
 @bp.route("/api/pqr", methods=["POST"])
 @sesion_requerida
 def api_guardar_pqr():
-    return jsonify(servicio.registrar_pqr(request.get_json(), session["usuario_id"]))
+    return jsonify(servicio.registrar_pqr(request.get_json(), session["usuario_id"], request.host_url))
 
 
 @bp.route("/api/pqr/todos", methods=["GET"])

@@ -11,6 +11,7 @@ def sin_correos(monkeypatch):
     """Los tests nunca envían correo real."""
     for modulo, nombre in (
         ("app.servicios.pqr", "enviar_confirmacion_pqr"),
+        ("app.servicios.pqr", "enviar_notificacion_calidad"),
         ("app.servicios.seguimiento", "enviar_notificacion_comercial"),
     ):
         monkeypatch.setattr(f"{modulo}.{nombre}", lambda *a, **k: (True, ""))

@@ -94,7 +94,7 @@ el bloqueo se libera solo al hacer commit o rollback.
 ## Autenticación y autorización
 
 - Login con usuario y contraseña (`POST /api/login`). Las contraseñas se guardan con hash Werkzeug (scrypt).
-- Sesión en cookie firmada (`SECRET_KEY`), `HttpOnly`, `SameSite=Lax`, `Secure` fuera de desarrollo; dura 12 horas.
+- Sesión en cookie firmada (`SECRET_KEY`), `HttpOnly`, `SameSite=Lax`, `Secure` fuera de desarrollo; se cierra sola tras 30 minutos de inactividad (se renueva en cada petición, no es un tiempo fijo desde el login) — corto a propósito porque se usa en dispositivos compartidos.
 - **Límite de intentos:** 5 fallos por combinación IP + usuario en 5 minutos → HTTP 429. El contador está en
   memoria de cada proceso (con varios workers el límite efectivo es por proceso).
 - Cada endpoint declara su acceso con `@sesion_requerida` (cualquier usuario autenticado) o `@rol_requerido(...)`.

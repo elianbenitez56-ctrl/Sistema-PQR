@@ -265,14 +265,14 @@ async function guardarSeg(rad, seccion) {
       var mensajeExito = seccion === 'comercial'
         ? 'Gestión comercial guardada correctamente.'
         : 'Información de Calidad guardada correctamente.';
-      if (resultado.calidad_estado === 'completada' && resultado.notificacion_mensaje) {
+      if (resultado.notificacion_comercial_intentada) {
         if (resultado.notificacion_comercial_enviada) {
           mensajeExito += ' Se notificó a Comercial por correo.';
         } else {
-          mensajeExito += ' ⚠ No se pudo notificar a Comercial por correo (' + resultado.notificacion_mensaje + '). Se reintentará al guardar de nuevo.';
+          mensajeExito += ' ⚠ No se pudo notificar a Comercial por correo (' + (resultado.notificacion_mensaje || 'error desconocido') + '). Se reintentará al guardar de nuevo.';
         }
       }
-      var avisoFallido = resultado.notificacion_comercial_enviada === false && resultado.notificacion_mensaje;
+      var avisoFallido = resultado.notificacion_comercial_intentada && !resultado.notificacion_comercial_enviada;
       toast(mensajeExito, avisoFallido ? "error" : "success");
       msg("seg-msg", (avisoFallido ? "⚠ " : "✅ ") + mensajeExito, avisoFallido ? "error" : "success");
     } else {

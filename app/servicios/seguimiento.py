@@ -117,5 +117,6 @@ def guardar_seguimiento(datos, seccion, rol, url_base):
         "calidad_estado": calidad_nuevo,
         "comercial_estado": comercial_nuevo,
         "notificacion_comercial_enviada": aviso_enviado,
+        "notificacion_comercial_intentada": avisar,
         "notificacion_mensaje": notificacion_mensaje,
     }

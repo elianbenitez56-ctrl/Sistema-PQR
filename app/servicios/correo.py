@@ -26,6 +26,8 @@ from email.mime.text import MIMEText
 from html import escape
 from urllib.parse import quote
 
+from app.seguridad import token_consulta_publica
+
 logger = logging.getLogger(__name__)
 
 NOMBRE_SISTEMA = "INAPEL · Industria Nacional Papelera S.A.S."
@@ -378,10 +380,12 @@ def _plantilla_html(radicado, correo_cliente, datos):
 
     bloque_consulta = ""
     if url_base:
+        token = token_consulta_publica(radicado)
+        enlace_consulta = f"{url_base}/consulta-pqr/{quote(radicado)}?token={token}"
         bloque_consulta = (
             '<p style="margin:0 0 8px">Con este número de radicado puede consultar '
             'el estado y seguimiento de su solicitud en nuestro portal:</p>'
-            f'<p style="margin:0 0 18px"><a href="{url_base}" '
+            f'<p style="margin:0 0 18px"><a href="{enlace_consulta}" '
             'style="background:#00325e;color:#ffffff;text-decoration:none;'
             'padding:10px 22px;border-radius:6px;display:inline-block;font-weight:bold">'
             "Consultar estado de mi PQR</a></p>"

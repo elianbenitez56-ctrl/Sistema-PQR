@@ -6,6 +6,7 @@ from app.repos.pqr import (
     RADICADO_RE,
     actualizar_estado_pqr,
     consultar_pqr,
+    consultar_pqr_publico,
     correo_confirmacion_enviado,
     crear_pqr,
     eliminar_pqr,
@@ -14,7 +15,7 @@ from app.repos.pqr import (
     marcar_correo_confirmacion,
 )
 from app.repos.usuarios import obtener_usuario_por_id
-from app.seguridad import VENDEDOR
+from app.seguridad import VENDEDOR, verificar_token_consulta_publica
 from app.servicios import almacenamiento
 from app.servicios.catalogo import LINEAS_PRODUCTO, buscar_productos
 from app.servicios.correo import enviar_confirmacion_pqr
@@ -198,6 +199,19 @@ def consultar(valor, rol, usuario_id):
     # Un vendedor solo puede consultar los PQR que él mismo registró.
     if rol == VENDEDOR and str(pqr.get("usuario_id", "")) != str(usuario_id or ""):
         raise ErrorNegocio("No tiene permisos para consultar este PQR.", 403, clave="error")
+    return pqr
+
+
+def consultar_publico(radicado, token):
+    """Consulta sin sesión desde el enlace del correo: exige un token firmado
+    atado al radicado (el radicado por sí solo es un consecutivo adivinable)."""
+    valor = verificar_token_consulta_publica(token)
+    if not valor or valor != str(radicado).strip().upper():
+        raise ErrorNegocio("El enlace de consulta no es válido o venció.", 400, clave="error")
+
+    pqr = consultar_pqr_publico(radicado)
+    if not pqr:
+        raise ErrorNegocio("PQR no encontrado", 404, clave="error")
     return pqr
 
 

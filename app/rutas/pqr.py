@@ -1,10 +1,22 @@
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, render_template, request, session
 
+from app.errores import ErrorNegocio
 from app.repos.pqr import listar_pqrs, obtener_dashboard
 from app.seguridad import ROLES_INVESTIGACION, ROLES_VER_TODO, rol_requerido, sesion_requerida
 from app.servicios import pqr as servicio
 
 bp = Blueprint("pqr", __name__)
+
+
+@bp.route("/consulta-pqr/<radicado>", methods=["GET"])
+def consulta_publica(radicado):
+    """Página pública (sin sesión) que abre el botón del correo de confirmación."""
+    token = request.args.get("token", "")
+    try:
+        pqr = servicio.consultar_publico(radicado, token)
+        return render_template("consulta_publica.html", pqr=pqr, error=None)
+    except ErrorNegocio as e:
+        return render_template("consulta_publica.html", pqr=None, error=e.mensaje), e.status
 
 
 @bp.route("/api/pqr", methods=["POST"])

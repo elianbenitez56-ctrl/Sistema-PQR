@@ -26,7 +26,7 @@ El servicio se define en `render.yaml` (blueprint) y se construye desde el `Dock
    | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | Del proyecto Supabase, con un bucket **privado** llamado `evidencias` creado de antemano (Storage → New bucket) |
    | `SEED_USER_PASSWORD` | Contraseña inicial de los usuarios sembrados (recomendado) |
 
-   `SECRET_KEY` se genera automáticamente (`generateValue: true`); **no la cambie** después o se cerrarán todas las sesiones.
+   `SECRET_KEY` se genera automáticamente (`generateValue: true`); **no la cambie** después o se cerrarán todas las sesiones y se invalidarán los enlaces de consulta pública (`/consulta-pqr/<radicado>`) ya enviados por correo.
    Ajuste `PQR_URL_BASE` si el dominio no es `https://sistema-pqr.onrender.com`.
 4. Espere a que el health check quede en verde y entre con `admin`.
 5. Cambie las contraseñas temporales de los usuarios sembrados.

@@ -136,13 +136,13 @@ function renderUsuarios() {
   data.forEach(function(u) {
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td>' + (u.nombre || '—') + '</td>' +
-      '<td>' + (u.documento || '—') + '</td>' +
-      '<td><span style="font-family:\'Courier New\',monospace;font-weight:600">' + u.usuario + '</span></td>' +
-      '<td><span class="cell-email" title="' + (u.correo || '') + '">' + (u.correo || '—') + '</span></td>' +
-      '<td>' + fmtTel(u.telefono) + '</td>' +
-      '<td>' + String(u.rol || '').replace(/_/g, ' ') + '</td>' +
-      '<td>' + (u.linea_producto || '—') + '</td>' +
+      '<td>' + esc(u.nombre || '—') + '</td>' +
+      '<td>' + esc(u.documento || '—') + '</td>' +
+      '<td><span style="font-family:\'Courier New\',monospace;font-weight:600">' + esc(u.usuario) + '</span></td>' +
+      '<td><span class="cell-email" title="' + esc(u.correo || '') + '">' + esc(u.correo || '—') + '</span></td>' +
+      '<td>' + esc(fmtTel(u.telefono)) + '</td>' +
+      '<td>' + esc(String(u.rol || '').replace(/_/g, ' ')) + '</td>' +
+      '<td>' + esc(u.linea_producto || '—') + '</td>' +
       '<td><span class="' + (u.activo ? 'badge bs-cer' : 'badge bs-nop') + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' +
       '<td style="text-align:center">' +
         (puedeEditar ? '<button class="btn btn-xs" title="Editar usuario" onclick="editarUsuario(' + u.id + ')">✏️ Editar</button> ' : '') +
@@ -186,11 +186,11 @@ function editarCredenciales(uid) {
   oModal('Editar credenciales',
     '<div style="margin-bottom:14px;padding:10px 12px;background:var(--surface-dim);border-radius:8px">' +
       '<div style="font-size:11px;color:var(--on-surface-variant)">Usuario seleccionado</div>' +
-      '<div style="font-size:14px;font-weight:600">' + nombre + ' · <span style="font-family:\'Courier New\',monospace">' + u.usuario + '</span></div>' +
+      '<div style="font-size:14px;font-weight:600">' + esc(nombre) + ' · <span style="font-family:\'Courier New\',monospace">' + esc(u.usuario) + '</span></div>' +
     '</div>' +
     '<div class="form-grid">' +
       '<div class="field full"><label for="uc-usuario">Nuevo usuario</label>' +
-        '<input type="text" id="uc-usuario" value="' + u.usuario + '" placeholder="Nombre de usuario" autocomplete="off">' +
+        '<input type="text" id="uc-usuario" value="' + esc(u.usuario) + '" placeholder="Nombre de usuario" autocomplete="off">' +
         '<small style="color:var(--on-surface-variant)">El usuario actual se conserva si no se cambia.</small></div>' +
       '<div class="field"><label for="uc-pass">Nueva contraseña</label>' +
         '<input type="password" id="uc-pass" placeholder="Nueva contraseña" autocomplete="new-password"></div>' +
@@ -303,23 +303,23 @@ function editarUsuario(uid) {
   oModal('Editar usuario',
     '<div style="margin-bottom:6px;padding:10px 12px;background:var(--surface-dim);border-radius:8px">' +
       '<div style="font-size:11px;color:var(--on-surface-variant)">Usuario seleccionado</div>' +
-      '<div style="font-size:14px;font-weight:600">' + (u.nombre || 'Usuario') + ' · <span style="font-family:\'Courier New\',monospace">' + u.usuario + '</span></div>' +
+      '<div style="font-size:14px;font-weight:600">' + esc(u.nombre || 'Usuario') + ' · <span style="font-family:\'Courier New\',monospace">' + esc(u.usuario) + '</span></div>' +
     '</div>' +
     '<div class="form-section">Datos personales</div>' +
     '<div class="form-grid">' +
       '<div class="field full"><label for="ue-nombre">Nombre completo</label>' +
-        '<input type="text" id="ue-nombre" value="' + u.nombre + '" autocomplete="off"></div>' +
+        '<input type="text" id="ue-nombre" value="' + esc(u.nombre) + '" autocomplete="off"></div>' +
       '<div class="field"><label for="ue-documento">Documento</label>' +
-        '<input type="text" id="ue-documento" value="' + (u.documento || '') + '" placeholder="Número de identificación" autocomplete="off"></div>' +
+        '<input type="text" id="ue-documento" value="' + esc(u.documento || '') + '" placeholder="Número de identificación" autocomplete="off"></div>' +
       '<div class="field"><label for="ue-correo">Correo electrónico</label>' +
-        '<input type="email" id="ue-correo" value="' + (u.correo || '') + '" placeholder="usuario@empresa.com" autocomplete="off"></div>' +
+        '<input type="email" id="ue-correo" value="' + esc(u.correo || '') + '" placeholder="usuario@empresa.com" autocomplete="off"></div>' +
       '<div class="field"><label for="ue-telefono">Teléfono</label>' +
-        '<input type="tel" id="ue-telefono" value="' + (u.telefono || '') + '" placeholder="310 123 4567" autocomplete="off"></div>' +
+        '<input type="tel" id="ue-telefono" value="' + esc(u.telefono || '') + '" placeholder="310 123 4567" autocomplete="off"></div>' +
     '</div>' +
     '<div class="form-section">Datos de acceso</div>' +
     '<div class="form-grid">' +
       '<div class="field full"><label for="ue-usuario">Usuario</label>' +
-        '<input type="text" id="ue-usuario" value="' + u.usuario + '" autocomplete="off"></div>' +
+        '<input type="text" id="ue-usuario" value="' + esc(u.usuario) + '" autocomplete="off"></div>' +
     '</div>' +
     '<div class="form-section">Configuración</div>' +
     '<div class="form-grid">' +

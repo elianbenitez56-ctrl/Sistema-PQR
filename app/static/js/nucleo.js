@@ -12,6 +12,16 @@ var dashboardInterval = null;
 var chartEstados = null;
 var chartTipos = null;
 
+// ── ESCAPE HTML ──────────────────────────────────────────────────────────
+// Texto libre (cliente, descripción, respuestas, nombres de usuario, etc.)
+// viene de PQRs radicadas por cualquier VENDEDOR y se reinserta como HTML en
+// varios paneles: hay que escaparlo siempre para evitar XSS almacenado.
+function esc(valor) {
+  return String(valor === undefined || valor === null ? '' : valor)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function cargarDatos() {
   try { db = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch(e) { db = []; }
 }
@@ -146,7 +156,7 @@ function mEstado(rad) {
   var sel = opts.map(function(o) { return '<option' + (p && p.estado === o ? ' selected' : '') + '>' + o + '</option>'; }).join('');
   oModal('Cambiar estado · ' + rad,
     '<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--on-surface-variant);margin-bottom:3px">Cliente</div>' +
-    '<div style="font-size:14px;font-weight:500">' + (p ? p.cliente : '—') + '</div></div>' +
+    '<div style="font-size:14px;font-weight:500">' + esc(p ? p.cliente : '—') + '</div></div>' +
     '<div class="field" style="margin-bottom:18px"><label>Nuevo estado</label><select id="m-est">' + sel + '</select></div>' +
     '<div style="display:flex;gap:9px;justify-content:flex-end">' +
     '<button class="btn" onclick="cModal()">Cancelar</button>' +
@@ -191,30 +201,30 @@ function mDetalle(rad) {
           var referencia = x.referencia_siesa || x.referencia || x.ref || '—';
           var nombreProducto = x.producto || x.detalle_presentacion || '—';
           return '<div style="font-size:12px;padding:5px 9px;background:var(--surface-dim);border-radius:6px;margin-bottom:3px">' +
-               '<strong>' + nombreProducto + '</strong> · Línea: ' + (x.linea||'—') + ' · Detalle: ' + (x.detalle_presentacion||'—') + ' · REFERENCIA SIESA: ' + referencia + ' · Lote: ' + (x.lote||'—') + ' · ' + (x.cant||'—') + ' ' + (x.unidad||'') + '</div>';
+               '<strong>' + esc(nombreProducto) + '</strong> · Línea: ' + esc(x.linea||'—') + ' · Detalle: ' + esc(x.detalle_presentacion||'—') + ' · REFERENCIA SIESA: ' + esc(referencia) + ' · Lote: ' + esc(x.lote||'—') + ' · ' + esc(x.cant||'—') + ' ' + esc(x.unidad||'') + '</div>';
       }).join('')
     : '<p style="font-size:13px;color:var(--on-surface-variant)">Sin productos</p>';
   var hist = (p.historial || [{estado:p.estado, fecha:p.savedAt}]).map(function(h){
     return '<div class="timeline-item">' +
            '<div class="timeline-dot"></div>' +
-           '<div><div class="timeline-state">' + h.estado + '</div>' +
-           '<div class="timeline-date">' + h.fecha + ' - ' + (h.hora || '') + '</div></div></div>';
+           '<div><div class="timeline-state">' + esc(h.estado) + '</div>' +
+           '<div class="timeline-date">' + esc(h.fecha) + ' - ' + esc(h.hora || '') + '</div></div></div>';
   }).join('');
-  oModal('Detalle · ' + rad,
+  oModal('Detalle · ' + esc(rad),
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
-    '<span style="font-family:Courier New,monospace;font-size:16px;font-weight:700;color:var(--navy)">' + p.radicado + '</span>' +
-    '<span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></div>' +
+    '<span style="font-family:Courier New,monospace;font-size:16px;font-weight:700;color:var(--navy)">' + esc(p.radicado) + '</span>' +
+    '<span class="' + badgeCls(p.estado) + '">' + esc(p.estado) + '</span></div>' +
     '<div class="progress-bar"><div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
     '<div class="progress-labels"><span>Recibido</span><span>Investigación</span><span>Cerrado</span></div></div>' +
     '<div class="result-card" style="border-color:var(--outline-soft);padding:16px;margin-top:0">' +
     '<div class="detail-grid">' +
-    dd('Cliente', p.cliente) + dd('Tipo', p.tipoSol) +
-    dd('Fecha recepción', p.fechaRec) + dd('Días', '<span class="timer ' + timerCls(d) + '">' + d + ' días</span>') +
-    dd('Prioridad', p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') +
-    dd('Expectativa', p.expectativa) + '</div></div>' +
+    dd('Cliente', esc(p.cliente)) + dd('Tipo', esc(p.tipoSol)) +
+    dd('Fecha recepción', esc(p.fechaRec)) + dd('Días', '<span class="timer ' + timerCls(d) + '">' + d + ' días</span>') +
+    dd('Prioridad', p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + esc(p.prioridad) + '</span>' : '—') +
+    dd('Expectativa', esc(p.expectativa)) + '</div></div>' +
     '<div style="margin-bottom:12px"><div class="detail-label" style="margin-bottom:5px">Productos</div>' + prods + '</div>' +
     '<div style="margin-bottom:12px"><div class="detail-label" style="margin-bottom:5px">Descripción</div>' +
-    '<p style="font-size:13px;color:var(--on-surface);line-height:1.6;background:var(--surface-dim);padding:9px 12px;border-radius:7px">' + (p.desc||'—') + '</p></div>' +
+    '<p style="font-size:13px;color:var(--on-surface);line-height:1.6;background:var(--surface-dim);padding:9px 12px;border-radius:7px">' + esc(p.desc||'—') + '</p></div>' +
     '<div><div class="detail-label" style="margin-bottom:6px">Historial de estados</div><div class="timeline">' + hist + '</div></div>' +
     '<div style="margin-top:18px;text-align:right"><button class="btn" onclick="cModal()">Cerrar</button></div>');
 }

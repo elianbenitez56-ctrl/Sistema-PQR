@@ -372,6 +372,9 @@ function guardar() {
     return;
   }
   if (!validarProductosCatalogo()) return;
+  var btnRadicar = document.getElementById('btn-radicar');
+  if (btnRadicar && btnRadicar.disabled) return;
+  if (btnRadicar) loadBtn(btnRadicar, true);
   var now = new Date();
   var pqr = {
     fechaRec: document.getElementById('f-fecha').value,
@@ -412,7 +415,7 @@ function guardar() {
   fetch("/api/pqr", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pqr) })
   .then(function(response) { return response.json(); })
   .then(function(data) {
-    if (!data.ok) { msg('msg-form', 'Error al guardar en el servidor.', 'error'); return; }
+    if (!data.ok) { msg('msg-form', 'Error al guardar en el servidor.', 'error'); if (btnRadicar) loadBtn(btnRadicar, false); return; }
     var rad = data.radicado;
     pqr.radicado = rad;
     pqr.savedAt = now.toISOString();
@@ -439,12 +442,14 @@ function guardar() {
           toast("PQR " + rad + " registrado, pero fallaron las evidencias: " + (res.mensaje || 'error desconocido'), "error", 6000);
         }
         toastEmailEstado(data);
+        if (btnRadicar) loadBtn(btnRadicar, false);
         setTimeout(limpiar, 5000);
       })
       .catch(function(err) {
         console.error("Error adjuntos:", err);
         toast("PQR " + rad + " registrado, pero hubo un error de conexión al subir las evidencias", "error", 6000);
         toastEmailEstado(data);
+        if (btnRadicar) loadBtn(btnRadicar, false);
         setTimeout(limpiar, 5000);
       });
     } else {
@@ -452,6 +457,7 @@ function guardar() {
       msg('msg-form', msjRegistro(rad, data), 'success');
       toast("PQR " + rad + " registrado exitosamente", "success", 5000);
       toastEmailEstado(data);
+      if (btnRadicar) loadBtn(btnRadicar, false);
       setTimeout(limpiar, 5000);
     }
   })
@@ -459,6 +465,7 @@ function guardar() {
     console.error(error);
     toast("Error de conexión con el servidor", "error");
     msg('msg-form', 'Error de conexión con el servidor.', 'error');
+    if (btnRadicar) loadBtn(btnRadicar, false);
   });
 }
 

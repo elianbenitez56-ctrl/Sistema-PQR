@@ -107,19 +107,19 @@ function renderConsulta(p) {
   var hist = (p.historial || [{ estado: p.estado, fecha: p.fechaRec, hora: p.horaRec }]).map(function(h) {
     return '<div class="timeline-item">' +
            '<div class="timeline-dot"></div>' +
-           '<div><div class="timeline-state">' + h.estado + '</div>' +
-           '<div class="timeline-date">' + h.fecha + ' - ' + (h.hora || '') + '</div></div></div>';
+           '<div><div class="timeline-state">' + esc(h.estado) + '</div>' +
+           '<div class="timeline-date">' + esc(h.fecha) + ' - ' + esc(h.hora || '') + '</div></div></div>';
   }).join('');
   var prodRows = p.productos && p.productos.length
     ? p.productos.map(function(x) {
         return '<tr>' +
-           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.linea || '—') + '</td>' +
-           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.referencia_siesa || x.referencia || x.ref || '—') + '</td>' +
-           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.producto || '—') + '</td>' +
-           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.detalle_presentacion || '—') + '</td>' +
-          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.lote || '—') + '</td>' +
-          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.cant || '—') + ' ' + (x.unidad || '') + '</td>' +
-          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + (x.tipoDoc || '—') + ' ' + (x.numDoc || '') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.linea || '—') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.referencia_siesa || x.referencia || x.ref || '—') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.producto || '—') + '</td>' +
+           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.detalle_presentacion || '—') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.lote || '—') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.cant || '—') + ' ' + esc(x.unidad || '') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.tipoDoc || '—') + ' ' + esc(x.numDoc || '') + '</td>' +
           '</tr>';
       }).join('')
       : '<tr><td colspan="7" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
@@ -132,8 +132,8 @@ function renderConsulta(p) {
   var evidenciasHtml = '';
   if (p.adjuntos && p.adjuntos.length) {
     var evidRows = p.adjuntos.map(function(a) {
-      return '<li style="padding:4px 0"><a href="/api/evidencias/' + a.id + '" target="_blank" rel="noopener">' +
-        (a.nombre || 'Archivo') + '</a>' + (a.tipo ? ' <span style="color:var(--on-surface-variant)">(' + a.tipo + ')</span>' : '') + '</li>';
+      return '<li style="padding:4px 0"><a href="/api/evidencias/' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">' +
+        esc(a.nombre || 'Archivo') + '</a>' + (a.tipo ? ' <span style="color:var(--on-surface-variant)">(' + esc(a.tipo) + ')</span>' : '') + '</li>';
     }).join('');
     evidenciasHtml =
       '<div style="margin-top:18px;border-top:1px solid var(--outline-soft);padding-top:14px">' +
@@ -142,16 +142,16 @@ function renderConsulta(p) {
   }
   div.innerHTML =
     '<div class="result-card">' +
-    '<div class="result-top"><span class="result-rad">' + p.radicado + '</span><span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></div>' +
+    '<div class="result-top"><span class="result-rad">' + esc(p.radicado) + '</span><span class="' + badgeCls(p.estado) + '">' + esc(p.estado) + '</span></div>' +
     '<div class="progress-bar"><div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
     '<div class="progress-labels"><span>Recibido</span><span>En revisión</span><span>Cerrado</span></div></div>' +
     '<div class="detail-grid">' +
-    dd('Cliente', p.cliente) + dd('Tipo de solicitud', p.tipoSol) +
-    (p.vendedor ? dd('Vendedor', p.vendedor) : '') +
-    (p.linea ? dd('Línea de producto', p.linea) : '') +
-    dd('Fecha de recepción', p.fechaRec) + dd('Días en trámite', '<span class="timer ' + timerCls(d) + '">' + d + ' días</span>') +
-    dd('Prioridad', p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') +
-    dd('Expectativa del cliente', p.expectativa) +
+    dd('Cliente', esc(p.cliente)) + dd('Tipo de solicitud', esc(p.tipoSol)) +
+    (p.vendedor ? dd('Vendedor', esc(p.vendedor)) : '') +
+    (p.linea ? dd('Línea de producto', esc(p.linea)) : '') +
+    dd('Fecha de recepción', esc(p.fechaRec)) + dd('Días en trámite', '<span class="timer ' + timerCls(d) + '">' + d + ' días</span>') +
+    dd('Prioridad', p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + esc(p.prioridad) + '</span>' : '—') +
+    dd('Expectativa del cliente', esc(p.expectativa)) +
     '</div>' +
     productosHtml +
     '<div style="border-top:1px solid var(--outline-soft);padding-top:12px">' +
@@ -166,19 +166,19 @@ function renderConsulta(p) {
     '<span class="material-symbols-outlined" style="font-size:22px">description</span>' +
     '<span>Resultados de la investigación</span></div>' +
     '<div class="inv-wrap"><table class="inv-table">' +
-    '<tr><td class="inv-label">Asignación de la causa</td><td class="inv-val">' + (inv.causa || 'Pendiente') + '</td>' +
+    '<tr><td class="inv-label">Asignación de la causa</td><td class="inv-val">' + esc(inv.causa || 'Pendiente') + '</td>' +
     '<td class="inv-label">Máquina o Equipo</td><td class="inv-val">Pendiente</td></tr>' +
-    '<tr><td class="inv-label">Departamentos involucrados</td><td class="inv-val">' + (inv.deptos || 'Pendiente') + '</td>' +
-    '<td class="inv-label">Herramienta utilizada</td><td class="inv-val">' + ((inv.herramientas && inv.herramientas.length) ? inv.herramientas.join(', ') : 'Pendiente') + '</td></tr>' +
-    '<tr><td class="inv-label">Acción Correctiva</td><td class="inv-val">' + (inv.acc || 'Pendiente') + '</td>' +
-    '<td class="inv-label">Notificación al cliente</td><td class="inv-val">' + (inv.notif || 'Pendiente') + '</td></tr>' +
-    '<tr><td class="inv-label">Fecha de respuesta</td><td class="inv-val">' + (inv.fResp || '-') + '</td>' +
-    '<td class="inv-label">Fecha de cierre</td><td class="inv-val">' + (inv.fCierre || '-') + '</td></tr>' +
-    '<tr><td class="inv-label">Cierre del PQR</td><td class="inv-val" colspan="3">' + (inv.cierre || 'No') + '</td></tr>' +
+    '<tr><td class="inv-label">Departamentos involucrados</td><td class="inv-val">' + esc(inv.deptos || 'Pendiente') + '</td>' +
+    '<td class="inv-label">Herramienta utilizada</td><td class="inv-val">' + ((inv.herramientas && inv.herramientas.length) ? esc(inv.herramientas.join(', ')) : 'Pendiente') + '</td></tr>' +
+    '<tr><td class="inv-label">Acción Correctiva</td><td class="inv-val">' + esc(inv.acc || 'Pendiente') + '</td>' +
+    '<td class="inv-label">Notificación al cliente</td><td class="inv-val">' + esc(inv.notif || 'Pendiente') + '</td></tr>' +
+    '<tr><td class="inv-label">Fecha de respuesta</td><td class="inv-val">' + esc(inv.fResp || '-') + '</td>' +
+    '<td class="inv-label">Fecha de cierre</td><td class="inv-val">' + esc(inv.fCierre || '-') + '</td></tr>' +
+    '<tr><td class="inv-label">Cierre del PQR</td><td class="inv-val" colspan="3">' + esc(inv.cierre || 'No') + '</td></tr>' +
     '</table></div></div>' +
 
     '<div style="margin-top:20px">' +
     '<div class="detail-label" style="margin-bottom:12px;font-size:16px;font-weight:700;color:var(--navy)">Respuesta al cliente</div>' +
-     '<div class="response-box">' + (inv.respuesta_comercial || 'La investigación aún se encuentra en proceso.') + '</div></div>' +
+     '<div class="response-box">' + esc(inv.respuesta_comercial || 'La investigación aún se encuentra en proceso.') + '</div></div>' +
     '</div></div>';
 }

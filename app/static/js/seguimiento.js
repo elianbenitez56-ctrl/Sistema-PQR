@@ -77,7 +77,7 @@ async function cargarSeg() {
   try {
     var respuesta = await fetch("/api/consultar/" + rad);
     if (!respuesta.ok) {
-      div.innerHTML = '<div class="alert alert-error">No se encontró el radicado <strong>' + rad + '</strong>.</div>';
+      div.innerHTML = '<div class="alert alert-error">No se encontró el radicado <strong>' + esc(rad) + '</strong>.</div>';
       toast("Radicado no encontrado", "error", 4000);
       return;
     }
@@ -91,13 +91,13 @@ async function cargarSeg() {
         : (inv.herr ? [inv.herr] : [CATEGORIAS_HERRAMIENTA[1].opciones[0]]);
      var prodRows = p.productos && p.productos.length
         ? p.productos.map(function(x) {
-            return '<tr><td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.linea||'—') + '</td>' +
-                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.referencia_siesa || x.referencia || x.ref || '—') + '</td>' +
-                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.producto||'—') + '</td>' +
-                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.detalle_presentacion||'—') + '</td>' +
-                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.lote||'—') + '</td>' +
-                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.cant||'—') + ' ' + (x.unidad||'') + '</td>' +
-                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + (x.tipoDoc||'—') + ' ' + (x.numDoc||'') + '</td></tr>';
+            return '<tr><td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.linea||'—') + '</td>' +
+                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.referencia_siesa || x.referencia || x.ref || '—') + '</td>' +
+                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.producto||'—') + '</td>' +
+                    '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.detalle_presentacion||'—') + '</td>' +
+                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.lote||'—') + '</td>' +
+                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.cant||'—') + ' ' + esc(x.unidad||'') + '</td>' +
+                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.tipoDoc||'—') + ' ' + esc(x.numDoc||'') + '</td></tr>';
         }).join('')
        : '<tr><td colspan="7" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
      var mkSel = function(id, opts, val) {
@@ -111,10 +111,10 @@ async function cargarSeg() {
       '<h3>PQR · ' + p.radicado + '</h3><span class="' + badgeCls(p.estado) + '" style="margin-left:auto">' + p.estado + '</span></div>' +
       '<div class="card-body">' +
       '<div class="form-grid" style="margin-bottom:14px">' +
-      '<div><div class="detail-label">Cliente</div><div style="font-size:14px;font-weight:500">' + (p.cliente||'—') + '</div></div>' +
-      '<div><div class="detail-label">Tipo de solicitud</div><div style="font-size:13px">' + (p.tipoSol||'—') + '</div></div></div>' +
+      '<div><div class="detail-label">Cliente</div><div style="font-size:14px;font-weight:500">' + esc(p.cliente||'—') + '</div></div>' +
+      '<div><div class="detail-label">Tipo de solicitud</div><div style="font-size:13px">' + esc(p.tipoSol||'—') + '</div></div></div>' +
       '<div class="detail-label" style="margin-bottom:5px">Descripción</div>' +
-      '<p style="font-size:13px;color:var(--on-surface);line-height:1.6;background:var(--surface-dim);padding:9px 13px;border-radius:7px;margin-bottom:14px">' + (p.desc||'—') + '</p>' +
+      '<p style="font-size:13px;color:var(--on-surface);line-height:1.6;background:var(--surface-dim);padding:9px 13px;border-radius:7px;margin-bottom:14px">' + esc(p.desc||'—') + '</p>' +
       '<div class="detail-label" style="margin-bottom:6px">Productos involucrados</div>' +
       '<table style="width:100%;border-collapse:collapse;font-size:13px;background:var(--surface-container-lowest);border:1px solid var(--outline-soft);border-radius:var(--radius-md);overflow:hidden">' +
          '<thead><tr style="background:var(--navy)"><th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Línea</th>' +
@@ -138,13 +138,13 @@ async function cargarSeg() {
        '<div class="card-header"><div class="card-icon"><span class="material-symbols-outlined mat-icon">troubleshoot</span></div><h3>Investigación y análisis de causas</h3><span style="margin-left:auto;color:var(--on-surface-variant);font-size:11px;font-weight:700">CALIDAD</span></div>' +
        '<div class="card-body">' +
        '<div class="form-grid">' +
-       '<div class="field"><label>Responsable de investigación</label><input type="text" id="si-resp" value="' + (inv.resp||'') + '"></div>' +
-       '<div class="field"><label>Cargo</label><input type="text" id="si-cargo" value="' + (inv.cargo||'') + '"></div>' +
+       '<div class="field"><label>Responsable de investigación</label><input type="text" id="si-resp" value="' + esc(inv.resp||'') + '"></div>' +
+       '<div class="field"><label>Cargo</label><input type="text" id="si-cargo" value="' + esc(inv.cargo||'') + '"></div>' +
        '<div class="field"><label>Asignación de causa</label>' + mkSel('si-causa',['Materias primas','Máquina o equipo','Mano de obra','Medición/Inspección','Diseño del producto','Empaque','Transporte','Almacenamiento','Proveedor','Cliente (Uso inadecuado)'],inv.causa) + '</div>' +
         '<div class="field full"><label>Herramientas utilizadas</label>' + construirHerramientasHtml(herramientas) + '</div>' +
-       '<div class="field full"><label>Departamentos involucrados</label><input type="text" id="si-deptos" value="' + (inv.deptos||'') + '" placeholder="Ej: Calidad, Logística, Producción"></div>' +
+       '<div class="field full"><label>Departamentos involucrados</label><input type="text" id="si-deptos" value="' + esc(inv.deptos||'') + '" placeholder="Ej: Calidad, Logística, Producción"></div>' +
         '<div class="field full"><label>Respuesta detallada al cliente</label>' +
-        '<textarea id="si-txt-calidad" name="respuesta_calidad" rows="6" placeholder="Redacte aquí la respuesta detallada para el cliente...">' + (inv.respuesta_calidad||'') + '</textarea></div>' +
+        '<textarea id="si-txt-calidad" name="respuesta_calidad" rows="6" placeholder="Redacte aquí la respuesta detallada para el cliente...">' + esc(inv.respuesta_calidad||'') + '</textarea></div>' +
         '<div class="action-row"><button id="seg-btn-calidad" class="btn btn-primary" onclick="guardarSeg(\'' + p.radicado + '\', \'calidad\')">💾 Guardar investigación</button></div>' +
         '</div></div></div>' +
        '<div class="card">' +
@@ -157,7 +157,7 @@ async function cargarSeg() {
       '<div class="field"><label>Cierre del PQR</label>' + mkSel('si-cierre',['No','Sí'],inv.cierre) + '</div>' +
       '<div class="field"><label>Fecha de cierre</label><input type="date" id="si-fcierre" value="' + (inv.fCierre||'') + '"></div>' +
       '<div class="field full"><label>Respuesta detallada al cliente</label>' +
-        '<textarea id="si-txt" name="respuesta_comercial" rows="6" placeholder="Redacte el análisis de causa raíz y la respuesta completa para el cliente...">' + (inv.respuesta_comercial||'') + '</textarea></div>' +
+        '<textarea id="si-txt" name="respuesta_comercial" rows="6" placeholder="Redacte el análisis de causa raíz y la respuesta completa para el cliente...">' + esc(inv.respuesta_comercial||'') + '</textarea></div>' +
       '</div>' +
       '<div class="action-row">' +
       '<button class="btn btn-success" onclick="expSeg(\'' + p.radicado + '\')">⬇ Descargar respuesta</button>' +
@@ -293,11 +293,6 @@ function expSeg(rad) {
     : (dbExcel !== null ? dbExcel : db).filter(function(x) { return x.radicado === rad; })[0];
   if (!p) { toast('PQR no encontrado.', 'error'); return; }
   var inv = p.investigacion || {};
-  var esc = function(valor) {
-    return String(valor === undefined || valor === null ? '' : valor)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  };
   var texto = function(valor, defecto) {
     var valorTexto = String(valor || '').trim();
     return valorTexto ? esc(valorTexto).replace(/\r?\n/g, '<br>') : (defecto || 'No registrado');

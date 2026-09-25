@@ -112,13 +112,13 @@ function renderDB() {
     var d = dias(p.fechaRec);
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td><span class="rad-cell">' + p.radicado + '</span></td>' +
-      '<td>' + (p.fechaRec || p.savedAt.slice(0,10)) + '</td>' +
+      '<td><span class="rad-cell">' + esc(p.radicado) + '</span></td>' +
+      '<td>' + esc(p.fechaRec || p.savedAt.slice(0,10)) + '</td>' +
       '<td><span class="timer ' + timerCls(d) + '">' + d + 'd</span></td>' +
-      '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (p.cliente||'—') + '</td>' +
-      '<td>' + (p.tipoSol||'—') + '</td>' +
-      '<td><span class="' + badgeCls(p.estado) + '">' + p.estado + '</span></td>' +
-      '<td>' + (p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + p.prioridad + '</span>' : '—') + '</td>' +
+      '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.cliente||'—') + '</td>' +
+      '<td>' + esc(p.tipoSol||'—') + '</td>' +
+      '<td><span class="' + badgeCls(p.estado) + '">' + esc(p.estado) + '</span></td>' +
+      '<td>' + (p.prioridad ? '<span class="' + priCls(p.prioridad) + '">' + esc(p.prioridad) + '</span>' : '—') + '</td>' +
       '<td style="text-align:center;white-space:nowrap">' +
         (puedeEditar ? '<button class="btn btn-xs btn-icon" title="Cambiar estado" onclick="mEstado(\'' + p.radicado + '\')" style="margin-right:4px">✏️</button>' : '') +
         '<button class="btn btn-xs btn-icon" title="Ver detalle" onclick="mDetalle(\'' + p.radicado + '\')" style="margin-right:4px">👁️</button>' +

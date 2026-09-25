@@ -339,6 +339,16 @@ function msjRegistro(rad, data) {
   }
   return base;
 }
+function toastEmailEstado(data) {
+  if (!data) return;
+  if (data.email_enviado) {
+    toast("Correo de confirmación enviado al cliente", "success", 6000);
+  } else if (data.email_estado === 'sin_correo') {
+    toast("La PQR no tiene correo registrado: no se envió confirmación", "info", 6000);
+  } else {
+    toast("No se pudo enviar el correo de confirmación al cliente", "error", 6000);
+  }
+}
 function guardar() {
   var req = [
     {id:'f-fecha', label:'Fecha de recepción'},
@@ -423,6 +433,7 @@ function guardar() {
         document.getElementById('rad-num').textContent = rad.replace(/-/g, ' · ');
         msg('msg-form', msjRegistro(rad, data) + '<br><br>Las evidencias fueron cargadas exitosamente.', 'success');
         toast("PQR " + rad + " registrado con evidencias", "success", 5000);
+        toastEmailEstado(data);
         setTimeout(limpiar, 5000);
       })
       .catch(function(err) { console.error("Error adjuntos:", err); });
@@ -430,6 +441,7 @@ function guardar() {
       document.getElementById('rad-num').textContent = rad.replace(/-/g, ' · ');
       msg('msg-form', msjRegistro(rad, data), 'success');
       toast("PQR " + rad + " registrado exitosamente", "success", 5000);
+      toastEmailEstado(data);
       setTimeout(limpiar, 5000);
     }
   })

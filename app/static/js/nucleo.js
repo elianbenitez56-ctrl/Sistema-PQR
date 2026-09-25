@@ -158,7 +158,8 @@ function aplicarEst() {
   confirmar("Cambiar estado", "¿Estás seguro de cambiar el estado a «" + nuevoEstado + "»?", "🔄", function() {
     fetch("/api/cambiar_estado", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ radicado: editRad, estado: nuevoEstado }) })
     .then(function(r) { return r.json(); })
-    .then(function() {
+    .then(function(res) {
+      if (!res.ok) { toast(res.mensaje || "Error al actualizar el estado", "error"); return; }
       var p = db.filter(function(x) { return x.radicado === editRad; })[0];
       if (p) {
         p.estado = nuevoEstado;

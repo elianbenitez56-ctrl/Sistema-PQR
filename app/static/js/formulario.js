@@ -431,12 +431,22 @@ function guardar() {
       .then(function(r) { return r.json(); })
       .then(function(res) {
         document.getElementById('rad-num').textContent = rad.replace(/-/g, ' · ');
-        msg('msg-form', msjRegistro(rad, data) + '<br><br>Las evidencias fueron cargadas exitosamente.', 'success');
-        toast("PQR " + rad + " registrado con evidencias", "success", 5000);
+        if (res.ok) {
+          msg('msg-form', msjRegistro(rad, data) + '<br><br>Las evidencias fueron cargadas exitosamente.', 'success');
+          toast("PQR " + rad + " registrado con evidencias", "success", 5000);
+        } else {
+          msg('msg-form', msjRegistro(rad, data) + '<br><br>&#9888; PQR registrado, pero las evidencias no se pudieron cargar: ' + (res.mensaje || 'error desconocido') + '.', 'error');
+          toast("PQR " + rad + " registrado, pero fallaron las evidencias: " + (res.mensaje || 'error desconocido'), "error", 6000);
+        }
         toastEmailEstado(data);
         setTimeout(limpiar, 5000);
       })
-      .catch(function(err) { console.error("Error adjuntos:", err); });
+      .catch(function(err) {
+        console.error("Error adjuntos:", err);
+        toast("PQR " + rad + " registrado, pero hubo un error de conexión al subir las evidencias", "error", 6000);
+        toastEmailEstado(data);
+        setTimeout(limpiar, 5000);
+      });
     } else {
       document.getElementById('rad-num').textContent = rad.replace(/-/g, ' · ');
       msg('msg-form', msjRegistro(rad, data), 'success');

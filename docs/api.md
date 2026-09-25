@@ -40,6 +40,7 @@ pero sin el rol necesario, **403**. Los errores de validación devuelven **400**
 | `GET /api/evidencias/<id>` | sesión (vendedor: solo suyos) | Descarga el archivo: redirige a una URL firmada (Supabase Storage) o lo sirve del disco local |
 | `GET /healthz` | público | `{"ok": true}` si la base responde; `503` si no |
 | `GET /` | público | Interfaz web |
+| `GET /consulta-pqr/<radicado>?token=...` | público (token firmado) | Página HTML de solo lectura para el cliente externo: enlace del correo de confirmación (`_plantilla_html` en `app/servicios/correo.py`). El token lo genera `token_consulta_publica` (`app/seguridad.py`) al enviar el correo y lo valida `verificar_token_consulta_publica`; sin token válido para ese radicado responde con la misma página mostrando el error (`400`/`404`). No usa `/api/consultar` ni expone causa raíz, responsable interno, departamentos ni adjuntos — solo estado, fechas, descripción, línea de tiempo y la respuesta comercial final |
 
 ### `POST /api/pqr`
 

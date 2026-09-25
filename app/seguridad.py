@@ -1,6 +1,7 @@
 from functools import wraps
 
-from flask import jsonify, session
+from flask import current_app, jsonify, session
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 # ==========================================================
 # ROLES Y PERMISOS
@@ -74,3 +75,22 @@ def rol_requerido(*roles):
 
 def sesion_requerida(f):
     return rol_requerido()(f)
+
+
+# ==========================================================
+# TOKEN DE CONSULTA PÚBLICA (enlace del correo al cliente)
+# ==========================================================
+
+def _serializer_consulta_publica():
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="consulta-pqr-publica")
+
+
+def token_consulta_publica(radicado):
+    return _serializer_consulta_publica().dumps(str(radicado).strip().upper())
+
+
+def verificar_token_consulta_publica(token, max_age=60 * 60 * 24 * 400):
+    try:
+        return _serializer_consulta_publica().loads(token, max_age=max_age)
+    except (BadSignature, SignatureExpired):
+        return None

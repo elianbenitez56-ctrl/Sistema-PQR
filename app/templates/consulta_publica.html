@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consulta de PQR - INAPEL</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px 12px; min-height: 100vh;
+      background: #f0f4f8; font-family: Arial, Helvetica, sans-serif;
+      display: flex; justify-content: center;
+    }
+    .card {
+      width: 100%; max-width: 640px; background: #ffffff; border: 1px solid #dde5ee;
+      border-radius: 10px; overflow: hidden; height: fit-content;
+    }
+    .encabezado {
+      background: #00325e; color: #fff; padding: 22px 28px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .encabezado .marca { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+    .encabezado .sub { font-size: 11px; color: #b8cfe3; text-align: right; line-height: 1.5; }
+    .cuerpo { padding: 26px 28px; }
+    .radicado-box {
+      background: #eef4fb; border: 1px solid #cfe0f2; border-radius: 8px;
+      padding: 16px; text-align: center; margin-bottom: 18px;
+    }
+    .radicado-box .etq { font-size: 11px; color: #5a6b80; letter-spacing: .5px; margin-bottom: 4px; }
+    .radicado-box .val { font-size: 20px; font-weight: bold; color: #00325e; font-family: 'Courier New', monospace; }
+    .badge {
+      display: inline-block; margin-top: 8px; padding: 4px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: bold; background: #00325e; color: #fff;
+    }
+    .grid { font-size: 13px; color: #555; border-top: 1px solid #e5e5e5; margin-bottom: 18px; }
+    .grid .fila { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e5e5; }
+    .grid .etq { color: #888; }
+    .grid .val { color: #333; text-align: right; }
+    .desc { font-size: 13px; color: #333; background: #f7fafc; border-radius: 6px; padding: 12px 14px; margin-bottom: 20px; white-space: pre-wrap; }
+    .seccion-titulo { font-size: 14px; font-weight: bold; color: #00325e; margin: 0 0 10px; }
+    .linea { border-top: 1px solid #e5e5e5; padding-top: 16px; margin-bottom: 20px; }
+    .hito { display: flex; gap: 10px; margin-bottom: 10px; font-size: 12px; }
+    .hito .punto { width: 8px; height: 8px; border-radius: 50%; background: #00325e; margin-top: 5px; flex-shrink: 0; }
+    .hito .estado { font-weight: bold; color: #333; }
+    .hito .fecha { color: #888; }
+    .respuesta-box { background: #eef4fb; border: 1px solid #cfe0f2; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #333; line-height: 1.6; white-space: pre-wrap; }
+    .error-box { text-align: center; padding: 20px 6px; }
+    .error-box .icono { font-size: 40px; margin-bottom: 10px; }
+    .error-box p { font-size: 14px; color: #555; line-height: 1.6; }
+    .pie { background: #f7fafc; border-top: 1px solid #e5e5e5; padding: 14px 28px; font-size: 11px; color: #8a97a5; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="encabezado">
+      <div class="marca">INAPEL</div>
+      <div class="sub">Industria Nacional<br>Papelera S.A.S.</div>
+    </div>
+    <div class="cuerpo">
+      {% if error %}
+        <div class="error-box">
+          <div class="icono">⚠️</div>
+          <p><strong>{{ error }}</strong></p>
+          <p>Si el problema persiste, comuníquese con INAPEL indicando su número de radicado.</p>
+        </div>
+      {% else %}
+        <div class="radicado-box">
+          <div class="etq">NÚMERO DE RADICADO</div>
+          <div class="val">{{ pqr.radicado }}</div>
+          <div class="badge">{{ pqr.estado }}</div>
+        </div>
+        <div class="grid">
+          <div class="fila"><span class="etq">Cliente</span><span class="val">{{ pqr.cliente or "—" }}</span></div>
+          <div class="fila"><span class="etq">Fecha de recepción</span><span class="val">{{ pqr.fechaRec or "—" }}</span></div>
+          <div class="fila"><span class="etq">Tipo de solicitud</span><span class="val">{{ pqr.tipoSol or "—" }}</span></div>
+        </div>
+        {% if pqr.desc %}
+          <div class="desc">{{ pqr.desc }}</div>
+        {% endif %}
+        {% if pqr.historial %}
+          <div class="linea">
+            <div class="seccion-titulo">Línea de tiempo</div>
+            {% for h in pqr.historial %}
+              <div class="hito">
+                <div class="punto"></div>
+                <div>
+                  <div class="estado">{{ h.estado }}</div>
+                  <div class="fecha">{{ h.fecha }}{% if h.hora %} - {{ h.hora }}{% endif %}</div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div>
+          <div class="seccion-titulo">Respuesta al cliente</div>
+          <div class="respuesta-box">
+            {% if pqr.cerrado and pqr.respuesta_comercial %}
+              {{ pqr.respuesta_comercial }}
+            {% else %}
+              Su solicitud aún se encuentra en proceso de investigación. Le informaremos por este mismo medio cuando tengamos una respuesta.
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+    <div class="pie">
+      Consulta generada automáticamente por el Sistema de Gestión de PQR de INAPEL.
+    </div>
+  </div>
+</body>
+</html>

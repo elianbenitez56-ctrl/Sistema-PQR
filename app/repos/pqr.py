@@ -120,6 +120,39 @@ def consultar_pqr(valor_busqueda):
     return pqr
 
 
+def consultar_pqr_publico(radicado):
+    """Consulta reducida para la vista pública (enlace del correo, sin sesión).
+
+    A diferencia de `consultar_pqr`, busca solo por radicado exacto (no por
+    cliente/NIT) y devuelve únicamente campos seguros para el cliente externo:
+    nada de causa raíz, responsable interno, departamentos ni adjuntos.
+    """
+    valor = str(radicado).strip().upper()
+    with get_db_cursor() as cursor:
+        cursor.execute("SELECT p.* FROM pqr p WHERE UPPER(p.radicado) = %s", (valor,))
+        row = cursor.fetchone()
+    if not row:
+        return None
+
+    pqr = _fila_a_pqr(row)
+    inv = obtener_investigacion_radicado(row['radicado']) or {}
+    hist = obtener_historial_radicado(row['radicado'])
+    return {
+        "radicado": pqr["radicado"],
+        "cliente": pqr.get("cliente", ""),
+        "tipoSol": pqr.get("tipoSol", ""),
+        "estado": pqr.get("estado", ""),
+        "fechaRec": pqr.get("fechaRec", ""),
+        "desc": pqr.get("desc", ""),
+        "historial": [
+            {"estado": h["estado"], "fecha": h["fecha"], "hora": h["hora"]}
+            for h in hist
+        ],
+        "respuesta_comercial": inv.get("respuesta_comercial") or "",
+        "cerrado": inv.get("cierre") == "Sí",
+    }
+
+
 def listar_pqrs():
     with get_db_cursor() as cursor:
         cursor.execute(

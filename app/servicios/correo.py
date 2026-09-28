@@ -261,8 +261,8 @@ def enviar_confirmacion_pqr(radicado, correo_cliente, datos):
 # NOTIFICACIÓN A CALIDAD (PQR recién radicado)
 # ==========================================================
 
-def enviar_notificacion_calidad(radicado, datos, destinatarios, url_base=None):
-    """Avisa a Calidad que hay un PQR nuevo por investigar (Brevo o SMTP, ver `_enviar`)."""
+def enviar_notificacion_calidad(radicado, datos, destinatarios, url_base=None, para_vendedor=False):
+    """Avisa que hay un PQR nuevo: a Calidad por investigar, o (para_vendedor) al vendedor que lo radicó."""
 
     if not correo_configurado():
         mensaje = "No hay servicio de correo configurado (falta BREVO_API_KEY o las variables SMTP)."
@@ -278,7 +278,7 @@ def enviar_notificacion_calidad(radicado, datos, destinatarios, url_base=None):
             vistos.add(correo.lower())
 
     if not correos:
-        return False, "No hay líderes de Calidad activos con correo válido."
+        return False, "No hay destinatarios con correo válido."
 
     base = (_var("PQR_URL_BASE", "") or str(url_base or "")).strip().rstrip("/")
     enlace = ""
@@ -286,8 +286,9 @@ def enviar_notificacion_calidad(radicado, datos, destinatarios, url_base=None):
         separador = "&" if "?" in base else "?"
         enlace = f"{base}{separador}seguimiento={quote(str(radicado))}"
 
-    asunto = f"PQR {radicado} pendiente de investigación (Calidad)"
-    html = _plantilla_notificacion_calidad(radicado, datos, enlace)
+    asunto = (f"PQR {radicado} radicado correctamente" if para_vendedor
+              else f"PQR {radicado} pendiente de investigación (Calidad)")
+    html = _plantilla_notificacion_calidad(radicado, datos, enlace, para_vendedor)
 
     ok, motivo = _enviar(correos, asunto, html)
 
@@ -299,7 +300,10 @@ def enviar_notificacion_calidad(radicado, datos, destinatarios, url_base=None):
     return ok, motivo
 
 
-def _plantilla_notificacion_calidad(radicado, datos, enlace):
+def _plantilla_notificacion_calidad(radicado, datos, enlace, para_vendedor=False):
+    titulo, intro = (("PQR radicado", "Radicó un nuevo PQR y ya fue notificado a Calidad para su investigación.")
+                     if para_vendedor else
+                     ("Nuevo PQR por investigar", "Se radicó un nuevo PQR y requiere la investigación de Calidad."))
     cliente = escape(str(datos.get("cliente", "") or "").strip() or "No informado")
     tipo = escape(str(datos.get("tipoSol", "") or "").strip() or "PQR")
     fecha = escape(str(datos.get("fechaRec", "") or "").strip() or "No informada")
@@ -323,8 +327,8 @@ def _plantilla_notificacion_calidad(radicado, datos, enlace):
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border:1px solid #dde5ee;border-radius:10px;overflow:hidden">
         <tr><td style="background:#00325e;padding:24px 30px;color:#ffffff;font-size:22px;font-weight:bold">INAPEL</td></tr>
         <tr><td style="padding:28px 30px;color:#555555;font-size:14px;line-height:1.6">
-          <h2 style="margin:0 0 16px;color:#00325e;font-size:19px">Nuevo PQR por investigar</h2>
-          <p>Se radicó un nuevo PQR y requiere la investigación de Calidad.</p>
+          <h2 style="margin:0 0 16px;color:#00325e;font-size:19px">{titulo}</h2>
+          <p>{intro}</p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;margin:18px 0">
             <tr><td style="padding:7px 0;color:#888888">Radicado</td><td style="padding:7px 0;text-align:right;font-weight:bold;color:#00325e">{radicado_html}</td></tr>
             <tr><td style="padding:7px 0;color:#888888">Cliente</td><td style="padding:7px 0;text-align:right">{cliente}</td></tr>

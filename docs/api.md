@@ -57,7 +57,7 @@ Campos principales del cuerpo JSON:
 El vendedor, línea, empresa y datos del receptor se completan **desde la sesión**; lo que envíe el navegador se ignora.
 El PQR siempre se guarda primero; si algún correo falla, la respuesta lo indica pero el registro se mantiene.
 Al radicarse, además de la confirmación al cliente, se notifica por correo a los usuarios con rol `LIDER_CALIDAD` activos
-(mismo mecanismo de envío que la notificación comercial; nunca bloquea el registro).
+(mismo mecanismo de envío que la notificación comercial; nunca bloquea el registro). También se envía una copia al correo del usuario que radicó el PQR (si tiene uno registrado).
 
 Respuesta: `{"ok": true, "radicado": "PQR-2026-0001", "email_enviado": bool, "email_estado": "...", "email_mensaje": "...", "notificacion_calidad_enviada": bool, "notificacion_calidad_mensaje": "...", "mensaje": "..."}`.
 

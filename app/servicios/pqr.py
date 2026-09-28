@@ -196,6 +196,20 @@ def _avisar_a_calidad(radicado, datos, url_base):
     return {"notificacion_calidad_enviada": enviado, "notificacion_calidad_mensaje": mensaje}
 
 
+def _avisar_a_vendedor(radicado, datos, url_base):
+    """Copia al vendedor que radicó el PQR. Nunca falla ni bloquea el registro."""
+    correo = _texto(datos.get("correo_receptor"))
+    if not correo:
+        return
+    try:
+        enviado, mensaje = enviar_notificacion_calidad(radicado, datos, [correo], url_base, para_vendedor=True)
+    except Exception:
+        logger.exception("Error inesperado al notificar al vendedor de %s", radicado)
+        return
+    if not enviado:
+        logger.warning("No se notificó al vendedor de %s: %s", radicado, mensaje)
+
+
 def registrar_pqr(datos, usuario_id, url_base=None):
     if not datos:
         raise ErrorNegocio("No se recibieron datos.")
@@ -205,6 +219,8 @@ def registrar_pqr(datos, usuario_id, url_base=None):
 
     # El PQR siempre se guarda primero: el correo nunca bloquea el registro.
     radicado = _guardar_y_verificar(datos)
+
+    _avisar_a_vendedor(radicado, datos, url_base)
 
     return {
         "ok": True,

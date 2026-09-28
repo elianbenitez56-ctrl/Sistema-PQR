@@ -121,6 +121,7 @@ puertos SMTP salientes), o SMTP clásico si no (sirve en local/Docker).
 | Cuándo | A quién | Condición |
 |---|---|---|
 | Se registra un PQR | Correo del cliente | Correo válido y confirmación aún no enviada |
+| Se registra un PQR | Correo del usuario que lo radicó (vendedor) | Tiene correo registrado |
 | Calidad completa su sección | Usuarios activos con rol comercial y correo registrado | Una sola vez por PQR (`notificacion_comercial_enviada`) |
 
 El envío nunca bloquea el registro: el PQR se guarda primero y el resultado del correo se informa en la respuesta.

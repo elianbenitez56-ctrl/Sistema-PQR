@@ -105,6 +105,13 @@ async function cargarSeg() {
          return '<option' + (val === o ? ' selected' : '') + '>' + o + '</option>';
        }).join('') + '</select>';
      };
+     var evidenciasHtml = (p.adjuntos && p.adjuntos.length)
+       ? '<div class="detail-label" style="margin:14px 0 6px">Evidencias adjuntas</div>' +
+         '<ul style="margin:0;padding-left:18px;font-size:13px">' + p.adjuntos.map(function(a) {
+           return '<li style="padding:4px 0"><a href="/api/evidencias/' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">' +
+             esc(a.nombre || 'Archivo') + '</a>' + (a.tipo ? ' <span style="color:var(--on-surface-variant)">(' + esc(a.tipo) + ')</span>' : '') + '</li>';
+         }).join('') + '</ul>'
+       : '';
      div.innerHTML =
       '<div class="card">' +
       '<div class="card-header"><div class="card-icon"><span class="material-symbols-outlined mat-icon">info</span></div>' +
@@ -125,6 +132,7 @@ async function cargarSeg() {
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Cantidad</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Documento</th></tr></thead>' +
        '<tbody>' + prodRows + '</tbody></table>' +
+       evidenciasHtml +
        '</div></div>' +
 
        '<div class="card"><div class="card-body">' +
@@ -331,6 +339,9 @@ function expSeg(rad) {
      : '<tr><td colspan="8" class="empty">No registrado</td></tr>';
    var generado = new Date().toLocaleDateString('es-CO');
    var logo = window.location.origin + '/static/img/logo_inapel.png';
+   var evidenciasInforme = (p.adjuntos || []).map(function(a) {
+     return '<li><a href="' + esc(window.location.origin + '/api/evidencias/' + encodeURIComponent(a.id), true) + '">' + esc(a.nombre || 'Archivo') + '</a>' + (a.tipo ? ' (' + esc(a.tipo) + ')' : '') + '</li>';
+   }).join('');
    var seguimientoUrl = window.location.origin + '/?seguimiento=' + encodeURIComponent(rad);
   var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe de Gestión de PQR - ' + esc(rad) + '</title>' +
     '<style>' +
@@ -385,6 +396,7 @@ function expSeg(rad) {
     '<section class="section"><h2 class="section-title">5. Resultado de la investigación</h2><div class="detail"><b>Respuesta detallada de Calidad</b><div class="text-block" style="margin-top:7px">' + texto(respuestaCalidad, 'No registrado') + '</div></div></section>' +
     '<section class="section"><h2 class="section-title">6. Gestión comercial</h2><table class="info-table"><tr><td class="label">Acciones tomadas</td><td class="value">' + valor(inv.acc, '-') + '</td><td class="label">Notificación al cliente</td><td class="value">' + valor(inv.notif, '-') + '</td></tr><tr><td class="label">Fecha de respuesta</td><td class="value">' + valor(inv.fResp, '-') + '</td><td class="label">Fecha de cierre</td><td class="value">' + valor(inv.fCierre, '-') + '</td></tr><tr><td class="label">Estado de cierre</td><td class="value" colspan="3">' + valor(inv.cierre, '-') + '</td></tr></table></section>' +
     '<section class="section"><h2 class="section-title">7. Respuesta al cliente</h2><div class="text-block">' + texto(respuestaComercial, 'No registrado') + '</div></section>' +
+    '<section class="section"><h2 class="section-title">8. Evidencias adjuntas</h2>' + (evidenciasInforme ? '<ul>' + evidenciasInforme + '</ul>' : '<div class="empty">Sin evidencias</div>') + '</section>' +
     '</main><footer class="document-footer"><span>INAPEL · Sistema de Gestión de PQR</span><span>Documento generado automáticamente</span><span class="page-number"></span></footer>' +
     '</body></html>';
   var w = window.open();

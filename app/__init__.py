@@ -57,6 +57,10 @@ def create_app():
 
     @app.after_request
     def no_cache(response):
+        if request.path.startswith("/static/"):
+            # Revalida con ETag (304) en vez de bajar todo cada vez: en móvil con mala señal se perdía el CSS.
+            response.headers["Cache-Control"] = "no-cache"
+            return response
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"

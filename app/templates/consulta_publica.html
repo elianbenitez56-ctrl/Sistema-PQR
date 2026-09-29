@@ -106,11 +106,11 @@
             <div class="resp-label">Respuesta de Calidad</div>
             <div class="respuesta-box">{{ pqr.respuesta_calidad }}</div>
           {% endif %}
-          {% if pqr.cerrado and pqr.respuesta_comercial %}
+          {% if pqr.respuesta_comercial %}
             <div class="resp-label">Respuesta de Comercial</div>
             <div class="respuesta-box">{{ pqr.respuesta_comercial }}</div>
           {% endif %}
-          {% if not pqr.respuesta_calidad and not (pqr.cerrado and pqr.respuesta_comercial) %}
+          {% if not pqr.respuesta_calidad and not pqr.respuesta_comercial %}
             <div class="respuesta-box">
               Su solicitud aún se encuentra en proceso de investigación. Le informaremos por este mismo medio cuando tengamos una respuesta.
             </div>

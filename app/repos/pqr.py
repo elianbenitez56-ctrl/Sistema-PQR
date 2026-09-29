@@ -151,6 +151,7 @@ def consultar_pqr_publico(radicado):
             for h in hist
         ],
         "respuesta_comercial": inv.get("respuesta_comercial") or "",
+        "respuesta_calidad": inv.get("respuesta_calidad") or "",
         "cerrado": inv.get("cierre") == "Sí",
     }
 

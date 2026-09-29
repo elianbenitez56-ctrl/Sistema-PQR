@@ -152,3 +152,14 @@ def estados_seguimiento(seccion, rol, calidad_anterior, comercial_anterior, falt
 
 def estado_pqr_tras_seguimiento(cierre):
     return "Cerrado" if cierre == "Sí" else "En investigación"
+
+
+def etiqueta_historial_seguimiento(seccion, cierre):
+    """Texto de la línea de tiempo: distingue quién actualizó (Calidad/Comercial)."""
+    if cierre == "Sí":
+        return "Cerrado"
+    if seccion == "calidad":
+        return "En investigación por Calidad"
+    if seccion == "comercial":
+        return "En investigación por Comercial"
+    return "En investigación"

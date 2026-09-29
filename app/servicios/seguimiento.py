@@ -10,6 +10,7 @@ from app.dominio import (
     campos_modificados,
     estado_pqr_tras_seguimiento,
     estados_seguimiento,
+    etiqueta_historial_seguimiento,
     preparar_herramientas,
 )
 from app.errores import ErrorNegocio
@@ -104,9 +105,11 @@ def guardar_seguimiento(datos, seccion, rol, url_base):
     a_guardar = _datos_a_guardar(datos, investigacion, rol)
     guardar_investigacion(radicado, a_guardar, calidad_nuevo, comercial_nuevo, aviso_enviado)
 
-    nuevo_estado = estado_pqr_tras_seguimiento(a_guardar.get("cierre", "No"))
+    cierre = a_guardar.get("cierre", "No")
+    nuevo_estado = estado_pqr_tras_seguimiento(cierre)
     actualizar_estado_pqr(radicado, nuevo_estado)
-    guardar_historial(radicado, nuevo_estado, "Sistema", "Seguimiento actualizado")
+    etiqueta_historial = etiqueta_historial_seguimiento(seccion, cierre)
+    guardar_historial(radicado, etiqueta_historial, "Sistema", "Seguimiento actualizado")
 
     notificacion_mensaje = ""
     if avisar:

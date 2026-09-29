@@ -97,6 +97,8 @@
           <div class="respuesta-box">
             {% if pqr.cerrado and pqr.respuesta_comercial %}
               {{ pqr.respuesta_comercial }}
+            {% elif pqr.respuesta_calidad %}
+              {{ pqr.respuesta_calidad }}
             {% else %}
               Su solicitud aún se encuentra en proceso de investigación. Le informaremos por este mismo medio cuando tengamos una respuesta.
             {% endif %}

@@ -152,6 +152,8 @@ def consultar_pqr_publico(radicado):
         ],
         "respuesta_comercial": inv.get("respuesta_comercial") or "",
         "respuesta_calidad": inv.get("respuesta_calidad") or "",
+        "fechaRespuesta": str(inv.get("fResp") or ""),
+        "fechaCierre": str(inv.get("fCierre") or ""),
         "cerrado": inv.get("cierre") == "Sí",
     }
 

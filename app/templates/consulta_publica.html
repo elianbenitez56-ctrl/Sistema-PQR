@@ -45,6 +45,8 @@
     .hito .estado { font-weight: bold; color: #333; }
     .hito .fecha { color: #888; }
     .respuesta-box { background: #eef4fb; border: 1px solid #cfe0f2; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #333; line-height: 1.6; white-space: pre-wrap; }
+    .respuesta-box + .resp-label { margin-top: 14px; }
+    .resp-label { font-size: 11px; font-weight: bold; color: #5a6b80; letter-spacing: .5px; margin: 0 0 6px; text-transform: uppercase; }
     .error-box { text-align: center; padding: 20px 6px; }
     .error-box .icono { font-size: 40px; margin-bottom: 10px; }
     .error-box p { font-size: 14px; color: #555; line-height: 1.6; }
@@ -74,6 +76,12 @@
           <div class="fila"><span class="etq">Cliente</span><span class="val">{{ pqr.cliente or "—" }}</span></div>
           <div class="fila"><span class="etq">Fecha de recepción</span><span class="val">{{ pqr.fechaRec or "—" }}</span></div>
           <div class="fila"><span class="etq">Tipo de solicitud</span><span class="val">{{ pqr.tipoSol or "—" }}</span></div>
+          {% if pqr.fechaRespuesta %}
+          <div class="fila"><span class="etq">Fecha de respuesta</span><span class="val">{{ pqr.fechaRespuesta }}</span></div>
+          {% endif %}
+          {% if pqr.fechaCierre %}
+          <div class="fila"><span class="etq">Fecha de cierre</span><span class="val">{{ pqr.fechaCierre }}</span></div>
+          {% endif %}
         </div>
         {% if pqr.desc %}
           <div class="desc">{{ pqr.desc }}</div>
@@ -94,15 +102,19 @@
         {% endif %}
         <div>
           <div class="seccion-titulo">Respuesta al cliente</div>
-          <div class="respuesta-box">
-            {% if pqr.cerrado and pqr.respuesta_comercial %}
-              {{ pqr.respuesta_comercial }}
-            {% elif pqr.respuesta_calidad %}
-              {{ pqr.respuesta_calidad }}
-            {% else %}
+          {% if pqr.respuesta_calidad %}
+            <div class="resp-label">Respuesta de Calidad</div>
+            <div class="respuesta-box">{{ pqr.respuesta_calidad }}</div>
+          {% endif %}
+          {% if pqr.cerrado and pqr.respuesta_comercial %}
+            <div class="resp-label">Respuesta de Comercial</div>
+            <div class="respuesta-box">{{ pqr.respuesta_comercial }}</div>
+          {% endif %}
+          {% if not pqr.respuesta_calidad and not (pqr.cerrado and pqr.respuesta_comercial) %}
+            <div class="respuesta-box">
               Su solicitud aún se encuentra en proceso de investigación. Le informaremos por este mismo medio cuando tengamos una respuesta.
-            {% endif %}
-          </div>
+            </div>
+          {% endif %}
         </div>
       {% endif %}
     </div>

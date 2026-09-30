@@ -1,4 +1,9 @@
 // ── SEGUIMIENTO ─────────────────────────────────────────────────────────
+// Control documental del informe de gestión (FGC-PQR-01). Editar aquí si sacan una nueva versión del formato.
+var INFORME_FORMATO_CODIGO = 'FGC-PQR-01';
+var INFORME_FORMATO_VERSION = '1';
+var INFORME_FORMATO_CREACION = '13/06/2026';
+
 var CATEGORIAS_HERRAMIENTA = [
   {
     titulo: '🔎 Herramientas de inspección',
@@ -355,6 +360,7 @@ function expSeg(rad) {
     '.brand{font-size:19px;font-weight:700;color:#00325e;letter-spacing:.04em}' +
     '.brand span{display:block;font-size:10px;color:#65758a;font-weight:500;letter-spacing:.03em;margin-top:3px}' +
     '.header-meta{margin-left:auto;text-align:right;color:#65758a;font-size:10px}' +
+    '.doc-control{border-bottom:1px solid #dce4ed;margin-bottom:6px;padding-bottom:6px}' +
     '.document-title{margin:24px 0 5px;color:#00325e;font-size:22px;letter-spacing:.04em}' +
     '.radicado{display:inline-block;margin-top:5px;padding:8px 14px;border-radius:6px;background:#eaf2fb;color:#00325e;font:700 17px "Courier New",monospace;letter-spacing:.05em}' +
     '.section{margin-top:25px;break-inside:avoid}' +
@@ -387,7 +393,7 @@ function expSeg(rad) {
     '@media screen and (max-width:700px){.report{margin:0;padding:20px 18px 55px}.report-header{align-items:flex-start}.header-meta{font-size:9px}.two-col{grid-template-columns:1fr}.info-table{font-size:10px}.info-table td{width:50%;display:table-cell}.document-footer{left:18px;right:18px}}' +
     '</style></head><body>' +
     '<main class="report">' +
-     '<header class="report-header"><img class="logo" src="' + esc(logo, true) + '" alt="INAPEL"><div class="brand">INAPEL<span>Sistema de Gestión de PQR</span></div><div class="header-meta">Fecha de generación<br><b>' + esc(generado) + '</b></div></header>' +
+     '<header class="report-header"><img class="logo" src="' + esc(logo, true) + '" alt="INAPEL"><div class="brand">INAPEL<span>Sistema de Gestión de PQR</span></div><div class="header-meta"><div class="doc-control">Formato: <b>' + esc(INFORME_FORMATO_CODIGO) + '</b><br>Versión: <b>' + esc(INFORME_FORMATO_VERSION) + '</b><br>Creación: <b>' + esc(INFORME_FORMATO_CREACION) + '</b></div>Fecha de generación<br><b>' + esc(generado) + '</b></div></header>' +
      '<a class="back-link" href="' + esc(seguimientoUrl) + '">← VOLVER AL SEGUIMIENTO</a>' +
      '<h1 class="document-title">INFORME DE GESTIÓN DE PQR</h1><div class="radicado">' + esc(rad) + '</div>' +
     '<section class="section"><h2 class="section-title">1. Información general</h2><table class="info-table"><tr><td class="label">Radicado</td><td class="value">' + valor(p.radicado, '-') + '</td><td class="label">Cliente</td><td class="value">' + valor(p.cliente, '-') + '</td></tr><tr><td class="label">Tipo de solicitud</td><td class="value">' + valor(p.tipoSol, '-') + '</td><td class="label">Fecha</td><td class="value">' + valor(p.fechaRec, '-') + '</td></tr><tr><td class="label">Estado</td><td class="value">' + valor(p.estado, '-') + '</td><td class="label">Prioridad</td><td class="value">' + valor(p.prioridad, '-') + '</td></tr></table></section>' +

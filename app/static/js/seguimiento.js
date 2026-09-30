@@ -82,6 +82,7 @@ async function cargarSeg() {
       return;
     }
      var p = await respuesta.json();
+     seguimientoActual = p;
      toast("PQR cargado exitosamente", "success", 3000);
      var inv = p.investigacion || {};
      var calidadCompletada = inv.calidad_estado === 'completada';

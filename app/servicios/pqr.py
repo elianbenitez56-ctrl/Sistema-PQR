@@ -16,7 +16,7 @@ from app.repos.pqr import (
     marcar_correo_confirmacion,
 )
 from app.repos.usuarios import listar_usuarios, obtener_usuario_por_id
-from app.seguridad import LIDER_CALIDAD, VENDEDOR, verificar_token_consulta_publica
+from app.seguridad import DIRECTORA_COMERCIAL, LIDER_CALIDAD, VENDEDOR, verificar_token_consulta_publica
 from app.servicios import almacenamiento
 from app.servicios.catalogo import LINEAS_PRODUCTO, buscar_productos
 from app.servicios.correo import enviar_confirmacion_pqr, enviar_notificacion_calidad
@@ -172,21 +172,24 @@ def _resultado_correo(enviado, estado, mensaje):
     return {"email_enviado": enviado, "email_estado": estado, "email_mensaje": mensaje}
 
 
-def _correos_lider_calidad():
-    """Correos únicos de los líderes de Calidad activos."""
+ROLES_NOTIFICACION_RADICADO = (LIDER_CALIDAD, DIRECTORA_COMERCIAL)
+
+
+def _correos_notificacion_radicado():
+    """Correos únicos de Calidad y Dirección Comercial activos, para avisar de un PQR nuevo."""
     correos = {}
     for usuario in listar_usuarios():
         rol = str(usuario.get("rol", "") or "").strip().upper()
         correo = str(usuario.get("correo", "") or "").strip()
-        if rol == LIDER_CALIDAD and usuario.get("activo", True) and correo:
+        if rol in ROLES_NOTIFICACION_RADICADO and usuario.get("activo", True) and correo:
             correos.setdefault(correo.lower(), correo)
     return list(correos.values())
 
 
 def _avisar_a_calidad(radicado, datos, url_base):
-    """Notifica a Calidad que hay un PQR nuevo por investigar. Nunca falla: el resultado se informa en la respuesta."""
+    """Notifica a Calidad y a Dirección Comercial que hay un PQR nuevo por investigar. Nunca falla: el resultado se informa en la respuesta."""
     try:
-        enviado, mensaje = enviar_notificacion_calidad(radicado, datos, _correos_lider_calidad(), url_base)
+        enviado, mensaje = enviar_notificacion_calidad(radicado, datos, _correos_notificacion_radicado(), url_base)
     except Exception:
         logger.exception("Error inesperado al notificar a Calidad de %s", radicado)
         enviado, mensaje = False, ""

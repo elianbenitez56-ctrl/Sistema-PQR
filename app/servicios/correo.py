@@ -290,12 +290,26 @@ def enviar_notificacion_calidad(radicado, datos, destinatarios, url_base=None, p
               else f"PQR {radicado} pendiente de investigación (Calidad)")
     html = _plantilla_notificacion_calidad(radicado, datos, enlace, para_vendedor)
 
-    ok, motivo = _enviar(correos, asunto, html)
+    # Un envío por destinatario: si uno falla (dirección rechazada, etc.) no debe
+    # impedir que los demás reciban el aviso.
+    enviados, fallidos = [], []
+    for correo in correos:
+        try:
+            ok_uno, motivo_uno = _enviar([correo], asunto, html)
+        except Exception as e:
+            ok_uno, motivo_uno = False, str(e)
+        if ok_uno:
+            enviados.append(correo)
+        else:
+            fallidos.append(f"{correo}: {motivo_uno}")
+
+    ok = bool(enviados)
+    motivo = "" if ok and not fallidos else "; ".join(fallidos)
 
     if ok:
-        print(f"[correo] Notificación a Calidad enviada para {radicado} -> {len(correos)} destinatarios")
-    else:
-        print(f"[correo] No fue posible enviar notificación a Calidad para {radicado}: {motivo}")
+        print(f"[correo] Notificación a Calidad enviada para {radicado} -> {len(enviados)}/{len(correos)} destinatarios")
+    if fallidos:
+        print(f"[correo] No fue posible enviar notificación a Calidad de {radicado} a: {motivo}")
 
     return ok, motivo
 

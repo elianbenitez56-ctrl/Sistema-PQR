@@ -107,9 +107,12 @@ async function cargarSeg() {
         }).join('')
        : '<tr><td colspan="7" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
      var mkSel = function(id, opts, val) {
-       return '<select id="' + id + '">' + opts.map(function(o) {
-         return '<option' + (val === o ? ' selected' : '') + '>' + o + '</option>';
-       }).join('') + '</select>';
+       var vacio = !val;
+       return '<select id="' + id + '">' +
+         '<option value=""' + (vacio ? ' selected' : '') + ' disabled>Seleccione una opción</option>' +
+         opts.map(function(o) {
+           return '<option' + (val === o ? ' selected' : '') + '>' + o + '</option>';
+         }).join('') + '</select>';
      };
      var evidenciasHtml = (p.adjuntos && p.adjuntos.length)
        ? '<div class="detail-label" style="margin:14px 0 6px">Evidencias adjuntas</div>' +

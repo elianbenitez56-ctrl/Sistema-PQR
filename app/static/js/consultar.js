@@ -174,7 +174,7 @@ function renderConsulta(p) {
     '<td class="inv-label">Notificación al cliente</td><td class="inv-val">' + esc(inv.notif || 'Pendiente') + '</td></tr>' +
     '<tr><td class="inv-label">Fecha de respuesta</td><td class="inv-val">' + esc(inv.fResp || '-') + '</td>' +
     '<td class="inv-label">Fecha de cierre</td><td class="inv-val">' + esc(inv.fCierre || '-') + '</td></tr>' +
-    '<tr><td class="inv-label">Cierre del PQR</td><td class="inv-val" colspan="3">' + esc(inv.cierre || 'No') + '</td></tr>' +
+    '<tr><td class="inv-label">Cierre del PQR</td><td class="inv-val" colspan="3">' + esc(inv.cierre || 'Pendiente') + '</td></tr>' +
     '</table></div></div>' +
 
     '<div style="margin-top:20px">' +

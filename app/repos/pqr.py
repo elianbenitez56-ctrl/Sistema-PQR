@@ -279,8 +279,8 @@ def obtener_investigacion_radicado(radicado):
     if not row:
         return {
             "resp": "", "cargo": "", "herr": "", "herramientas": [],
-            "causa": "Materias primas", "acc": "Reposición",
-            "notif": "Sí", "fResp": "", "fCierre": "", "cierre": "No",
+            "causa": "", "acc": "",
+            "notif": "", "fResp": "", "fCierre": "", "cierre": "",
             "respuesta_calidad": "", "respuesta_comercial": "",
             "deptos": "", "calidad_estado": "pendiente",
             "comercial_estado": "pendiente", "notificacion_comercial_enviada": False
@@ -295,7 +295,7 @@ def obtener_investigacion_radicado(radicado):
         "notif": row['notificar'] if row['notificar'] else "",
         "fResp": row['fecha_respuesta'] or "",
         "fCierre": row['fecha_cierre'] or "",
-        "cierre": row['cierre'] or "No",
+        "cierre": row['cierre'] or "",
         "respuesta_calidad": row['respuesta_calidad'] or "",
         "respuesta_comercial": row['respuesta_comercial'] or "",
         "deptos": row['departamentos'] or "",

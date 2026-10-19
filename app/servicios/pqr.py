@@ -1,7 +1,7 @@
 """Casos de uso del PQR: registrar, consultar, cambiar estado y eliminar."""
 import logging
 
-from app.dominio import ESTADOS_PQR
+from app.dominio import ESTADOS_PQR, normalizar_valorizacion
 from app.errores import ErrorNegocio
 from app.repos.pqr import (
     RADICADO_RE,
@@ -44,6 +44,8 @@ def _normalizar_producto(producto):
     """Producto validado contra el catálogo maestro (o tal cual si viene de un cliente antiguo sin catálogo)."""
     producto = dict(producto)
     producto["tipoDoc"] = TIPO_DOC_PRODUCTO
+    producto["descripcion"] = _texto(producto.get("descripcion"))
+    producto["valorizacion"] = normalizar_valorizacion(producto.get("valorizacion"))
 
     linea = _texto(producto.get("linea")).upper()
     referencia = _texto(producto.get("referencia_siesa"))
@@ -72,7 +74,7 @@ def _normalizar_producto(producto):
         "producto": maestro["producto"],
         "unidad": maestro["unidad"] or _texto(producto.get("unidad")),
     }
-    for campo in ("lote", "fechaEmp", "cant", "numDoc"):
+    for campo in ("lote", "fechaEmp", "cant", "numDoc", "descripcion", "valorizacion"):
         normalizado[campo] = producto.get(campo, "")
     normalizado["tipoDoc"] = TIPO_DOC_PRODUCTO
     return normalizado

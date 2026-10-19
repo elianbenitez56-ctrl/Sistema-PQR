@@ -79,7 +79,7 @@ lo que habría obligado a cambiar ese código; con `TEXT` el comportamiento es i
 | `usuarios` | Cuentas: nombre, usuario, hash de contraseña (scrypt), rol, línea de producto, empresa, activo, documento, correo, teléfono | `id`; `usuario` único |
 | `pqr` | El caso: datos del cliente, tipo, estado, prioridad, descripción, productos (JSON), datos de quien recibe, vendedor, línea, `usuario_id`, `correo_confirmacion_enviado` | `radicado` |
 | `historial` | Una fila por cambio de estado (estado, usuario, fecha, hora, observación) | `id`; `radicado` |
-| `investigaciones` | Una por PQR: sección de Calidad (responsable, causa, herramientas, departamentos, respuesta de calidad) y de Comercial (acciones, notificación, fechas, cierre, respuesta comercial), con `calidad_estado` / `comercial_estado` | `radicado` |
+| `investigaciones` | Una por PQR: sección de Calidad (responsable, causa, herramientas, departamentos, respuesta de calidad) y de Comercial (acciones, notificación, fechas, cierre, respuesta comercial, observaciones), con `calidad_estado` / `comercial_estado` | `radicado` |
 | `adjuntos` | Evidencias subidas: nombre original, ruta, tipo, usuario, fecha | `id`; `radicado` |
 
 Las relaciones se hacen por `radicado` (sin claves foráneas); `eliminar_pqr()` borra las cuatro tablas y la carpeta de evidencias.
@@ -123,8 +123,13 @@ puertos SMTP salientes), o SMTP clásico si no (sirve en local/Docker).
 | Se registra un PQR | Correo del cliente | Correo válido y confirmación aún no enviada |
 | Se registra un PQR | Correo del usuario que lo radicó (vendedor) | Tiene correo registrado |
 | Calidad completa su sección | Usuarios activos con rol comercial y correo registrado | Una sola vez por PQR (`notificacion_comercial_enviada`) |
+| Comercial completa su gestión con `acc` = `Cambio mano a mano` | `CORREOS_CAMBIO_MANO_A_MANO` (Alejandro, Liliana, Logística, Facturación) | Una sola vez por PQR (`aviso_mano_a_mano_enviado`); incluye radicado, productos con descripción y valorización, respuesta, tipo de solución y observaciones |
+| Comercial completa su gestión con `cierre` = `Sí` | `CORREO_CARTERA` (Inés) | Una sola vez por PQR (`aviso_cierre_enviado`); incluye radicado, motivo, solución, respuesta final, observaciones y fecha de cierre |
 
 El envío nunca bloquea el registro: el PQR se guarda primero y el resultado del correo se informa en la respuesta.
+
+Los destinatarios de los dos últimos avisos viven en variables de entorno, no en usuarios. Si una variable está vacía el aviso
+falla con un mensaje claro en la respuesta y se reintenta al guardar de nuevo.
 
 ## Catálogo de productos
 

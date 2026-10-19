@@ -161,6 +161,8 @@
                   <col class="col-pqr-unidad">
                   <col class="col-pqr-tipo-doc">
                   <col class="col-pqr-num-doc">
+                  <col class="col-pqr-descripcion">
+                  <col class="col-pqr-valor">
                   <col class="col-pqr-acciones">
                 </colgroup>
                 <thead><tr>
@@ -174,6 +176,8 @@
                   <th style="min-width:100px">Unidad</th>
                   <th style="min-width:115px">Tipo doc.</th>
                   <th style="min-width:85px">N° doc.</th>
+                  <th style="min-width:200px">Descripción del producto</th>
+                  <th style="min-width:140px">Valorización ($)</th>
                   <th></th>
                 </tr></thead>
                 <tbody id="prod-tbody">
@@ -197,6 +201,11 @@
                     <td><input type="text" class="catalog-field catalog-unidad" placeholder="Catálogo" readonly disabled></td>
                     <td><input type="text" class="prod-tipo-doc fixed-doc-type" value="Factura de venta" readonly aria-readonly="true"></td>
                     <td><input type="text" class="prod-num-doc" placeholder="N°"></td>
+                    <td><textarea class="prod-descripcion" rows="2" maxlength="500" placeholder="Describa el producto afectado"></textarea></td>
+                    <td>
+                      <input type="number" class="prod-valor" min="0" step="any" placeholder="Opcional" aria-label="Valor económico del producto afectado">
+                      <label class="prod-valor-na"><input type="checkbox" class="prod-valor-na-check" onchange="valorNoAplica(this)"> No aplica</label>
+                    </td>
                     <td><button class="btn-del" onclick="rmRow(this)" title="Eliminar">✕</button></td>
                   </tr>
                 </tbody>

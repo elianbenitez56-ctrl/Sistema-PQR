@@ -21,6 +21,7 @@ import smtplib
 import urllib.error
 import urllib.request
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from html import escape
@@ -457,6 +458,151 @@ def _plantilla_notificacion_comercial(radicado, datos, campos_pendientes, enlace
           </table>
           <p>Complete los siguientes campos de la sección Gestión comercial:</p>
           <ul>{pendientes_html}</ul>
+          {enlace_html}
+          <p style="font-size:11px;color:#8a97a5">Correo generado automáticamente por el Sistema de Gestión PQR.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+# ==========================================================
+# AVISOS DE COMERCIAL: CAMBIO MANO A MANO Y CIERRE
+# ==========================================================
+
+def correos_de_entorno(nombre):
+    """Correos de una variable de entorno, separados por coma o punto y coma."""
+    return [c.strip() for c in re.split(r"[;,]", _var(nombre, "") or "") if c.strip()]
+
+
+def _texto(valor):
+    return str(valor or "").strip()
+
+
+def _valor_legible(valor):
+    """Valorización para el correo: "$150.000" (pesos enteros), o el texto tal cual ("No aplica")."""
+    try:
+        return f"${Decimal(_texto(valor)):,.0f}".replace(",", ".")
+    except InvalidOperation:
+        return _texto(valor)
+
+
+def _producto_legible(producto):
+    nombre = " · ".join(x for x in (_texto(producto.get("producto")), _texto(producto.get("detalle_presentacion"))) if x)
+    cantidad = " ".join(x for x in (_texto(producto.get("cant")), _texto(producto.get("unidad"))) if x)
+    lineas = [(nombre or _texto(producto.get("referencia_siesa")) or "Producto") + (f" ({cantidad})" if cantidad else "")]
+    if _texto(producto.get("descripcion")):
+        lineas.append(f"Descripción: {_texto(producto.get('descripcion'))}")
+    if _valor_legible(producto.get("valorizacion")):
+        lineas.append(f"Valorización: {_valor_legible(producto.get('valorizacion'))}")
+    return "\n".join(lineas)
+
+
+def _enviar_aviso(radicado, asunto, titulo, intro, filas, textos, destinatarios, url_base):
+    """Envía un aviso interno de Comercial, un correo por destinatario (uno rechazado no frena a los demás).
+
+    Retorna (True, "") si llegó al menos a uno, o (False, motivo). Nunca lanza.
+    """
+    if not correo_configurado():
+        return False, "No hay servicio de correo configurado (falta BREVO_API_KEY o las variables SMTP)."
+
+    correos = {}
+    for correo in destinatarios or []:
+        if _correo_valido(correo):
+            correos.setdefault(correo.strip().lower(), correo.strip())
+    if not correos:
+        return False, "No hay destinatarios con correo válido configurados para este aviso."
+
+    base = (_var("PQR_URL_BASE", "") or str(url_base or "")).strip().rstrip("/")
+    enlace = f"{base}{'&' if '?' in base else '?'}seguimiento={quote(str(radicado))}" if base else ""
+    html = _plantilla_aviso(titulo, intro, filas, textos, enlace, radicado)
+
+    enviados, fallidos = [], []
+    for correo in correos.values():
+        try:
+            ok, motivo = _enviar([correo], asunto, html)
+        except Exception as error:
+            ok, motivo = False, str(error)
+        (enviados if ok else fallidos).append(correo if ok else f"{correo}: {motivo}")
+
+    if fallidos:
+        print(f"[correo] Aviso '{asunto}' no llegó a: {'; '.join(fallidos)}")
+    if enviados:
+        print(f"[correo] Aviso '{asunto}' enviado -> {len(enviados)}/{len(correos)} destinatarios")
+    return bool(enviados), "; ".join(fallidos)
+
+
+def enviar_aviso_mano_a_mano(radicado, pqr, investigacion, destinatarios, url_base=None):
+    """Avisa a Logística y Facturación que Comercial resolvió el PQR con un cambio mano a mano."""
+    productos = "\n\n".join(_producto_legible(p) for p in pqr.get("productos") or [] if isinstance(p, dict))
+    return _enviar_aviso(
+        radicado,
+        f"PQR {radicado}: cambio mano a mano por gestionar",
+        "Cambio mano a mano por gestionar",
+        "Comercial respondió este PQR con un cambio mano a mano. Logística debe gestionarlo y "
+        "Facturación debe tener conocimiento para realizar las gestiones que correspondan.",
+        [("Radicado", radicado), ("Cliente", _texto(pqr.get("cliente"))),
+         ("Tipo de solicitud", _texto(pqr.get("tipoSol"))), ("Tipo de solución", _texto(investigacion.get("acc")))],
+        [("Descripción de los productos", productos or "Sin productos registrados"),
+         ("Respuesta de Comercial", _texto(investigacion.get("respuesta_comercial"))),
+         ("Observaciones", _texto(investigacion.get("observaciones")) or "Sin observaciones")],
+        destinatarios, url_base,
+    )
+
+
+def enviar_aviso_cierre(radicado, pqr, investigacion, destinatarios, url_base=None):
+    """Avisa a Cartera que el PQR quedó solucionado y cerrado."""
+    motivo = " — ".join(x for x in (_texto(pqr.get("tipoSol")), _texto(pqr.get("desc"))) if x)
+    return _enviar_aviso(
+        radicado,
+        f"PQR {radicado} cerrado: solución aplicada",
+        "PQR solucionado y cerrado",
+        "Comercial confirmó el cierre de este PQR.",
+        [("Radicado", radicado), ("Cliente", _texto(pqr.get("cliente"))),
+         ("Solución aplicada", _texto(investigacion.get("acc"))),
+         ("Fecha de cierre", _texto(investigacion.get("fCierre")) or "No informada")],
+        [("Motivo de la PQR", motivo or "No informado"),
+         ("Respuesta final", _texto(investigacion.get("respuesta_comercial"))),
+         ("Observaciones", _texto(investigacion.get("observaciones")) or "Sin observaciones")],
+        destinatarios, url_base,
+    )
+
+
+def _plantilla_aviso(titulo, intro, filas, textos, enlace, radicado):
+    filas_html = "".join(
+        f'<tr><td style="padding:7px 0;color:#888888">{escape(etiqueta)}</td>'
+        f'<td style="padding:7px 0;text-align:right">{escape(valor or "No informado")}</td></tr>'
+        for etiqueta, valor in filas
+    )
+    textos_html = "".join(
+        f'<p style="margin:0 0 4px;color:#888888">{escape(etiqueta)}</p>'
+        f'<p style="margin:0 0 16px;color:#333333">{escape(valor or "No informado").replace(chr(10), "<br>")}</p>'
+        for etiqueta, valor in textos
+    )
+    enlace_html = (
+        f'<p style="margin:20px 0"><a href="{escape(enlace, quote=True)}" '
+        'style="background:#00325e;color:#ffffff;text-decoration:none;padding:10px 18px;'
+        'border-radius:6px;display:inline-block;font-weight:bold">Abrir seguimiento del PQR</a></p>'
+        if enlace else
+        '<p style="margin:20px 0;color:#555555">Ingrese al aplicativo y busque el radicado '
+        f"<strong>{escape(str(radicado))}</strong> en la sección Seguimiento.</p>"
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:Arial,Helvetica,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4f8;padding:24px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border:1px solid #dde5ee;border-radius:10px;overflow:hidden">
+        <tr><td style="background:#00325e;padding:24px 30px;color:#ffffff;font-size:22px;font-weight:bold">INAPEL</td></tr>
+        <tr><td style="padding:28px 30px;color:#555555;font-size:14px;line-height:1.6">
+          <h2 style="margin:0 0 16px;color:#00325e;font-size:19px">{escape(titulo)}</h2>
+          <p>{escape(intro)}</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;margin:18px 0">{filas_html}</table>
+          {textos_html}
           {enlace_html}
           <p style="font-size:11px;color:#8a97a5">Correo generado automáticamente por el Sistema de Gestión PQR.</p>
         </td></tr>

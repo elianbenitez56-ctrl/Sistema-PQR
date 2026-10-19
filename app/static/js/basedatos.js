@@ -182,12 +182,14 @@ function expCSV() {
       p.ciudadRec, p.dptoRec, p.centro, p.medio + (p.otroMedio ? ': '+p.otroMedio : ''),
       p.tipoSol, p.cliente, p.nit, p.contacto, p.tel, p.email,
       '"' + (p.desc||'').replace(/"/g,'""') + '"',
-       p.productos ? p.productos.map(function(x) {
+       '"' + (p.productos ? p.productos.map(function(x) {
          return [x.linea, x.referencia_siesa || x.referencia || x.ref, x.detalle_presentacion, x.producto,
-            x.unidad, x.lote, x.fechaEmp, x.cant, x.tipoDoc, x.numDoc]
+            x.unidad, x.lote, x.fechaEmp, x.cant, x.tipoDoc, x.numDoc,
+            x.descripcion ? 'Descripción: ' + x.descripcion : '',
+            x.valorizacion ? 'Valorización: ' + x.valorizacion : '']
            .filter(function(valor) { return String(valor || '').trim(); })
            .join(' | ');
-       }).join('; ') : '',
+       }).join('; ') : '').replace(/"/g, '""') + '"',
       p.tipoEvid, p.numEvid, p.expectativa, p.utilizado, p.estado, p.prioridad
     ];
   });

@@ -51,7 +51,7 @@ Campos principales del cuerpo JSON:
 | `cliente`, `nit`, `contacto`, `tel`, `email` | Datos del cliente (`email` válido → se envía la confirmación) |
 | `tipoSol` | Tipo de solicitud (petición, queja, reclamo…) |
 | `prioridad`, `desc`, `expectativa` | Prioridad, descripción y expectativa del cliente |
-| `productos` | Lista; cada elemento debe coincidir con el catálogo (`linea`, `referencia_siesa`, `detalle_presentacion`, `producto`, `unidad`) |
+| `productos` | Lista; cada elemento debe coincidir con el catálogo (`linea`, `referencia_siesa`, `detalle_presentacion`, `producto`, `unidad`). Además, por producto: `descripcion` (texto libre) y `valorizacion` (valor económico: número ≥ 0, `"No aplica"` o vacío; otro valor devuelve 400) |
 | `fechaRec`, `horaRec`, `ciudadRec`, `dptoRec`, `medio`, `otroMedio` | Datos de la recepción |
 
 El vendedor, línea, empresa y datos del receptor se completan **desde la sesión**; lo que envíe el navegador se ignora.
@@ -67,10 +67,20 @@ Sección **Calidad**: `resp`, `cargo`, `causa`, `herramientas` (lista; valores p
 `5 ¿Por qué?`, `Diagrama Ishikawa`, `Análisis Pareto`, `Inspección visual`, `Ensayos de laboratorio`,
 `Comparación muestra patrón`, `Checklist de inspección`), `deptos`, `respuesta_calidad`.
 
-Sección **Comercial**: `acc`, `notif` (`Sí`/`No`), `fResp`, `cierre` (`Sí`/`No`), `fCierre`, `respuesta_comercial`.
+Sección **Comercial**: `acc`, `notif` (`Sí`/`No`), `fResp`, `cierre` (`Sí`/`No`), `fCierre`, `respuesta_comercial` y `observaciones` (opcional).
+`acc` = `Cambio mano a mano` marca la solución que se avisa a Logística y Facturación.
 
 Cada rol solo puede modificar su sección; intentar cambiar campos de la otra devuelve 403. Las fechas vacías se guardan como nulas.
 Guardar Calidad por primera vez avisa por correo a los usuarios comerciales (una sola vez por PQR).
+
+Al guardar la gestión comercial **completa** salen dos avisos más, cada uno una sola vez por PQR (se reintentan en cada guardado mientras fallen):
+
+| Aviso | Cuándo | Destinatarios |
+|---|---|---|
+| Cambio mano a mano | `acc` = `Cambio mano a mano` | `CORREOS_CAMBIO_MANO_A_MANO` |
+| Solución final | `cierre` = `Sí` (cerrar el estado a mano desde Base de datos **no** lo dispara) | `CORREO_CARTERA` |
+
+La respuesta incluye `aviso_mano_a_mano` y `aviso_cierre`, cada uno `{"intentado": bool, "enviado": bool, "mensaje": "..."}`.
 
 ## Estados del PQR
 

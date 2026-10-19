@@ -231,7 +231,7 @@
 .table-wrap::-webkit-scrollbar-track{background:var(--surface);border-radius:var(--radius-full)}
 .table-wrap::-webkit-scrollbar-thumb{background:var(--outline);border-radius:var(--radius-full)}
 .table-wrap::-webkit-scrollbar-thumb:hover{background:var(--blue)}
-.table-pqr{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;min-width:1240px}
+.table-pqr{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;min-width:1580px}
 .table-pqr .col-pqr-linea{width:92px}
 .table-pqr .col-pqr-referencia{width:100px}
 .table-pqr .col-pqr-producto{width:205px}
@@ -242,6 +242,8 @@
 .table-pqr .col-pqr-unidad{width:90px}
 .table-pqr .col-pqr-tipo-doc{width:125px}
 .table-pqr .col-pqr-num-doc{width:90px}
+.table-pqr .col-pqr-descripcion{width:200px}
+.table-pqr .col-pqr-valor{width:140px}
 .table-pqr .col-pqr-acciones{width:40px}
 .table-pqr thead th{
   background:var(--navy); color:#fff; padding:11px 9px;
@@ -281,4 +283,6 @@
 .table-pqr td .catalog-message{
   line-height:1.25; overflow-wrap:anywhere;
 }
+.table-pqr td .prod-valor-na{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:var(--on-surface-variant)}
+.table-pqr td .prod-valor-na input{appearance:auto;flex:none;width:16px;height:16px;min-height:0;padding:0;border:initial;background:initial;accent-color:var(--blue)}
 .table-pqr td:last-child{width:36px;text-align:center}

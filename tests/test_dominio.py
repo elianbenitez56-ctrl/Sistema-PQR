@@ -10,6 +10,7 @@ from app.dominio import (
     estado_pqr_tras_seguimiento,
     estados_seguimiento,
     normalizar_herramientas,
+    normalizar_valorizacion,
     preparar_herramientas,
     serializar_herramientas,
 )
@@ -71,3 +72,26 @@ def test_admin_en_ruta_general_completa_comercial_solo_si_hay_todo():
 def test_estado_del_pqr_tras_seguimiento():
     assert estado_pqr_tras_seguimiento("Sí") == "Cerrado"
     assert estado_pqr_tras_seguimiento("No") == "En investigación"
+
+
+def test_valorizacion_acepta_vacio_no_aplica_y_numeros():
+    assert normalizar_valorizacion("") == ""
+    assert normalizar_valorizacion(None) == ""
+    assert normalizar_valorizacion(" no aplica ") == "No aplica"
+    assert normalizar_valorizacion("1500000") == "1500000"
+    assert normalizar_valorizacion(1500000.5) == "1500000.5"
+    assert normalizar_valorizacion("0") == "0"
+
+
+@pytest.mark.parametrize("malo", ["abc", "-5", "NaN", "Infinity", "1.500.000,00"])
+def test_valorizacion_rechaza_texto_negativos_y_no_finitos(malo):
+    with pytest.raises(ErrorNegocio):
+        normalizar_valorizacion(malo)
+
+
+def test_observaciones_son_de_comercial_y_calidad_no_puede_modificarlas():
+    campos, _ = bloque_no_autorizado("calidad", "LIDER_CALIDAD")
+    assert campos_modificados({"observaciones": "nueva"}, {"observaciones": ""}, campos) == ["Observaciones"]
+    # Es opcional: no cuenta como campo obligatorio de Comercial.
+    assert campos_faltantes({}, CAMPOS_COMERCIALES) == [etiqueta for _, etiqueta in CAMPOS_COMERCIALES]
+    assert all(clave != "observaciones" for clave, _ in CAMPOS_COMERCIALES)

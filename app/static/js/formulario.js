@@ -134,11 +134,23 @@ function addRow() {
   });
   row.querySelectorAll('.catalog-message').forEach(function(m) { m.textContent = ''; });
   limpiarCatalogoFila(row);
+  limpiarValorFila(row);
   var tipoDocumento = row.querySelector('.prod-tipo-doc');
   if (tipoDocumento) tipoDocumento.value = 'Factura de venta';
   row._catalogoProducto = null;
   row._catalogoOpciones = [];
   tbody.appendChild(row);
+}
+function valorNoAplica(check) {
+  var valor = check.closest('tr').querySelector('.prod-valor');
+  valor.disabled = check.checked;
+  if (check.checked) valor.value = '';
+}
+function limpiarValorFila(row) {
+  var check = row.querySelector('.prod-valor-na-check');
+  var valor = row.querySelector('.prod-valor');
+  if (check) check.checked = false;
+  if (valor) valor.disabled = false;
 }
 function rmRow(btn) {
   var tbody = document.getElementById('prod-tbody');
@@ -300,7 +312,9 @@ function getProds() {
       fechaEmp: valor('.prod-fecha'),
       cant: valor('.prod-cantidad'),
       tipoDoc: 'Factura de venta',
-      numDoc: valor('.prod-num-doc')
+      numDoc: valor('.prod-num-doc'),
+      descripcion: valor('.prod-descripcion'),
+      valorizacion: r.querySelector('.prod-valor-na-check').checked ? 'No aplica' : valor('.prod-valor')
     };
   }).filter(function(p) { return p.referencia_siesa || p.producto || p.lote || p.cant || p.numDoc; });
 }
@@ -510,6 +524,7 @@ function limpiar() {
       s.selectedIndex = 0;
     }
   });
+  limpiarValorFila(tbody.rows[0]);
   var tipoDocumento = tbody.rows[0].querySelector('.prod-tipo-doc');
   if (tipoDocumento) tipoDocumento.value = 'Factura de venta';
   tbody.rows[0]._catalogoProducto = null;

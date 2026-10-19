@@ -201,7 +201,8 @@ function mDetalle(rad) {
           var referencia = x.referencia_siesa || x.referencia || x.ref || '—';
           var nombreProducto = x.producto || x.detalle_presentacion || '—';
           return '<div style="font-size:12px;padding:5px 9px;background:var(--surface-dim);border-radius:6px;margin-bottom:3px">' +
-               '<strong>' + esc(nombreProducto) + '</strong> · Línea: ' + esc(x.linea||'—') + ' · Detalle: ' + esc(x.detalle_presentacion||'—') + ' · REFERENCIA SIESA: ' + esc(referencia) + ' · Lote: ' + esc(x.lote||'—') + ' · ' + esc(x.cant||'—') + ' ' + esc(x.unidad||'') + '</div>';
+               '<strong>' + esc(nombreProducto) + '</strong> · Línea: ' + esc(x.linea||'—') + ' · Detalle: ' + esc(x.detalle_presentacion||'—') + ' · REFERENCIA SIESA: ' + esc(referencia) + ' · Lote: ' + esc(x.lote||'—') + ' · ' + esc(x.cant||'—') + ' ' + esc(x.unidad||'') +
+               ' · Descripción: ' + esc(x.descripcion||'—') + ' · Valorización: ' + esc(fmtValor(x.valorizacion)) + '</div>';
       }).join('')
     : '<p style="font-size:13px;color:var(--on-surface-variant)">Sin productos</p>';
   var hist = (p.historial || [{estado:p.estado, fecha:p.savedAt}]).map(function(h){
@@ -227,6 +228,13 @@ function mDetalle(rad) {
     '<p style="font-size:13px;color:var(--on-surface);line-height:1.6;background:var(--surface-dim);padding:9px 12px;border-radius:7px">' + esc(p.desc||'—') + '</p></div>' +
     '<div><div class="detail-label" style="margin-bottom:6px">Historial de estados</div><div class="timeline">' + hist + '</div></div>' +
     '<div style="margin-top:18px;text-align:right"><button class="btn" onclick="cModal()">Cerrar</button></div>');
+}
+// Valorización del producto: "$150.000", "No aplica" o "—" si no se informó.
+function fmtValor(v) {
+  v = String(v == null ? '' : v).trim();
+  if (!v) return '—';
+  var n = Number(v);
+  return isNaN(n) ? v : '$' + n.toLocaleString('es-CO', { maximumFractionDigits: 0 });
 }
 function dd(label, val) {
   return '<div><div class="detail-label">' + label + '</div><div class="detail-value">' + (val||'—') + '</div></div>';

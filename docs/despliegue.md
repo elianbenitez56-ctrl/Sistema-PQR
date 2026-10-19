@@ -25,6 +25,7 @@ El servicio se define en `render.yaml` (blueprint) y se construye desde el `Dock
    | `BREVO_API_KEY`, `SMTP_FROM` | Cuenta gratis en [Brevo](https://app.brevo.com) (SMTP & API → API Keys) con el remitente verificado |
    | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | Del proyecto Supabase, con un bucket **privado** llamado `evidencias` creado de antemano (Storage → New bucket) |
    | `SEED_USER_PASSWORD` | Contraseña inicial de los usuarios sembrados (recomendado) |
+   | `CORREOS_CAMBIO_MANO_A_MANO`, `CORREO_CARTERA` | Destinatarios de los avisos de Comercial (ver [ejecucion.md](ejecucion.md)); sin ellos esos avisos no se envían |
 
    `SECRET_KEY` se genera automáticamente (`generateValue: true`); **no la cambie** después o se cerrarán todas las sesiones y se invalidarán los enlaces de consulta pública (`/consulta-pqr/<radicado>`) ya enviados por correo.
    Ajuste `PQR_URL_BASE` si el dominio no es `https://sistema-pqr.onrender.com`.
@@ -58,4 +59,5 @@ descomente el bloque `disk` (exige plan de pago y limita el servicio a una sola 
 - [ ] `BREVO_API_KEY` configurada y remitente (`SMTP_FROM`) verificado en Brevo.
 - [ ] Bucket privado `evidencias` creado en Supabase Storage y `SUPABASE_URL`/`SUPABASE_SERVICE_KEY` configuradas (o aceptada la pérdida de evidencias sin ellas).
 - [ ] `PQR_URL_BASE` con el dominio real (los correos enlazan a él).
+- [ ] `CORREOS_CAMBIO_MANO_A_MANO` y `CORREO_CARTERA` con los correos reales.
 - [ ] Contraseñas temporales de los usuarios sembrados cambiadas.

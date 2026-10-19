@@ -151,8 +151,16 @@ SCHEMA_SQL = [
         comercial_estado VARCHAR(50) DEFAULT 'pendiente',
         notificacion_comercial_enviada SMALLINT DEFAULT 0,
         respuesta_calidad TEXT DEFAULT '',
-        respuesta_comercial TEXT DEFAULT ''
+        respuesta_comercial TEXT DEFAULT '',
+        observaciones TEXT DEFAULT '',
+        aviso_mano_a_mano_enviado SMALLINT DEFAULT 0,
+        aviso_cierre_enviado SMALLINT DEFAULT 0
     );""",
+    # Bases creadas antes de estas columnas (CREATE TABLE IF NOT EXISTS no las agrega).
+    """ALTER TABLE investigaciones
+        ADD COLUMN IF NOT EXISTS observaciones TEXT DEFAULT '',
+        ADD COLUMN IF NOT EXISTS aviso_mano_a_mano_enviado SMALLINT DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS aviso_cierre_enviado SMALLINT DEFAULT 0;""",
     # Tabla Adjuntos
     """CREATE TABLE IF NOT EXISTS adjuntos (
         id SERIAL PRIMARY KEY,

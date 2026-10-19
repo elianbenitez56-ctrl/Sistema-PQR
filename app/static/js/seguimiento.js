@@ -45,7 +45,7 @@ function configurarPermisosSeguimiento() {
   var camposCalidad = ['si-resp', 'si-cargo', 'si-causa', 'si-deptos', 'si-txt-calidad'];
   var herramientas = document.querySelectorAll('input[name="herramientas[]"]');
   for (var i = 0; i < herramientas.length; i++) camposCalidad.push(herramientas[i].id);
-  var camposComercial = ['si-acc', 'si-notif', 'si-fresp', 'si-cierre', 'si-fcierre', 'si-txt'];
+  var camposComercial = ['si-acc', 'si-notif', 'si-fresp', 'si-cierre', 'si-fcierre', 'si-txt', 'si-obs'];
 
   function aplicarBloqueo(ids, editable) {
     ids.forEach(function(id) {
@@ -103,9 +103,11 @@ async function cargarSeg() {
                     '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.detalle_presentacion||'—') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.lote||'—') + '</td>' +
                  '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.cant||'—') + ' ' + esc(x.unidad||'') + '</td>' +
-                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.tipoDoc||'—') + ' ' + esc(x.numDoc||'') + '</td></tr>';
+                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.tipoDoc||'—') + ' ' + esc(x.numDoc||'') + '</td>' +
+                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(x.descripcion||'—') + '</td>' +
+                 '<td style="padding:7px 11px;border-bottom:1px solid var(--outline-soft)">' + esc(fmtValor(x.valorizacion)) + '</td></tr>';
         }).join('')
-       : '<tr><td colspan="7" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
+       : '<tr><td colspan="9" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
      var mkSel = function(id, opts, val) {
        var vacio = !val;
        return '<select id="' + id + '">' +
@@ -139,7 +141,9 @@ async function cargarSeg() {
          '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Detalle / presentación</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Lote/OP</th>' +
       '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Cantidad</th>' +
-      '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Documento</th></tr></thead>' +
+      '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Documento</th>' +
+      '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Descripción</th>' +
+      '<th style="padding:7px 11px;color:#fff;font-size:10.5px;text-align:left;font-weight:600">Valorización</th></tr></thead>' +
        '<tbody>' + prodRows + '</tbody></table>' +
        evidenciasHtml +
        '</div></div>' +
@@ -168,13 +172,15 @@ async function cargarSeg() {
        '<div class="card-header"><div class="card-icon"><span class="material-symbols-outlined mat-icon">business_center</span></div><h3>Gestión comercial</h3><span style="margin-left:auto;color:var(--on-surface-variant);font-size:11px;font-weight:700">COMERCIAL</span></div>' +
        '<div class="card-body">' +
        '<div class="form-grid">' +
-       '<div class="field"><label>Acciones tomadas</label>' + mkSel('si-acc',['Reposición','Retrabajo','Nota crédito','Capacitación','Acción correctiva','Acción preventiva','Mejora del proceso'],inv.acc) + '</div>' +
+       '<div class="field"><label>Acciones tomadas</label>' + mkSel('si-acc',['Reposición','Retrabajo','Nota crédito','Cambio mano a mano','Capacitación','Acción correctiva','Acción preventiva','Mejora del proceso'],inv.acc) + '</div>' +
        '<div class="field"><label>Notificación al cliente</label>' + mkSel('si-notif',['Sí','No'],inv.notif) + '</div>' +
        '<div class="field"><label>Fecha de respuesta</label><input type="date" id="si-fresp" value="' + (inv.fResp||'') + '"></div>' +
       '<div class="field"><label>Cierre del PQR</label>' + mkSel('si-cierre',['No','Sí'],inv.cierre) + '</div>' +
       '<div class="field"><label>Fecha de cierre</label><input type="date" id="si-fcierre" value="' + (inv.fCierre||'') + '"></div>' +
       '<div class="field full"><label>Respuesta detallada al cliente</label>' +
         '<textarea id="si-txt" name="respuesta_comercial" rows="6" placeholder="Redacte el análisis de causa raíz y la respuesta completa para el cliente...">' + esc(inv.respuesta_comercial||'') + '</textarea></div>' +
+      '<div class="field full"><label>Observaciones (opcional)</label>' +
+        '<textarea id="si-obs" name="observaciones" rows="3" placeholder="Observaciones para Logística, Facturación o Cartera...">' + esc(inv.observaciones||'') + '</textarea></div>' +
       '</div>' +
       '<div class="action-row">' +
       '<button class="btn btn-success" onclick="expSeg(\'' + p.radicado + '\')">⬇ Descargar respuesta</button>' +
@@ -210,7 +216,8 @@ async function guardarSeg(rad, seccion) {
     cierre: document.getElementById('si-cierre').value,
     fCierre: document.getElementById('si-fcierre').value,
     respuesta_calidad: respuestaCalidad,
-    respuesta_comercial: respuestaComercial
+    respuesta_comercial: respuestaComercial,
+    observaciones: document.getElementById('si-obs').value
   };
   var rolSeg = currentUser ? currentUser.rol : '';
   var camposObligatorios = seccion === 'comercial'
@@ -248,7 +255,8 @@ async function guardarSeg(rad, seccion) {
         fResp: p.investigacion.fResp,
         cierre: p.investigacion.cierre,
         fCierre: p.investigacion.fCierre,
-        respuesta_comercial: p.investigacion.respuesta_comercial
+        respuesta_comercial: p.investigacion.respuesta_comercial,
+        observaciones: p.investigacion.observaciones
       }
     : {
         radicado: p.radicado,
@@ -290,6 +298,18 @@ async function guardarSeg(rad, seccion) {
         }
       }
       var avisoFallido = resultado.notificacion_comercial_intentada && !resultado.notificacion_comercial_enviada;
+      [['aviso_mano_a_mano', 'Logística y Facturación'], ['aviso_cierre', 'Cartera']].forEach(function(aviso) {
+        var estadoAviso = resultado[aviso[0]];
+        if (!estadoAviso || !estadoAviso.intentado) return;
+        if (estadoAviso.enviado) {
+          mensajeExito += ' Se notificó a ' + aviso[1] + ' por correo.';
+          if (estadoAviso.mensaje) mensajeExito += ' ⚠ No llegó a: ' + estadoAviso.mensaje + '.';
+        } else {
+          avisoFallido = true;
+          mensajeExito += ' ⚠ No se pudo notificar a ' + aviso[1] + ' (' + (estadoAviso.mensaje || 'error desconocido') + '). Se reintentará al guardar de nuevo.';
+        }
+        avisoFallido = avisoFallido || Boolean(estadoAviso.mensaje);
+      });
       toast(mensajeExito, avisoFallido ? "error" : "success");
       msg("seg-msg", (avisoFallido ? "⚠ " : "✅ ") + mensajeExito, avisoFallido ? "error" : "success");
     } else {
@@ -323,6 +343,9 @@ function expSeg(rad) {
   var respuestaComercial = document.getElementById('si-txt')
     ? document.getElementById('si-txt').value
     : (inv.respuesta_comercial || '');
+  var observaciones = document.getElementById('si-obs')
+    ? document.getElementById('si-obs').value
+    : (inv.observaciones || '');
   var herramientas = Array.isArray(inv.herramientas) ? inv.herramientas : (inv.herr ? [inv.herr] : []);
   var herramientasHtml = CATEGORIAS_HERRAMIENTA.map(function(categoria, indice) {
     var seleccionadas = categoria.opciones.filter(function(opcion) {
@@ -343,9 +366,11 @@ function expSeg(rad) {
            '<td>' + valor(x.lote, '-') + '</td>' +
            '<td>' + valor(x.cant, '-') + '</td>' +
            '<td>' + valor(x.unidad, '-') + '</td>' +
-           '<td>' + valor(documento, '-') + '</td></tr>';
+           '<td>' + valor(documento, '-') + '</td>' +
+           '<td>' + valor(x.descripcion, '-') + '</td>' +
+           '<td>' + valor(fmtValor(x.valorizacion), '-') + '</td></tr>';
        }).join('')
-     : '<tr><td colspan="8" class="empty">No registrado</td></tr>';
+     : '<tr><td colspan="10" class="empty">No registrado</td></tr>';
    var generado = new Date().toLocaleDateString('es-CO');
    var logo = window.location.origin + '/static/img/logo_inapel.png';
    var evidenciasInforme = (p.adjuntos || []).map(function(a) {
@@ -401,10 +426,10 @@ function expSeg(rad) {
      '<h1 class="document-title">INFORME DE GESTIÓN DE PQR</h1><div class="radicado">' + esc(rad) + '</div>' +
     '<section class="section"><h2 class="section-title">1. Información general</h2><table class="info-table"><tr><td class="label">Radicado</td><td class="value">' + valor(p.radicado, '-') + '</td><td class="label">Cliente</td><td class="value">' + valor(p.cliente, '-') + '</td></tr><tr><td class="label">Tipo de solicitud</td><td class="value">' + valor(p.tipoSol, '-') + '</td><td class="label">Fecha</td><td class="value">' + valor(p.fechaRec, '-') + '</td></tr><tr><td class="label">Estado</td><td class="value">' + valor(p.estado, '-') + '</td><td class="label">Prioridad</td><td class="value">' + valor(p.prioridad, '-') + '</td></tr></table></section>' +
     '<section class="section"><h2 class="section-title">2. Descripción del caso</h2><div class="text-block">' + texto(p.desc, 'No registrado') + '</div></section>' +
-     '<section class="section"><h2 class="section-title">3. Productos involucrados</h2><table class="data-table"><thead><tr><th>Línea</th><th>Producto</th><th>Detalle / presentación</th><th>Referencia</th><th>Lote/OP</th><th>Cantidad</th><th>Unidad</th><th>Documento</th></tr></thead><tbody>' + prods + '</tbody></table></section>' +
+     '<section class="section"><h2 class="section-title">3. Productos involucrados</h2><table class="data-table"><thead><tr><th>Línea</th><th>Producto</th><th>Detalle / presentación</th><th>Referencia</th><th>Lote/OP</th><th>Cantidad</th><th>Unidad</th><th>Documento</th><th>Descripción</th><th>Valorización</th></tr></thead><tbody>' + prods + '</tbody></table></section>' +
     '<section class="section"><h2 class="section-title">4. Investigación y análisis</h2><div class="two-col"><div class="detail"><b>Responsable de investigación</b>' + valor(inv.resp, '-') + '</div><div class="detail"><b>Cargo</b>' + valor(inv.cargo, '-') + '</div><div class="detail"><b>Causa asignada</b>' + valor(inv.causa, '-') + '</div><div class="detail"><b>Departamentos involucrados</b>' + valor(inv.deptos, '-') + '</div></div><div class="detail" style="margin-top:10px"><b>Herramientas utilizadas</b>' + herramientasHtml + '</div></section>' +
     '<section class="section"><h2 class="section-title">5. Resultado de la investigación</h2><div class="detail"><b>Respuesta detallada de Calidad</b><div class="text-block" style="margin-top:7px">' + texto(respuestaCalidad, 'No registrado') + '</div></div></section>' +
-    '<section class="section"><h2 class="section-title">6. Gestión comercial</h2><table class="info-table"><tr><td class="label">Acciones tomadas</td><td class="value">' + valor(inv.acc, '-') + '</td><td class="label">Notificación al cliente</td><td class="value">' + valor(inv.notif, '-') + '</td></tr><tr><td class="label">Fecha de respuesta</td><td class="value">' + valor(inv.fResp, '-') + '</td><td class="label">Fecha de cierre</td><td class="value">' + valor(inv.fCierre, '-') + '</td></tr><tr><td class="label">Estado de cierre</td><td class="value" colspan="3">' + valor(inv.cierre, '-') + '</td></tr></table></section>' +
+    '<section class="section"><h2 class="section-title">6. Gestión comercial</h2><table class="info-table"><tr><td class="label">Acciones tomadas</td><td class="value">' + valor(inv.acc, '-') + '</td><td class="label">Notificación al cliente</td><td class="value">' + valor(inv.notif, '-') + '</td></tr><tr><td class="label">Fecha de respuesta</td><td class="value">' + valor(inv.fResp, '-') + '</td><td class="label">Fecha de cierre</td><td class="value">' + valor(inv.fCierre, '-') + '</td></tr><tr><td class="label">Estado de cierre</td><td class="value" colspan="3">' + valor(inv.cierre, '-') + '</td></tr><tr><td class="label">Observaciones</td><td class="value" colspan="3">' + texto(observaciones, '-') + '</td></tr></table></section>' +
     '<section class="section"><h2 class="section-title">7. Respuesta al cliente</h2><div class="text-block">' + texto(respuestaComercial, 'No registrado') + '</div></section>' +
     '<section class="section"><h2 class="section-title">8. Evidencias adjuntas</h2>' + (evidenciasInforme ? '<ul>' + evidenciasInforme + '</ul>' : '<div class="empty">Sin evidencias</div>') + '</section>' +
     '</main><footer class="document-footer"><span>INAPEL · Sistema de Gestión de PQR</span><span>Documento generado automáticamente</span><span class="page-number"></span></footer>' +

@@ -1,5 +1,6 @@
 """Reglas de negocio puras (sin base de datos ni Flask): herramientas de análisis y flujo de seguimiento."""
 import json
+from decimal import Decimal, InvalidOperation
 
 from app.errores import ErrorNegocio
 from app.seguridad import ADMIN, LIDER_CALIDAD, ROLES_COMERCIAL
@@ -29,6 +30,14 @@ CAMPOS_COMERCIALES = (
     ("cierre", "Cierre del PQR"),
     ("fCierre", "Fecha de cierre"),
     ("respuesta_comercial", "Respuesta detallada al cliente")
+)
+
+# "Acciones tomadas" que dispara el aviso a Logística/Facturación (ver servicios/seguimiento.py).
+ACCION_MANO_A_MANO = "Cambio mano a mano"
+
+# Opcionales: no cuentan como obligatorios, pero Calidad tampoco puede modificarlos.
+CAMPOS_COMERCIALES_EDITABLES = CAMPOS_COMERCIALES + (
+    ("observaciones", "Observaciones"),
 )
 
 CAMPOS_CALIDAD_EDITABLES = CAMPOS_CALIDAD + (
@@ -83,6 +92,24 @@ def preparar_herramientas(datos):
     return herramientas
 
 
+# ---------------------------------------------------------- valorización
+
+def normalizar_valorizacion(valor):
+    """Valor económico del producto: "" (sin dato), "No aplica" o un número >= 0 como texto. Lanza ErrorNegocio si no es válido."""
+    texto = str(valor if valor is not None else "").strip()
+    if not texto:
+        return ""
+    if texto.lower() == "no aplica":
+        return "No aplica"
+    try:
+        numero = Decimal(texto)
+    except InvalidOperation:
+        numero = None
+    if numero is None or not numero.is_finite() or numero < 0:
+        raise ErrorNegocio("La valorización del producto debe ser un número mayor o igual a 0, o «No aplica».")
+    return format(abs(numero).normalize(), "f")
+
+
 # ---------------------------------------------------------- campos
 
 def campos_faltantes(datos, campos):
@@ -112,7 +139,7 @@ def campos_modificados(datos, actual, campos):
 def bloque_no_autorizado(seccion, rol):
     """(campos, nombre) que el rol NO puede modificar al guardar esa sección."""
     if seccion == "calidad" or (seccion is None and rol == LIDER_CALIDAD):
-        return CAMPOS_COMERCIALES, "Gestión comercial"
+        return CAMPOS_COMERCIALES_EDITABLES, "Gestión comercial"
     if seccion == "comercial" or (seccion is None and rol in ROLES_COMERCIAL):
         return CAMPOS_CALIDAD_EDITABLES, "Calidad"
     return (), ""

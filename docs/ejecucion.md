@@ -86,6 +86,8 @@ flask --app wsgi run --debug --port 8000
 | `SMTP_HOST`, `SMTP_PORT` | Para correo (solo local/Docker) | — / `587` | Servidor SMTP (Gmail: `smtp.gmail.com`, `587`) — Render bloquea estos puertos salientes |
 | `SMTP_USER`, `SMTP_PASSWORD` | Para correo (solo local/Docker) | — | Credenciales. En Gmail use una *contraseña de aplicación* |
 | `SMTP_USE_TLS`, `SMTP_USE_SSL` | No | `true` / `false` | Cifrado del SMTP |
+| `CORREOS_CAMBIO_MANO_A_MANO` | Para el aviso de cambio mano a mano | — | Correos (separados por coma o `;`) de Alejandro, Liliana y los responsables de Logística y Facturación |
+| `CORREO_CARTERA` | Para el aviso de cierre | — | Correo de Inés (Cartera), que recibe la solución final al cerrarse el PQR |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | Para evidencias persistentes en Render | — | Proyecto Supabase con un bucket privado (`SUPABASE_BUCKET`, por defecto `evidencias`) |
 | `SUPABASE_BUCKET` | No | `evidencias` | Nombre del bucket de Supabase Storage |
 | `FLASK_DEBUG` | No | — | `1` = modo desarrollo (permite `SECRET_KEY` por defecto y cookies sin `Secure`) |

@@ -21,7 +21,7 @@
   .hero-left h1{font-size:20px}
   .hero-left p{font-size:12px}
   .db-table{min-width:650px}
-  .table-pqr{min-width:1240px}
+  .table-pqr{min-width:1580px}
   .topbar-date .material-symbols-outlined{display:none}
   .topbar-date span:not(.material-symbols-outlined){font-size:11px}
 }
@@ -66,7 +66,7 @@
   .toolbar{flex-direction:column;align-items:flex-start;gap:12px}
   .dash-card .dash-value{font-size:28px}
   .result-card .detail-grid{grid-template-columns:minmax(0,1fr)}
-  .table-pqr{font-size:11.5px;min-width:1240px}
+  .table-pqr{font-size:11.5px;min-width:1580px}
   .chart-box{height:240px}
   .chart-box canvas{height:240px !important;max-height:240px !important}
   .hamburger{display:none}
@@ -125,7 +125,7 @@
   .toolbar{flex-direction:column;align-items:flex-start;gap:10px}
   .dash-card .dash-value{font-size:26px}
   .result-card .detail-grid{grid-template-columns:minmax(0,1fr)}
-  .table-pqr{font-size:11px;min-width:1240px}
+  .table-pqr{font-size:11px;min-width:1580px}
   .db-table{font-size:12px;min-width:550px}
   .modal-box{margin:10px}
   .modal-header{padding:14px 18px 10px}
@@ -199,7 +199,7 @@
   .stat-card .stat-value{font-size:22px}
   .card-header h3{font-size:13px}
   .db-table{min-width:480px;font-size:11px}
-  .table-pqr{min-width:1240px;font-size:10.5px}
+  .table-pqr{min-width:1580px;font-size:10.5px}
   .modal-box{margin:4px}
 }
 /* Móvil muy pequeño (320-360) */
@@ -213,7 +213,7 @@
   .dash-card .dash-value{font-size:20px}
   .stat-card .stat-value{font-size:20px}
   .db-table{min-width:440px;font-size:10px}
-  .table-pqr{min-width:1240px;font-size:10px}
+  .table-pqr{min-width:1580px;font-size:10px}
 }
 
 /* ─── SAFE AREAS (iPhone/iPad) ─── */

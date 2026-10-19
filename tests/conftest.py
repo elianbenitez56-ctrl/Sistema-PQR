@@ -13,6 +13,8 @@ def sin_correos(monkeypatch):
         ("app.servicios.pqr", "enviar_confirmacion_pqr"),
         ("app.servicios.pqr", "enviar_notificacion_calidad"),
         ("app.servicios.seguimiento", "enviar_notificacion_comercial"),
+        ("app.servicios.seguimiento", "enviar_aviso_mano_a_mano"),
+        ("app.servicios.seguimiento", "enviar_aviso_cierre"),
     ):
         monkeypatch.setattr(f"{modulo}.{nombre}", lambda *a, **k: (True, ""))
 

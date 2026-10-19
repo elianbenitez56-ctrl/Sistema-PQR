@@ -283,7 +283,8 @@ def obtener_investigacion_radicado(radicado):
             "notif": "", "fResp": "", "fCierre": "", "cierre": "",
             "respuesta_calidad": "", "respuesta_comercial": "",
             "deptos": "", "calidad_estado": "pendiente",
-            "comercial_estado": "pendiente", "notificacion_comercial_enviada": False
+            "comercial_estado": "pendiente", "notificacion_comercial_enviada": False,
+            "observaciones": "", "aviso_mano_a_mano_enviado": False, "aviso_cierre_enviado": False
         }
     return {
         "resp": row['responsable'] or "",
@@ -301,7 +302,10 @@ def obtener_investigacion_radicado(radicado):
         "deptos": row['departamentos'] or "",
         "calidad_estado": str(row['calidad_estado'] or "pendiente").strip().lower(),
         "comercial_estado": str(row['comercial_estado'] or "pendiente").strip().lower(),
-        "notificacion_comercial_enviada": bool(row['notificacion_comercial_enviada'])
+        "notificacion_comercial_enviada": bool(row['notificacion_comercial_enviada']),
+        "observaciones": row['observaciones'] or "",
+        "aviso_mano_a_mano_enviado": bool(row['aviso_mano_a_mano_enviado']),
+        "aviso_cierre_enviado": bool(row['aviso_cierre_enviado'])
     }
 
 
@@ -362,6 +366,7 @@ def guardar_investigacion(radicado, datos, calidad_estado, comercial_estado, avi
         1 if aviso_enviado else 0,
         datos.get("respuesta_calidad", ""),
         datos.get("respuesta_comercial", ""),
+        datos.get("observaciones", ""),
     ]
 
     with get_db_cursor(commit=True) as cursor:
@@ -373,7 +378,7 @@ def guardar_investigacion(radicado, datos, calidad_estado, comercial_estado, avi
                 "fecha_cierre = %s, cierre = %s, respuesta = %s, "
                 "departamentos = %s, calidad_estado = %s, comercial_estado = %s, "
                 "notificacion_comercial_enviada = %s, respuesta_calidad = %s, "
-                "respuesta_comercial = %s WHERE radicado = %s",
+                "respuesta_comercial = %s, observaciones = %s WHERE radicado = %s",
                 (*valores, radicado)
             )
         else:
@@ -381,8 +386,8 @@ def guardar_investigacion(radicado, datos, calidad_estado, comercial_estado, avi
                 "INSERT INTO investigaciones (responsable, cargo, herramienta, "
                 "causa, accion, notificar, fecha_respuesta, fecha_cierre, cierre, "
                 "respuesta, departamentos, calidad_estado, comercial_estado, "
-                "notificacion_comercial_enviada, respuesta_calidad, respuesta_comercial, radicado) "
-                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                "notificacion_comercial_enviada, respuesta_calidad, respuesta_comercial, observaciones, radicado) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 (*valores, radicado)
             )
 
@@ -414,6 +419,17 @@ def marcar_notificacion_comercial_enviada(radicado):
             "UPDATE investigaciones SET notificacion_comercial_enviada = 1 WHERE radicado = %s",
             (radicado,)
         )
+    return True
+
+
+AVISOS_COMERCIALES = {"mano_a_mano": "aviso_mano_a_mano_enviado", "cierre": "aviso_cierre_enviado"}
+
+
+def marcar_aviso_enviado(radicado, aviso):
+    """Deja constancia de que el aviso ("mano_a_mano" o "cierre") ya salió, para no repetirlo."""
+    columna = AVISOS_COMERCIALES[aviso]
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(f"UPDATE investigaciones SET {columna} = 1 WHERE radicado = %s", (radicado,))
     return True
 
 

@@ -120,14 +120,16 @@ function renderConsulta(p) {
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.lote || '—') + '</td>' +
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.cant || '—') + ' ' + esc(x.unidad || '') + '</td>' +
           '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.tipoDoc || '—') + ' ' + esc(x.numDoc || '') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(x.descripcion || '—') + '</td>' +
+          '<td style="padding:7px 10px;border-bottom:1px solid var(--outline-soft)">' + esc(fmtValor(x.valorizacion)) + '</td>' +
           '</tr>';
       }).join('')
-      : '<tr><td colspan="7" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
+      : '<tr><td colspan="9" style="padding:10px;color:var(--on-surface-variant);text-align:center">Sin productos</td></tr>';
   var productosHtml =
     '<div style="margin-top:18px;border-top:1px solid var(--outline-soft);padding-top:14px">' +
     '<div class="detail-label" style="margin-bottom:6px">Productos involucrados</div>' +
-    '<div class="table-wrap"><table class="table-pqr" style="min-width:620px;font-size:12px">' +
-      '<thead><tr><th>Línea</th><th>REFERENCIA SIESA</th><th>Producto</th><th>Detalle / presentación</th><th>Lote / OP</th><th>Cantidad</th><th>Documento</th></tr></thead>' +
+    '<div class="table-wrap"><table class="table-pqr" style="min-width:760px;font-size:12px">' +
+      '<thead><tr><th>Línea</th><th>REFERENCIA SIESA</th><th>Producto</th><th>Detalle / presentación</th><th>Lote / OP</th><th>Cantidad</th><th>Documento</th><th>Descripción</th><th>Valorización</th></tr></thead>' +
     '<tbody>' + prodRows + '</tbody></table></div></div>';
   var evidenciasHtml = '';
   if (p.adjuntos && p.adjuntos.length) {

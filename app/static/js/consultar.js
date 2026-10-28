@@ -134,7 +134,7 @@ function renderConsulta(p) {
   var evidenciasHtml = '';
   if (p.adjuntos && p.adjuntos.length) {
     var evidRows = p.adjuntos.map(function(a) {
-      return '<li style="padding:4px 0"><a href="/api/evidencias/' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">' +
+      return '<li style="padding:4px 0"><a class="evidencia-link" href="/api/evidencias/' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener" title="Abrir el archivo en una pestaña nueva">' +
         esc(a.nombre || 'Archivo') + '</a>' + (a.tipo ? ' <span style="color:var(--on-surface-variant)">(' + esc(a.tipo) + ')</span>' : '') + '</li>';
     }).join('');
     evidenciasHtml =

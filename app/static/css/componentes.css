@@ -175,6 +175,9 @@
 .date-filter label{font-size:11px;color:var(--on-surface-variant);font-weight:500}
 
 /* ─── RESULT CARD ─── */
+/* Tailwind resetea los enlaces: sin esto el archivo adjunto se ve como texto y nadie sabe que se abre. */
+.evidencia-link{color:var(--blue);font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.evidencia-link:hover{color:var(--navy)}
 .result-card{
   background:var(--surface-container-lowest);
   border:1.5px solid var(--blue-light); border-radius:var(--radius-lg);

@@ -119,7 +119,7 @@ async function cargarSeg() {
      var evidenciasHtml = (p.adjuntos && p.adjuntos.length)
        ? '<div class="detail-label" style="margin:14px 0 6px">Evidencias adjuntas</div>' +
          '<ul style="margin:0;padding-left:18px;font-size:13px">' + p.adjuntos.map(function(a) {
-           return '<li style="padding:4px 0"><a href="/api/evidencias/' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener">' +
+           return '<li style="padding:4px 0"><a class="evidencia-link" href="/api/evidencias/' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener" title="Abrir el archivo en una pestaña nueva">' +
              esc(a.nombre || 'Archivo') + '</a>' + (a.tipo ? ' <span style="color:var(--on-surface-variant)">(' + esc(a.tipo) + ')</span>' : '') + '</li>';
          }).join('') + '</ul>'
        : '';
